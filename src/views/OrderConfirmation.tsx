@@ -1,5 +1,4 @@
-import { CheckCircle2, ArrowLeft, ShoppingBag } from 'lucide-react';
-import WernerLogo from '../components/WernerLogo';
+import { CheckCircle2, ArrowLeft, ShoppingBag, Clock } from 'lucide-react';
 
 type Props = {
   orderNumber: number;
@@ -9,53 +8,58 @@ type Props = {
 
 export default function OrderConfirmation({ orderNumber, onBackHome, onOrderAgain }: Props) {
   return (
-    <div className="min-h-screen bg-[#c8102e] flex items-center justify-center px-4 sm:px-6 py-8">
-      <div className="max-w-md w-full text-center">
+    <div className="min-h-screen bg-premium flex items-center justify-center px-4 sm:px-6 py-10 text-white">
+      <div className="max-w-md w-full text-center animate-fade-up">
+        {/* Logo */}
         <div className="flex justify-center mb-6">
           <img
             src="/image.png"
             alt="WernerBurguer logo"
-            className="w-24 h-24 sm:w-20 sm:h-20 rounded-full border-4 border-yellow-400 object-cover shadow-lg"
+            className="w-20 h-20 rounded-full border-2 border-gold/60 object-cover shadow-glow-gold"
           />
         </div>
-        <div className="w-24 h-24 sm:w-20 sm:h-20 rounded-full bg-yellow-400 flex items-center justify-center mx-auto mb-6 animate-bounce-in">
-          <CheckCircle2 className="w-14 h-14 sm:w-11 sm:h-11 text-black" />
+
+        {/* Check con halo */}
+        <div className="relative mx-auto mb-7 w-24 h-24">
+          <div className="absolute inset-0 rounded-full bg-gold/20 blur-2xl" />
+          <div className="relative w-24 h-24 rounded-full bg-yellow-cta flex items-center justify-center mx-auto animate-bounce-in shadow-glow-gold">
+            <CheckCircle2 className="w-14 h-14 text-ink" strokeWidth={2.5} />
+          </div>
         </div>
-        <h1
-          className="text-4xl sm:text-3xl font-black text-white mb-3 uppercase"
-          style={{
-            fontFamily: "'Arial Black', 'Impact', sans-serif",
-            textShadow: '2px 2px 0 #000',
-          }}
-        >
-          ¡Pedido enviado!
+
+        <h1 className="font-display text-4xl font-extrabold uppercase tracking-tight mb-3">
+          ¡Pedido <span className="text-gold-grad">enviado!</span>
         </h1>
-        <p className="text-base sm:text-base text-white/80 mb-6 leading-relaxed">
+        <p className="text-white/60 mb-7 leading-relaxed">
           Tu pedido ha sido recibido por la cocina. Puedes seguir su estado
           desde el panel de cocina.
         </p>
-        <div className="bg-black/20 rounded-2xl border-2 border-yellow-400/40 p-6 sm:p-5 mb-8">
-          <p className="text-base sm:text-sm text-white/60 mb-2 sm:mb-1">Número de pedido</p>
-          <p
-            className="text-5xl sm:text-4xl font-black text-yellow-400"
-            style={{ fontFamily: "'Arial Black', sans-serif" }}
-          >
+
+        {/* Número de pedido */}
+        <div className="glass-strong rounded-[28px] p-7 mb-8 shadow-card">
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/40 mb-2">Número de pedido</p>
+          <p className="font-display text-6xl font-extrabold text-gold-grad leading-none">
             #{String(orderNumber).padStart(3, '0')}
           </p>
+          <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5 text-[12px] font-medium text-white/55">
+            <Clock className="h-3.5 w-3.5 text-gold" />
+            En preparación · listo en minutos
+          </div>
         </div>
+
         <div className="flex flex-col gap-3">
           <button
             onClick={onOrderAgain}
-            className="flex items-center justify-center gap-2 py-4 rounded-xl bg-yellow-400 text-black font-black uppercase hover:bg-yellow-300 transition-all active:scale-95 text-base min-h-[48px]"
+            className="flex items-center justify-center gap-2 rounded-2xl bg-yellow-cta py-4 text-ink font-extrabold uppercase tracking-wide shadow-glow-gold transition-all hover:brightness-105 active:scale-95 min-h-[50px]"
           >
-            <ShoppingBag className="w-6 h-6 sm:w-5 sm:h-5" />
+            <ShoppingBag className="h-5 w-5" />
             Hacer otro pedido
           </button>
           <button
             onClick={onBackHome}
-            className="flex items-center justify-center gap-2 py-4 rounded-xl bg-black/30 border-2 border-yellow-400/40 text-white font-bold hover:bg-black/50 transition-all text-base min-h-[48px]"
+            className="flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] py-4 text-white/80 font-bold transition-colors hover:bg-white/10 min-h-[50px]"
           >
-            <ArrowLeft className="w-6 h-6 sm:w-5 sm:h-5" />
+            <ArrowLeft className="h-5 w-5" />
             Volver al inicio
           </button>
         </div>

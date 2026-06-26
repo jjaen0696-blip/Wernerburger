@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ShoppingBag, Clock, Star, ArrowRight, LogIn, MapPin, ChevronDown, Check } from 'lucide-react';
+import { ShoppingBag, Clock, Star, ArrowRight, LogIn, MapPin, ChevronDown, Check, Flame, Sparkles } from 'lucide-react';
 import WernerLogo from '../components/WernerLogo';
 import { supabase, type Location } from '../lib/supabase';
 
@@ -63,10 +63,10 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#c8102e] flex items-center justify-center">
+      <div className="min-h-screen bg-premium flex items-center justify-center">
         <div className="text-center">
-          <div className="w-14 h-14 rounded-full border-4 border-yellow-400 border-t-transparent animate-spin mx-auto mb-4" />
-          <p className="text-white font-bold">Cargando sucursales...</p>
+          <div className="w-14 h-14 rounded-full border-4 border-gold border-t-transparent animate-spin mx-auto mb-4" />
+          <p className="text-white/70 font-semibold">Cargando sucursales…</p>
         </div>
       </div>
     );
@@ -74,10 +74,11 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#c8102e] flex items-center justify-center px-6">
-        <div className="max-w-lg w-full bg-black/20 border-2 border-yellow-400/50 rounded-3xl p-8 text-center">
-          <p className="text-white font-black text-xl mb-4">Error al cargar sucursales</p>
-          <p className="text-white/80 mb-6">{error}</p>
+      <div className="min-h-screen bg-premium flex items-center justify-center px-6">
+        <div className="max-w-lg w-full glass-strong rounded-[28px] p-8 text-center shadow-card">
+          <div className="grid h-16 w-16 place-items-center rounded-2xl border border-white/10 bg-white/[0.04] text-3xl mx-auto mb-5">😕</div>
+          <p className="text-white font-display font-extrabold text-xl mb-3">Error al cargar sucursales</p>
+          <p className="text-white/60 mb-6">{error}</p>
           <button
             onClick={() => {
               setError(null);
@@ -111,7 +112,7 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
               };
               load();
             }}
-            className="px-6 py-3 rounded-2xl bg-yellow-400 text-black font-black uppercase hover:bg-yellow-300 transition-all"
+            className="rounded-2xl bg-yellow-cta px-6 py-3 text-ink font-extrabold uppercase shadow-glow-gold transition-transform active:scale-95"
           >
             Reintentar
           </button>
@@ -121,15 +122,15 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-[#c8102e] text-white">
+    <div className="min-h-screen bg-premium text-white">
       {/* Nav */}
-      <nav className="absolute top-0 left-0 right-0 z-20 px-6 py-5 flex items-center justify-between">
+      <nav className="absolute top-0 left-0 right-0 z-20 px-5 sm:px-8 py-5 flex items-center justify-between">
         <WernerLogo size="md" />
         <button
           onClick={onKitchenAccess}
-          className="flex items-center gap-2 px-4 py-3 sm:py-2 rounded-xl bg-black/30 backdrop-blur border-2 border-yellow-400/40 text-white font-bold text-base sm:text-sm hover:bg-black/50 hover:border-yellow-400 transition-all min-h-[44px] sm:min-h-auto"
+          className="flex items-center gap-2 rounded-2xl border border-white/10 glass px-4 py-2.5 font-bold text-sm text-white/90 transition-all hover:border-gold/40 hover:text-white min-h-[44px]"
         >
-          <LogIn className="w-5 h-5 sm:w-4 sm:h-4 text-yellow-400" />
+          <LogIn className="h-4 w-4 text-gold" />
           Login
         </button>
       </nav>
@@ -139,52 +140,49 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
         <div className="absolute inset-0">
           <img
             src="https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg?auto=compress&cs=tinysrgb&w=1600"
-            alt="Hamburguesa"
-            className="w-full h-full object-cover"
+            alt=""
+            className="w-full h-full object-cover opacity-40"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#c8102e] via-[#c8102e]/85 to-[#c8102e]/30" />
+          <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/95 to-brand-deep/40" />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-ink/60" />
+          <div className="absolute -right-40 top-10 h-[480px] w-[480px] rounded-full bg-brand/25 blur-[140px]" />
+          <div className="absolute -left-40 bottom-0 h-[420px] w-[420px] rounded-full bg-gold/10 blur-[140px]" />
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 w-full">
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-400/15 border border-yellow-400/40 mb-6">
-              <Star className="w-5 h-5 sm:w-4 sm:h-4 text-yellow-400 fill-yellow-400" />
-              <span className="text-base sm:text-sm font-bold text-yellow-300">Comida hecha al momento</span>
+        <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-8 w-full pt-24 pb-12">
+          <div className="max-w-2xl animate-fade-up">
+            <div className="inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold/10 px-4 py-1.5 mb-6">
+              <Flame className="h-4 w-4 text-gold-light" />
+              <span className="text-[13px] font-bold uppercase tracking-wider text-gold-light">Comida hecha al momento</span>
             </div>
-            <h1
-              className="text-5xl sm:text-7xl font-black leading-[1.05] tracking-tight mb-6 text-white"
-              style={{
-                fontFamily: "'Arial Black', 'Impact', sans-serif",
-                textShadow: '3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000',
-              }}
-            >
+            <h1 className="font-display text-[44px] sm:text-7xl font-extrabold leading-[0.95] tracking-tight mb-6 text-balance">
               PIDE TU COMIDA
               <br />
-              <span className="text-yellow-400">FAVORITA EN MINUTOS</span>
+              <span className="text-gold-grad">FAVORITA EN MINUTOS</span>
             </h1>
-            <p className="text-base sm:text-lg text-white/80 mb-6 leading-relaxed max-w-lg font-medium">
-              Hamburguesas, papas, bebidas y postres. Arma tu pedido y
-              la cocina lo recibe al instante.
+            <p className="text-[15px] sm:text-lg text-white/60 mb-8 leading-relaxed max-w-lg">
+              Hamburguesas a la parrilla, hot dogs cargados, salchipapas y más.
+              Arma tu pedido y la cocina lo recibe al instante.
             </p>
 
             {/* Location selector */}
             <div className="mb-8 relative">
-              <p className="text-base sm:text-sm font-bold text-white/60 mb-3 sm:mb-2 flex items-center gap-1.5">
-                <MapPin className="w-5 h-5 sm:w-4 sm:h-4 text-yellow-400" />
+              <p className="text-[13px] font-bold uppercase tracking-wider text-white/45 mb-2 flex items-center gap-1.5">
+                <MapPin className="h-4 w-4 text-gold" />
                 Elige tu sucursal
               </p>
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center justify-between gap-3 w-full max-w-sm px-4 py-4 sm:py-3 rounded-xl bg-black/30 backdrop-blur border-2 border-yellow-400/40 text-white font-bold text-base sm:text-base hover:border-yellow-400 transition-all min-h-[44px] sm:min-h-auto"
+                className="flex items-center justify-between gap-3 w-full max-w-sm rounded-2xl border border-white/10 glass px-4 py-3.5 text-white font-semibold transition-all hover:border-gold/40 min-h-[44px]"
               >
                 <span className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5 sm:w-4 sm:h-4 text-yellow-400" />
-                  {selectedLocation ? selectedLocation.name : 'Cargando...'}
+                  <MapPin className="h-5 w-5 text-gold" />
+                  {selectedLocation ? selectedLocation.name : 'Cargando…'}
                 </span>
-                <ChevronDown className={`w-5 h-5 sm:w-4 sm:h-4 text-yellow-400 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`h-5 w-5 text-gold transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
               </button>
               {dropdownOpen && (
-                <div className="absolute left-0 top-0 mt-0 ml-0 w-72 max-w-md rounded-xl bg-stone-900 border-2 border-yellow-400/40 shadow-2xl overflow-y-auto z-20 max-h-96">
+                <div className="absolute left-0 top-full mt-2 w-72 max-w-sm rounded-2xl glass-strong shadow-card overflow-y-auto z-20 max-h-96 animate-scale-in">
                   {locations.map((loc) => (
                     <button
                       key={loc.id}
@@ -192,15 +190,13 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
                         setSelectedLocation(loc);
                         setDropdownOpen(false);
                       }}
-                      className="flex items-center justify-between w-full px-4 py-4 sm:py-3 text-left hover:bg-white/5 transition-colors min-h-[48px] sm:min-h-auto border-b border-yellow-400/20 last:border-b-0"
+                      className="flex items-center justify-between w-full px-4 py-3.5 text-left hover:bg-white/[0.06] transition-colors min-h-[48px] border-b border-white/[0.06] last:border-b-0"
                     >
                       <div>
-                        <p className="font-bold text-white text-base sm:text-base">{loc.name}</p>
-                        <p className="text-sm sm:text-xs text-white/50">{loc.address}</p>
+                        <p className="font-bold text-white">{loc.name}</p>
+                        <p className="text-xs text-white/45">{loc.address}</p>
                       </div>
-                      {selectedLocation?.id === loc.id && (
-                        <Check className="w-5 h-5 sm:w-4 sm:h-4 text-yellow-400" />
-                      )}
+                      {selectedLocation?.id === loc.id && <Check className="h-5 w-5 text-gold" />}
                     </button>
                   ))}
                 </div>
@@ -208,7 +204,7 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
             </div>
 
             {warning && (
-              <div className="mb-4 rounded-2xl bg-yellow-400/10 border border-yellow-400/40 px-4 py-3 text-yellow-100 text-sm">
+              <div className="mb-5 rounded-2xl border border-gold/30 bg-gold/10 px-4 py-3 text-gold-light text-sm">
                 {warning}
               </div>
             )}
@@ -217,11 +213,11 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
               <button
                 onClick={() => selectedLocation && onOrder(selectedLocation.id)}
                 disabled={!selectedLocation}
-                className="group inline-flex items-center justify-center gap-3 px-8 py-4 sm:py-4 rounded-2xl bg-yellow-400 text-black font-black text-lg sm:text-lg uppercase hover:bg-yellow-300 transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-black/30 disabled:opacity-50 disabled:active:scale-100 min-h-[50px]"
+                className="group inline-flex items-center justify-center gap-3 rounded-2xl bg-yellow-cta px-8 py-4 text-ink font-extrabold text-lg uppercase tracking-wide shadow-glow-gold transition-all hover:brightness-105 active:scale-95 disabled:opacity-50 disabled:active:scale-100 min-h-[52px]"
               >
-                <ShoppingBag className="w-7 h-7 sm:w-6 sm:h-6" />
+                <ShoppingBag className="h-6 w-6" />
                 Pedir ahora
-                <ArrowRight className="w-6 h-6 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
               </button>
             </div>
           </div>
@@ -229,32 +225,28 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
       </section>
 
       {/* Features */}
-      <section className="bg-black py-20 px-6 border-t-4 border-yellow-400">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-8 px-4 sm:px-0">
+      <section className="relative border-t border-white/8 py-20 px-6">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-6">
           {[
             { icon: ShoppingBag, title: 'Pide fácil', text: 'Explora el menú, agrega al carrito y confirma.' },
             { icon: Clock, title: 'En tiempo real', text: 'La cocina recibe tu pedido al instante.' },
             { icon: Star, title: 'Calidad garantizada', text: 'Ingredientes frescos preparados al momento.' },
           ].map((f) => (
-            <div key={f.title} className="text-center">
-              <div className="w-16 h-16 sm:w-14 sm:h-14 rounded-2xl bg-yellow-400/10 border border-yellow-400/30 flex items-center justify-center mx-auto mb-4">
-                <f.icon className="w-8 h-8 sm:w-7 sm:h-7 text-yellow-400" />
+            <div key={f.title} className="glass rounded-[24px] p-6 text-center transition-all hover:-translate-y-1.5 hover:border-gold/30">
+              <div className="w-16 h-16 rounded-2xl bg-gold/10 border border-gold/25 flex items-center justify-center mx-auto mb-4">
+                <f.icon className="h-7 w-7 text-gold" />
               </div>
-              <h3
-                className="text-lg sm:text-lg font-black text-white mb-2 uppercase"
-                style={{ fontFamily: "'Arial Black', sans-serif" }}
-              >
-                {f.title}
-              </h3>
-              <p className="text-white/60 text-base sm:text-sm leading-relaxed">{f.text}</p>
+              <h3 className="font-display text-lg font-extrabold text-white mb-2 uppercase">{f.title}</h3>
+              <p className="text-white/55 text-sm leading-relaxed">{f.text}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <footer className="bg-black py-4 px-6 border-t border-yellow-400/20">
-        <div className="max-w-5xl mx-auto flex items-center justify-center">
-          <p className="text-xs text-white/30">© WernerBurguer</p>
+      <footer className="border-t border-white/8 py-5 px-6">
+        <div className="max-w-5xl mx-auto flex items-center justify-center gap-2">
+          <Sparkles className="h-3.5 w-3.5 text-gold/50" />
+          <p className="text-xs text-white/30">© WernerBurguer · Hecho al momento</p>
         </div>
       </footer>
     </div>

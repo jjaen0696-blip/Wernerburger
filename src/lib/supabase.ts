@@ -19,6 +19,7 @@ export type Location = {
   name: string;
   address: string;
   is_active: boolean;
+  created_at: string;
 };
 
 export type MenuItem = {

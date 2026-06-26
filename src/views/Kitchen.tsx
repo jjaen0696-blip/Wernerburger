@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback } from 'react';
 import {
   ArrowLeft, Loader2, Clock, ChefHat, CheckCircle2, PackageCheck, XCircle, LogOut,
 } from 'lucide-react';
-import WernerLogo from '../components/WernerLogo';
 import { supabase, type OrderWithItems, type OrderStatus, type Location } from '../lib/supabase';
 
 type Props = {
@@ -15,37 +14,37 @@ const STATUS_CONFIG: Record<
 > = {
   pending: {
     label: 'Recibido',
-    color: 'text-yellow-400',
-    bg: 'bg-black/30',
-    border: 'border-yellow-400',
+    color: 'text-gold',
+    bg: 'bg-gold/[0.06]',
+    border: 'border-gold/40',
     icon: Clock,
   },
   preparing: {
     label: 'Preparando',
-    color: 'text-blue-400',
-    bg: 'bg-black/30',
-    border: 'border-blue-400',
+    color: 'text-sky-400',
+    bg: 'bg-sky-500/[0.06]',
+    border: 'border-sky-400/40',
     icon: ChefHat,
   },
   ready: {
     label: 'Listo',
     color: 'text-emerald-400',
-    bg: 'bg-black/30',
-    border: 'border-emerald-400',
+    bg: 'bg-emerald-500/[0.06]',
+    border: 'border-emerald-400/40',
     icon: PackageCheck,
   },
   completed: {
     label: 'Entregado',
     color: 'text-white/50',
-    bg: 'bg-black/20',
-    border: 'border-white/30',
+    bg: 'bg-white/[0.02]',
+    border: 'border-white/20',
     icon: CheckCircle2,
   },
   cancelled: {
     label: 'Cancelado',
     color: 'text-red-300',
-    bg: 'bg-black/30',
-    border: 'border-red-400',
+    bg: 'bg-brand/[0.08]',
+    border: 'border-brand-light/40',
     icon: XCircle,
   },
 };
@@ -201,34 +200,36 @@ export default function Kitchen({ onBack }: Props) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#c8102e] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-yellow-400" />
+      <div className="min-h-screen bg-premium flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-gold" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#c8102e]">
+    <div className="min-h-screen bg-premium text-white">
       {/* Header */}
-      <header className="sticky top-0 z-20 bg-black text-white border-b-4 border-yellow-400">
+      <header className="sticky top-0 z-20 glass-strong border-b border-white/8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-2 sm:gap-4">
           <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={onBack}
-              className="p-3 sm:p-2 rounded-lg hover:bg-white/10 transition-colors -m-3 sm:m-0 min-h-[44px] min-w-[44px] sm:min-h-auto sm:min-w-auto flex items-center justify-center"
+              className="grid h-11 w-11 place-items-center rounded-2xl border border-white/10 bg-white/[0.04] text-white/80 transition-all hover:border-gold/40 hover:text-gold"
             >
-              <ArrowLeft className="w-6 h-6 sm:w-5 sm:h-5" />
+              <ArrowLeft className="h-5 w-5" />
             </button>
             <div className="flex items-center gap-2 sm:gap-3">
               <img
                 src="/image.png"
                 alt="WernerBurguer logo"
-                className="w-12 h-12 sm:w-10 sm:h-10 rounded-full border-2 border-yellow-400 object-cover"
+                className="w-11 h-11 rounded-full border-2 border-gold/50 object-cover"
               />
-              <div className="h-8 w-px bg-white/20 hidden sm:block" />
+              <div className="h-8 w-px bg-white/10 hidden sm:block" />
               <div className="hidden sm:block">
-                <h1 className="font-black leading-tight text-white" style={{ fontFamily: "'Arial Black', sans-serif" }}>Cocina</h1>
-                <p className="text-xs text-white/50">Panel de pedidos en tiempo real</p>
+                <h1 className="font-display font-extrabold leading-tight text-white flex items-center gap-2">
+                  <ChefHat className="h-4 w-4 text-gold" /> Cocina
+                </h1>
+                <p className="text-xs text-white/40">Panel de pedidos en tiempo real</p>
               </div>
             </div>
           </div>
@@ -239,21 +240,23 @@ export default function Kitchen({ onBack }: Props) {
                 setActiveLocationId(e.target.value);
                 setLoading(true);
               }}
-              className="px-3 py-2 sm:py-2 rounded-lg bg-white/10 border-2 border-yellow-400/40 text-white font-bold text-sm outline-none focus:border-yellow-400 cursor-pointer min-h-[44px] sm:min-h-auto"
+              className="rounded-2xl border border-white/10 bg-white/[0.05] px-3 py-2.5 text-white font-bold text-sm outline-none focus:border-gold/50 cursor-pointer min-h-[44px]"
             >
               {locations.map((loc) => (
-                <option key={loc.id} value={loc.id} className="bg-stone-900">
+                <option key={loc.id} value={loc.id} className="bg-ink-800">
                   {loc.name}
                 </option>
               ))}
             </select>
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse hidden sm:block" />
-            <span className="text-sm text-white/70 font-bold hidden md:inline">En vivo</span>
+            <span className="hidden sm:flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-xs text-emerald-300 font-bold">En vivo</span>
+            </span>
             <button
               onClick={async () => { await supabase.auth.signOut(); onBack(); }}
-              className="flex items-center gap-2 px-3 py-3 sm:py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-sm transition-colors min-h-[44px] sm:min-h-auto"
+              className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-3 sm:py-2.5 text-white font-bold text-sm transition-colors hover:bg-white/10 min-h-[44px]"
             >
-              <LogOut className="w-5 h-5 sm:w-4 sm:h-4" />
+              <LogOut className="h-4 w-4" />
               <span className="hidden md:inline">Salir</span>
             </button>
           </div>
@@ -262,7 +265,7 @@ export default function Kitchen({ onBack }: Props) {
 
       {error && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 mt-4">
-          <p className="text-sm text-red-200 font-bold bg-black/30 border border-red-400/40 rounded-xl px-4 py-3">
+          <p className="text-sm text-red-200 font-semibold rounded-2xl border border-brand-light/40 bg-brand/15 px-4 py-3">
             {error}
           </p>
         </div>
@@ -276,15 +279,15 @@ export default function Kitchen({ onBack }: Props) {
             return (
               <div key={col.status} className="flex flex-col">
                 <div className="flex items-center justify-between mb-3 px-1">
-                  <h2 className="font-black text-white uppercase" style={{ fontFamily: "'Arial Black', sans-serif" }}>{col.title}</h2>
-                  <span className="px-2.5 py-0.5 rounded-full bg-yellow-400 text-black text-sm font-black">
+                  <h2 className="font-display font-extrabold text-white uppercase tracking-tight">{col.title}</h2>
+                  <span className="px-2.5 py-0.5 rounded-full bg-yellow-cta text-ink text-sm font-black">
                     {colOrders.length}
                   </span>
                 </div>
                 <div className="space-y-3 min-h-[200px]">
                   {colOrders.length === 0 ? (
-                    <div className="rounded-xl border-2 border-dashed border-white/20 py-10 text-center">
-                      <p className="text-white/40 text-sm">Sin pedidos</p>
+                    <div className="rounded-2xl border border-dashed border-white/15 py-10 text-center">
+                      <p className="text-white/35 text-sm">Sin pedidos</p>
                     </div>
                   ) : (
                     colOrders.map((order) => {
@@ -296,11 +299,11 @@ export default function Kitchen({ onBack }: Props) {
                       return (
                         <div
                           key={order.id}
-                          className={`rounded-2xl border-2 ${cfg.border} ${cfg.bg} p-4 shadow-sm`}
+                          className={`reveal rounded-2xl border ${cfg.border} ${cfg.bg} glass p-4 shadow-soft`}
                         >
                           <div className="flex items-start justify-between mb-3">
                             <div>
-                              <span className="text-lg font-black text-yellow-400" style={{ fontFamily: "'Arial Black', sans-serif" }}>
+                              <span className="font-display text-lg font-extrabold text-gold-grad">
                                 #{String(order.number).padStart(3, '0')}
                               </span>
                               <p className="text-sm text-white font-bold">
@@ -308,12 +311,12 @@ export default function Kitchen({ onBack }: Props) {
                               </p>
                             </div>
                             <div className={`flex items-center gap-1.5 ${cfg.color}`}>
-                              <Icon className="w-4 h-4" />
+                              <Icon className="h-4 w-4" />
                               <span className="text-xs font-bold">{cfg.label}</span>
                             </div>
                           </div>
 
-                          <div className="text-xs text-white/50 mb-3">
+                          <div className="text-xs text-white/40 mb-3">
                             {timeAgo(order.created_at)}
                           </div>
 
@@ -321,9 +324,9 @@ export default function Kitchen({ onBack }: Props) {
                             {order.order_items.map((item) => (
                               <div
                                 key={item.id}
-                                className="flex items-start gap-2 text-sm bg-black/20 rounded-lg px-3 py-2"
+                                className="flex items-start gap-2 text-sm bg-black/25 rounded-xl px-3 py-2"
                               >
-                                <span className="font-black text-yellow-400 min-w-[1.5rem]">
+                                <span className="font-black text-gold min-w-[1.5rem]">
                                   {item.quantity}×
                                 </span>
                                 <div className="flex-1">
@@ -331,7 +334,7 @@ export default function Kitchen({ onBack }: Props) {
                                     {item.name}
                                   </span>
                                   {item.notes && (
-                                    <p className="text-xs text-white/50 italic mt-0.5">
+                                    <p className="text-xs text-white/45 italic mt-0.5">
                                       {item.notes}
                                     </p>
                                   )}
@@ -341,22 +344,22 @@ export default function Kitchen({ onBack }: Props) {
                           </div>
 
                           {order.notes && (
-                            <div className="text-xs text-white/70 bg-black/20 rounded-lg px-3 py-2 mb-3">
-                              <span className="font-bold text-yellow-400">Nota: </span>
+                            <div className="text-xs text-white/65 bg-black/25 rounded-xl px-3 py-2 mb-3">
+                              <span className="font-bold text-gold">Nota: </span>
                               {order.notes}
                             </div>
                           )}
 
                           <div className="flex items-center justify-between pt-2 border-t border-white/10">
-                            <span className="font-black text-yellow-400" style={{ fontFamily: "'Arial Black', sans-serif" }}>
+                            <span className="font-display font-extrabold text-gold-grad">
                               ${Number(order.total).toFixed(2)}
                             </span>
-                <div className="flex gap-2 flex-col sm:flex-row">
+                            <div className="flex gap-2 flex-col sm:flex-row">
                               {order.status === 'pending' && (
                                 <button
                                   onClick={() => cancelOrder(order)}
                                   disabled={isUpdating}
-                                  className="px-4 py-3 sm:px-3 sm:py-1.5 rounded-lg text-sm sm:text-xs font-bold text-red-300 bg-red-500/20 hover:bg-red-500/30 transition-colors disabled:opacity-50 min-h-[44px] sm:min-h-auto"
+                                  className="rounded-xl px-4 py-3 sm:px-3 sm:py-1.5 text-sm sm:text-xs font-bold text-red-300 bg-brand/15 border border-brand-light/30 hover:bg-brand/25 transition-colors disabled:opacity-50 min-h-[44px] sm:min-h-auto"
                                 >
                                   Cancelar
                                 </button>
@@ -365,12 +368,12 @@ export default function Kitchen({ onBack }: Props) {
                                 <button
                                   onClick={() => advanceOrder(order)}
                                   disabled={isUpdating}
-                                  className="flex items-center justify-center gap-1.5 px-4 py-3 sm:px-4 sm:py-1.5 rounded-lg text-sm sm:text-xs font-black bg-yellow-400 text-black hover:bg-yellow-300 transition-colors disabled:opacity-50 min-h-[44px] sm:min-h-auto"
+                                  className="flex items-center justify-center gap-1.5 rounded-xl px-4 py-3 sm:px-4 sm:py-1.5 text-sm sm:text-xs font-black bg-yellow-cta text-ink hover:brightness-105 transition-all disabled:opacity-50 min-h-[44px] sm:min-h-auto"
                                 >
                                   {isUpdating ? (
-                                    <Loader2 className="w-5 h-5 sm:w-3.5 sm:h-3.5 animate-spin" />
+                                    <Loader2 className="h-4 w-4 animate-spin" />
                                   ) : (
-                                    <CheckCircle2 className="w-5 h-5 sm:w-3.5 sm:h-3.5" />
+                                    <CheckCircle2 className="h-4 w-4" />
                                   )}
                                   {actionLabel}
                                 </button>

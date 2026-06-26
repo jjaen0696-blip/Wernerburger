@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, Loader2, LogIn } from 'lucide-react';
-import WernerLogo from '../components/WernerLogo';
+import { ArrowLeft, Loader2, LogIn, Lock } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 type Props = {
@@ -31,40 +30,30 @@ export default function KitchenLock({ onUnlock, onBack }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-[#c8102e] flex items-center justify-center px-4 sm:px-6 py-8">
-      <div className="max-w-sm w-full">
-        <div className="flex justify-center mb-8">
+    <div className="min-h-screen bg-premium flex items-center justify-center px-4 sm:px-6 py-8 text-white">
+      <div className="max-w-sm w-full animate-fade-up">
+        <div className="flex justify-center mb-7">
           <img
             src="/image.png"
             alt="WernerBurguer logo"
-            className="w-24 h-24 sm:w-20 sm:h-20 rounded-full border-4 border-yellow-400 object-cover shadow-lg"
+            className="w-20 h-20 rounded-full border-2 border-gold/60 object-cover shadow-glow-gold"
           />
         </div>
 
-        <div className="bg-black/20 rounded-2xl border-2 border-yellow-400/40 p-8 sm:p-8">
-          <div className="text-center mb-6">
-            <div className="w-20 h-20 sm:w-16 sm:h-16 rounded-full bg-yellow-400/10 border border-yellow-400/30 flex items-center justify-center mx-auto mb-4">
-              <LogIn className="w-10 h-10 sm:w-8 sm:h-8 text-yellow-400" />
+        <div className="glass-strong rounded-[28px] p-8 shadow-card">
+          <div className="text-center mb-7">
+            <div className="w-16 h-16 rounded-2xl bg-gold/10 border border-gold/25 flex items-center justify-center mx-auto mb-4">
+              <Lock className="h-7 w-7 text-gold" />
             </div>
-            <h1
-              className="text-3xl sm:text-2xl font-black text-white uppercase mb-2"
-              style={{
-                fontFamily: "'Arial Black', 'Impact', sans-serif",
-                textShadow: '2px 2px 0 #000',
-              }}
-            >
-              Acceso Personal
+            <h1 className="font-display text-2xl font-extrabold text-white uppercase tracking-tight mb-1.5">
+              Acceso personal
             </h1>
-            <p className="text-base sm:text-sm text-white/60">
-              Inicia sesión para acceder al Panel
-            </p>
+            <p className="text-sm text-white/50">Inicia sesión para acceder al panel</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-base sm:text-sm font-bold text-white mb-2">
-                Email
-              </label>
+              <label className="block text-sm font-bold text-white/80 mb-2">Email</label>
               <input
                 type="email"
                 value={email}
@@ -72,13 +61,11 @@ export default function KitchenLock({ onUnlock, onBack }: Props) {
                 placeholder="Correo"
                 required
                 autoComplete="email"
-                className="w-full px-4 py-4 sm:py-3 rounded-xl bg-black/30 border-2 border-yellow-400/40 text-white placeholder-white/30 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 outline-none transition-all text-base min-h-[48px] sm:min-h-auto"
+                className="w-full rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3.5 text-[15px] text-white placeholder-white/30 outline-none transition-all focus:border-gold/50 focus:ring-2 focus:ring-gold/15 min-h-[48px]"
               />
             </div>
             <div>
-              <label className="block text-base sm:text-sm font-bold text-white mb-2">
-                Contraseña
-              </label>
+              <label className="block text-sm font-bold text-white/80 mb-2">Contraseña</label>
               <input
                 type="password"
                 value={password}
@@ -86,12 +73,12 @@ export default function KitchenLock({ onUnlock, onBack }: Props) {
                 placeholder=""
                 required
                 autoComplete="current-password"
-                className="w-full px-4 py-4 sm:py-3 rounded-xl bg-black/30 border-2 border-yellow-400/40 text-white placeholder-white/30 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 outline-none transition-all text-base min-h-[48px] sm:min-h-auto"
+                className="w-full rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3.5 text-[15px] text-white placeholder-white/30 outline-none transition-all focus:border-gold/50 focus:ring-2 focus:ring-gold/15 min-h-[48px]"
               />
             </div>
 
             {error && (
-              <p className="text-base sm:text-sm text-red-200 font-bold text-center bg-red-500/20 border border-red-400/40 rounded-xl px-4 py-3">
+              <p className="text-sm text-red-200 font-semibold text-center rounded-2xl border border-brand-light/40 bg-brand/15 px-4 py-3">
                 {error}
               </p>
             )}
@@ -99,13 +86,13 @@ export default function KitchenLock({ onUnlock, onBack }: Props) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-yellow-400 text-black font-black uppercase hover:bg-yellow-300 transition-all active:scale-95 disabled:opacity-60 disabled:active:scale-100 text-base min-h-[48px]"
+              className="w-full flex items-center justify-center gap-2 rounded-2xl bg-yellow-cta py-4 text-ink font-extrabold uppercase tracking-wide shadow-glow-gold transition-all hover:brightness-105 active:scale-95 disabled:opacity-60 disabled:active:scale-100 min-h-[50px]"
             >
               {loading ? (
-                <Loader2 className="w-6 h-6 sm:w-5 sm:h-5 animate-spin" />
+                <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
                 <>
-                  <LogIn className="w-6 h-6 sm:w-5 sm:h-5" />
+                  <LogIn className="h-5 w-5" />
                   Entrar
                 </>
               )}
@@ -114,9 +101,9 @@ export default function KitchenLock({ onUnlock, onBack }: Props) {
 
           <button
             onClick={onBack}
-            className="w-full flex items-center justify-center gap-2 mt-4 py-3 text-base sm:text-sm text-white/60 hover:text-white transition-colors font-bold"
+            className="w-full flex items-center justify-center gap-2 mt-4 py-3 text-sm text-white/55 hover:text-white transition-colors font-semibold"
           >
-            <ArrowLeft className="w-5 h-5 sm:w-4 sm:h-4" />
+            <ArrowLeft className="h-4 w-4" />
             Volver al inicio
           </button>
         </div>
