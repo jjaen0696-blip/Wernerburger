@@ -3,6 +3,18 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+console.log('Supabase env', {
+  supabaseUrl,
+  supabaseAnonKeySet: Boolean(supabaseAnonKey),
+});
+
+if (!supabaseUrl) {
+  throw new Error('VITE_SUPABASE_URL is required but was not provided. Check your .env or environment settings.');
+}
+if (!supabaseAnonKey) {
+  throw new Error('VITE_SUPABASE_ANON_KEY is required but was not provided. Check your .env or environment settings.');
+}
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: { persistSession: true },
 });
