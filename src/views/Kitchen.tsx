@@ -211,31 +211,31 @@ export default function Kitchen({ onBack }: Props) {
     <div className="min-h-screen bg-[#c8102e]">
       {/* Header */}
       <header className="sticky top-0 z-20 bg-black text-white border-b-4 border-yellow-400">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={onBack}
-              className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+              className="p-3 sm:p-2 rounded-lg hover:bg-white/10 transition-colors -m-3 sm:m-0 min-h-[44px] min-w-[44px] sm:min-h-auto sm:min-w-auto flex items-center justify-center"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-6 h-6 sm:w-5 sm:h-5" />
             </button>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <WernerLogo size="sm" />
-              <div className="h-8 w-px bg-white/20" />
-              <div>
+              <div className="h-8 w-px bg-white/20 hidden sm:block" />
+              <div className="hidden sm:block">
                 <h1 className="font-black leading-tight text-white" style={{ fontFamily: "'Arial Black', sans-serif" }}>Cocina</h1>
                 <p className="text-xs text-white/50">Panel de pedidos en tiempo real</p>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <select
               value={activeLocationId ?? ''}
               onChange={(e) => {
                 setActiveLocationId(e.target.value);
                 setLoading(true);
               }}
-              className="px-3 py-2 rounded-lg bg-white/10 border-2 border-yellow-400/40 text-white font-bold text-sm outline-none focus:border-yellow-400 cursor-pointer"
+              className="px-3 py-2 sm:py-2 rounded-lg bg-white/10 border-2 border-yellow-400/40 text-white font-bold text-sm outline-none focus:border-yellow-400 cursor-pointer min-h-[44px] sm:min-h-auto"
             >
               {locations.map((loc) => (
                 <option key={loc.id} value={loc.id} className="bg-stone-900">
@@ -243,14 +243,14 @@ export default function Kitchen({ onBack }: Props) {
                 </option>
               ))}
             </select>
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-sm text-white/70 font-bold hidden sm:inline">En vivo</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse hidden sm:block" />
+            <span className="text-sm text-white/70 font-bold hidden md:inline">En vivo</span>
             <button
               onClick={async () => { await supabase.auth.signOut(); onBack(); }}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-sm transition-colors"
+              className="flex items-center gap-2 px-3 py-3 sm:py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-sm transition-colors min-h-[44px] sm:min-h-auto"
             >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">Salir</span>
+              <LogOut className="w-5 h-5 sm:w-4 sm:h-4" />
+              <span className="hidden md:inline">Salir</span>
             </button>
           </div>
         </div>
@@ -266,7 +266,7 @@ export default function Kitchen({ onBack }: Props) {
 
       {/* Kanban columns */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
           {columns.map((col) => {
             const colOrders = orders.filter((o) => o.status === col.status);
             return (
@@ -347,12 +347,12 @@ export default function Kitchen({ onBack }: Props) {
                             <span className="font-black text-yellow-400" style={{ fontFamily: "'Arial Black', sans-serif" }}>
                               ${Number(order.total).toFixed(2)}
                             </span>
-                            <div className="flex gap-2">
+                <div className="flex gap-2 flex-col sm:flex-row">
                               {order.status === 'pending' && (
                                 <button
                                   onClick={() => cancelOrder(order)}
                                   disabled={isUpdating}
-                                  className="px-3 py-1.5 rounded-lg text-xs font-bold text-red-300 bg-red-500/20 hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                                  className="px-4 py-3 sm:px-3 sm:py-1.5 rounded-lg text-sm sm:text-xs font-bold text-red-300 bg-red-500/20 hover:bg-red-500/30 transition-colors disabled:opacity-50 min-h-[44px] sm:min-h-auto"
                                 >
                                   Cancelar
                                 </button>
@@ -361,12 +361,12 @@ export default function Kitchen({ onBack }: Props) {
                                 <button
                                   onClick={() => advanceOrder(order)}
                                   disabled={isUpdating}
-                                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-black bg-yellow-400 text-black hover:bg-yellow-300 transition-colors disabled:opacity-50"
+                                  className="flex items-center justify-center gap-1.5 px-4 py-3 sm:px-4 sm:py-1.5 rounded-lg text-sm sm:text-xs font-black bg-yellow-400 text-black hover:bg-yellow-300 transition-colors disabled:opacity-50 min-h-[44px] sm:min-h-auto"
                                 >
                                   {isUpdating ? (
-                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                    <Loader2 className="w-5 h-5 sm:w-3.5 sm:h-3.5 animate-spin" />
                                   ) : (
-                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                    <CheckCircle2 className="w-5 h-5 sm:w-3.5 sm:h-3.5" />
                                   )}
                                   {actionLabel}
                                 </button>
