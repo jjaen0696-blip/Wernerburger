@@ -231,26 +231,28 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-[#c8102e] pb-28">
+    <div className="min-h-screen bg-[#c8102e] pb-32 sm:pb-28">
       {/* Header */}
       <header className="sticky top-0 z-30 bg-[#c8102e] border-b-4 border-yellow-400">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 py-4 sm:py-3 flex items-center justify-between gap-2">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 text-white hover:text-yellow-300 font-bold transition-colors"
+            className="flex items-center gap-2 text-white hover:text-yellow-300 font-bold transition-colors p-2 -m-2 min-h-[44px] min-w-[44px] justify-center sm:p-0 sm:m-0 sm:min-h-auto sm:min-w-auto"
           >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="hidden sm:inline">Inicio</span>
+            <ArrowLeft className="w-6 h-6 sm:w-5 sm:h-5" />
+            <span className="hidden sm:inline text-base">Inicio</span>
           </button>
-          <WernerLogo size="sm" />
+          <div className="flex-1 flex justify-center">
+            <WernerLogo size="sm" />
+          </div>
           <button
             onClick={() => setCartOpen(true)}
-            className="relative flex items-center gap-2 px-4 py-2 rounded-xl bg-yellow-400 text-black font-black hover:bg-yellow-300 transition-colors"
+            className="relative flex items-center gap-2 px-3 sm:px-4 py-3 sm:py-2 rounded-xl bg-yellow-400 text-black font-black hover:bg-yellow-300 transition-colors min-h-[44px] text-sm sm:text-base"
           >
-            <ShoppingBag className="w-5 h-5" />
+            <ShoppingBag className="w-6 h-6 sm:w-5 sm:h-5" />
             <span className="hidden sm:inline">Carrito</span>
             {cartCount > 0 && (
-              <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-black text-yellow-400 text-xs font-black flex items-center justify-center">
+              <span className="absolute -top-2 -right-2 w-7 h-7 sm:w-6 sm:h-6 rounded-full bg-black text-yellow-400 text-xs font-black flex items-center justify-center">
                 {cartCount}
               </span>
             )}
@@ -285,7 +287,7 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
               placeholder="Buscar en el menú..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-xl bg-black/20 border-2 border-yellow-400/40 text-white placeholder-white/40 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 outline-none transition-all"
+              className="w-full pl-12 pr-4 py-4 sm:py-3 rounded-xl bg-black/20 border-2 border-yellow-400/40 text-white placeholder-white/40 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 outline-none transition-all text-base"
             />
           </div>
 
@@ -293,7 +295,7 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setSelectedCategory(null)}
-              className={`px-4 py-2 rounded-lg font-bold transition-all ${
+              className={`px-4 py-3 sm:py-2 rounded-lg font-bold transition-all min-h-[44px] sm:min-h-auto text-sm sm:text-base ${
                 selectedCategory === null
                   ? 'bg-yellow-400 text-black'
                   : 'bg-black/20 border-2 border-yellow-400/40 text-white hover:border-yellow-400'
@@ -306,7 +308,7 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                className={`px-4 py-3 sm:py-2 rounded-lg font-bold transition-all min-h-[44px] sm:min-h-auto text-sm sm:text-base ${
                   selectedCategory === cat
                     ? 'bg-yellow-400 text-black'
                     : 'bg-black/20 border-2 border-yellow-400/40 text-white hover:border-yellow-400'
@@ -319,16 +321,16 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
         </div>
 
         {/* Category columns */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {grouped.map((col) => (
             <div
               key={col.category}
               className="bg-black/20 rounded-2xl border-2 border-yellow-400/40 overflow-hidden"
             >
               {/* Category header */}
-              <div className="bg-yellow-400 px-4 py-3 text-center">
+              <div className="bg-yellow-400 px-4 py-4 sm:py-3 text-center">
                 <h2
-                  className="text-2xl font-black uppercase text-black"
+                  className="text-xl sm:text-2xl font-black uppercase text-black"
                   style={{
                     fontFamily: "'Arial Black', 'Impact', sans-serif",
                     letterSpacing: '0.04em',
@@ -343,20 +345,20 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
                 {col.items.map((item) => (
                   <div
                     key={item.id}
-                    className="flex gap-3 p-4 hover:bg-black/40 transition-all group relative"
+                    className="flex gap-3 p-4 sm:p-4 hover:bg-black/40 transition-all group relative"
                   >
                     <div className="relative flex-shrink-0">
                       <img
                         src={item.image_url}
                         alt={item.name}
-                        className="w-16 h-16 rounded-lg object-cover border-2 border-yellow-400/50 group-hover:border-yellow-400 transition-all"
+                        className="w-20 h-20 sm:w-16 sm:h-16 rounded-lg object-cover border-2 border-yellow-400/50 group-hover:border-yellow-400 transition-all"
                       />
                       <button
                         onClick={() => toggleFavorite(item.id)}
-                        className="absolute -top-2 -right-2 p-1.5 rounded-full bg-black border-2 border-yellow-400 hover:bg-yellow-400 hover:text-black transition-all"
+                        className="absolute -top-2 -right-2 p-2 sm:p-1.5 rounded-full bg-black border-2 border-yellow-400 hover:bg-yellow-400 hover:text-black transition-all min-w-[32px] min-h-[32px] flex items-center justify-center"
                       >
                         <Heart
-                          className={`w-4 h-4 ${
+                          className={`w-5 h-5 sm:w-4 sm:h-4 ${
                             favorites.has(item.id)
                               ? 'fill-current text-red-500'
                               : 'text-yellow-400'
@@ -386,7 +388,7 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
                       </div>
                       <button
                         onClick={() => addToCart(item)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-yellow-400 text-black font-black text-xs uppercase hover:bg-yellow-300 transition-all active:scale-95 hover:shadow-lg"
+                        className="flex items-center gap-1.5 px-4 py-3 sm:px-3 sm:py-1.5 rounded-lg bg-yellow-400 text-black font-black text-sm sm:text-xs uppercase hover:bg-yellow-300 transition-all active:scale-95 hover:shadow-lg min-h-[44px] sm:min-h-auto"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         Agregar
@@ -404,7 +406,7 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
       {cartCount > 0 && !cartOpen && (
         <button
           onClick={() => setCartOpen(true)}
-          className="fixed bottom-5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-black text-white font-black shadow-2xl hover:bg-stone-800 hover:shadow-yellow-400/50 transition-all active:scale-95 border-2 border-yellow-400 animate-pulse"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-6 py-4 sm:py-3.5 rounded-2xl bg-black text-white font-black shadow-2xl hover:bg-stone-800 hover:shadow-yellow-400/50 transition-all active:scale-95 border-2 border-yellow-400 animate-pulse min-h-[48px]"
         >
           <ShoppingBag className="w-5 h-5 text-yellow-400" />
           <span>
@@ -427,14 +429,14 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
                 className="text-xl font-black text-white flex items-center gap-2"
                 style={{ fontFamily: "'Arial Black', sans-serif" }}
               >
-                <ShoppingBag className="w-5 h-5 text-yellow-400" />
+                <ShoppingBag className="w-6 h-6 sm:w-5 sm:h-5 text-yellow-400" />
                 Tu Carrito
               </h2>
               <button
                 onClick={() => setCartOpen(false)}
-                className="p-2 rounded-lg hover:bg-black/20 transition-colors"
+                className="p-3 sm:p-2 rounded-lg hover:bg-black/20 transition-colors -m-3 sm:-m-2 min-w-[44px] min-h-[44px] sm:min-h-auto sm:min-w-auto flex items-center justify-center"
               >
-                <X className="w-5 h-5 text-white" />
+                <X className="w-6 h-6 sm:w-5 sm:h-5 text-white" />
               </button>
             </div>
 
@@ -457,7 +459,7 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
                       <img
                         src={c.menu_item.image_url}
                         alt={c.menu_item.name}
-                        className="w-14 h-14 rounded-lg object-cover border border-yellow-400/40 flex-shrink-0"
+                        className="w-16 h-16 sm:w-14 sm:h-14 rounded-lg object-cover border border-yellow-400/40 flex-shrink-0"
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
@@ -476,30 +478,30 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
                           </div>
                           <button
                             onClick={() => removeItem(c.menu_item.id)}
-                            className="text-white/50 hover:text-red-300 transition-colors flex-shrink-0"
+                            className="text-white/50 hover:text-red-300 transition-colors flex-shrink-0 p-2 -m-2 min-w-[40px] min-h-[40px] flex items-center justify-center"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-5 h-5 sm:w-4 sm:h-4" />
                           </button>
                         </div>
                         <div className="flex items-center justify-between mt-2">
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => updateQty(c.menu_item.id, -1)}
-                              className="w-6 h-6 rounded-md bg-black/50 hover:bg-black transition-colors flex items-center justify-center"
+                              className="w-8 h-8 sm:w-6 sm:h-6 rounded-md bg-black/50 hover:bg-black transition-colors flex items-center justify-center"
                             >
-                              <Minus className="w-3 h-3 text-white" />
+                              <Minus className="w-4 h-4 sm:w-3 sm:h-3 text-white" />
                             </button>
-                            <span className="font-black text-white w-5 text-center text-sm">
+                            <span className="font-black text-white w-6 text-center text-base sm:text-sm">
                               {c.quantity}
                             </span>
                             <button
                               onClick={() => updateQty(c.menu_item.id, 1)}
-                              className="w-6 h-6 rounded-md bg-yellow-400/30 hover:bg-yellow-400/50 transition-colors flex items-center justify-center"
+                              className="w-8 h-8 sm:w-6 sm:h-6 rounded-md bg-yellow-400/30 hover:bg-yellow-400/50 transition-colors flex items-center justify-center"
                             >
-                              <Plus className="w-3 h-3 text-white" />
+                              <Plus className="w-4 h-4 sm:w-3 sm:h-3 text-white" />
                             </button>
                           </div>
-                          <span className="font-black text-yellow-400 text-sm">
+                          <span className="font-black text-yellow-400 text-lg sm:text-base">
                             ${(c.menu_item.price * c.quantity).toFixed(2)}
                           </span>
                         </div>
@@ -529,14 +531,14 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
                     setCartOpen(false);
                     setCheckoutOpen(true);
                   }}
-                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-yellow-400 to-yellow-300 text-black font-black uppercase hover:from-yellow-300 hover:to-yellow-200 transition-all active:scale-95 shadow-lg shadow-yellow-400/30"
+                  className="w-full py-4 rounded-xl bg-gradient-to-r from-yellow-400 to-yellow-300 text-black font-black uppercase hover:from-yellow-300 hover:to-yellow-200 transition-all active:scale-95 shadow-lg shadow-yellow-400/30 text-base min-h-[48px]"
                 >
-                  <ShoppingBag className="w-5 h-5 inline mr-2" />
+                  <ShoppingBag className="w-6 h-6 sm:w-5 sm:h-5 inline mr-2" />
                   Realizar Pedido
                 </button>
                 <button
                   onClick={() => setCartOpen(false)}
-                  className="w-full py-2 rounded-xl bg-black/50 text-white font-bold uppercase hover:bg-black/70 transition-all text-sm"
+                  className="w-full py-3 rounded-xl bg-black/50 text-white font-bold uppercase hover:bg-black/70 transition-all text-sm min-h-[44px]"
                 >
                   Continuar Comprando
                 </button>
@@ -563,15 +565,15 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
               </h2>
               <button
                 onClick={() => !submitting && setCheckoutOpen(false)}
-                className="p-2 rounded-lg hover:bg-black/20 transition-colors"
+                className="p-3 sm:p-2 rounded-lg hover:bg-black/20 transition-colors -m-3 sm:-m-2 min-w-[44px] min-h-[44px] sm:min-h-auto sm:min-w-auto flex items-center justify-center"
               >
-                <X className="w-5 h-5 text-white" />
+                <X className="w-6 h-6 sm:w-5 sm:h-5 text-white" />
               </button>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-bold text-white mb-2">
+                <label className="block text-base sm:text-sm font-bold text-white mb-3 sm:mb-2">
                   👤 Tu nombre
                 </label>
                 <input
@@ -579,13 +581,14 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
                   placeholder="Ej. María González"
-                  className="w-full px-4 py-3 rounded-xl bg-black/20 border-2 border-yellow-400/40 text-white placeholder-white/40 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 outline-none transition-all font-bold"
+                  className="w-full px-4 py-3 rounded-xl bg-black/20 border-2 border-yellow-400/40 text-white placeholder-white/40 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 outline-none transition-all font-bold text-base"
                   disabled={submitting}
+                  minHeight="44px"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-white mb-2">
+                <label className="block text-base sm:text-sm font-bold text-white mb-3 sm:mb-2">
                   📝 Notas especiales (opcional)
                 </label>
                 <textarea
@@ -593,7 +596,7 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
                   onChange={(e) => setOrderNotes(e.target.value)}
                   placeholder="Ej. Sin cebolla, extra queso, que sea rápido..."
                   rows={3}
-                  className="w-full px-4 py-3 rounded-xl bg-black/20 border-2 border-yellow-400/40 text-white placeholder-white/40 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 outline-none transition-all resize-none"
+                  className="w-full px-4 py-3 rounded-xl bg-black/20 border-2 border-yellow-400/40 text-white placeholder-white/40 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 outline-none transition-all resize-none text-base"
                   disabled={submitting}
                 />
               </div>
@@ -640,16 +643,16 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
               <button
                 onClick={placeOrder}
                 disabled={submitting || !customerName.trim()}
-                className="w-full py-4 rounded-xl bg-gradient-to-r from-yellow-400 to-yellow-300 text-black font-black uppercase hover:from-yellow-300 hover:to-yellow-200 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-yellow-400/30"
+                className="w-full py-4 rounded-xl bg-gradient-to-r from-yellow-400 to-yellow-300 text-black font-black uppercase hover:from-yellow-300 hover:to-yellow-200 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-yellow-400/30 text-base min-h-[48px]"
               >
                 {submitting ? (
                   <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Loader2 className="w-6 h-6 sm:w-5 sm:h-5 animate-spin" />
                     Procesando...
                   </>
                 ) : (
                   <>
-                    <Check className="w-5 h-5" />
+                    <Check className="w-6 h-6 sm:w-5 sm:h-5" />
                     Confirmar Pedido
                   </>
                 )}
@@ -658,7 +661,7 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
               <button
                 onClick={() => !submitting && setCheckoutOpen(false)}
                 disabled={submitting}
-                className="w-full py-2.5 rounded-xl bg-black/50 text-white font-bold uppercase hover:bg-black/70 transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-3 rounded-xl bg-black/50 text-white font-bold uppercase hover:bg-black/70 transition-all text-sm min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Volver al Carrito
               </button>
