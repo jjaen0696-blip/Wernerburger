@@ -184,7 +184,7 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
                 <ChevronDown className={`w-5 h-5 sm:w-4 sm:h-4 text-yellow-400 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
               </button>
               {dropdownOpen && (
-                <div className="absolute top-full mt-2 w-full max-w-sm rounded-xl bg-stone-900 border-2 border-yellow-400/40 shadow-2xl overflow-hidden z-20">
+                <div className="absolute left-0 top-0 mt-0 ml-0 w-72 max-w-md rounded-xl bg-stone-900 border-2 border-yellow-400/40 shadow-2xl overflow-y-auto z-20 max-h-96">
                   {locations.map((loc) => (
                     <button
                       key={loc.id}
@@ -192,7 +192,7 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
                         setSelectedLocation(loc);
                         setDropdownOpen(false);
                       }}
-                      className="flex items-center justify-between w-full px-4 py-4 sm:py-3 text-left hover:bg-white/5 transition-colors min-h-[48px] sm:min-h-auto"
+                      className="flex items-center justify-between w-full px-4 py-4 sm:py-3 text-left hover:bg-white/5 transition-colors min-h-[48px] sm:min-h-auto border-b border-yellow-400/20 last:border-b-0"
                     >
                       <div>
                         <p className="font-bold text-white text-base sm:text-base">{loc.name}</p>

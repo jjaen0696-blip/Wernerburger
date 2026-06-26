@@ -298,11 +298,11 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
             />
           </div>
 
-          {/* Category filters */}
-          <div className="flex flex-wrap gap-2">
+          {/* Category filters - horizontal scroll */}
+          <div className="flex gap-2 overflow-x-auto pb-3 px-1 -mx-1 snap-x snap-mandatory">
             <button
               onClick={() => setSelectedCategory(null)}
-              className={`px-4 py-3 sm:py-2 rounded-lg font-bold transition-all min-h-[44px] sm:min-h-auto text-sm sm:text-base ${
+              className={`flex-shrink-0 px-4 py-3 sm:py-2 rounded-lg font-bold transition-all min-h-[44px] sm:min-h-auto text-sm sm:text-base whitespace-nowrap snap-start ${
                 selectedCategory === null
                   ? 'bg-yellow-400 text-black'
                   : 'bg-black/20 border-2 border-yellow-400/40 text-white hover:border-yellow-400'
@@ -315,7 +315,7 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-4 py-3 sm:py-2 rounded-lg font-bold transition-all min-h-[44px] sm:min-h-auto text-sm sm:text-base ${
+                className={`flex-shrink-0 px-4 py-3 sm:py-2 rounded-lg font-bold transition-all min-h-[44px] sm:min-h-auto text-sm sm:text-base whitespace-nowrap snap-start ${
                   selectedCategory === cat
                     ? 'bg-yellow-400 text-black'
                     : 'bg-black/20 border-2 border-yellow-400/40 text-white hover:border-yellow-400'
