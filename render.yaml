@@ -15,7 +15,7 @@ services:
       - key: VITE_SUPABASE_URL
         value: https://uhodpfcajtnrmofabyyt.supabase.co
       - key: VITE_SUPABASE_ANON_KEY
-        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmbXRmZnlhamR4enZzZGZtYnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MjE4MTAsImV4cCI6MjA5Nzk5NzgxMH0.YI-0knzsgBZy0hPSaY4uD7YDndJS129uErtB-lx1kCc
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVob2RwZmNhanRucm1vZmFieXl0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MjcxNTgsImV4cCI6MjA5ODAwMzE1OH0.OoTWzxnquodS7WizMibnv-9CpsQTtw1v-o9DfCGw-oY
     # La app usa hash routing (#/cocina), así que este rewrite no es imprescindible,
     # pero deja listo el fallback SPA por si se añaden rutas por path más adelante.
     routes:
