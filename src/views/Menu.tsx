@@ -27,7 +27,6 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
-  const [itemNotes, setItemNotes] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const load = async () => {
