@@ -1,0 +1,21 @@
+# Render Blueprint — despliega WernerBurguer (Vite + React) como Static Site.
+# Docs: https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: wernerburger
+    runtime: static
+    buildCommand: npm run build
+    staticPublishPath: ./dist
+    # Vite incrusta estas variables EN BUILD. sync:false => Render las pide al crear
+    # el Blueprint y se guardan en el dashboard (no se versionan en el repo).
+    envVars:
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false
+    # La app usa hash routing (#/cocina), así que este rewrite no es imprescindible,
+    # pero deja listo el fallback SPA por si se añaden rutas por path más adelante.
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
