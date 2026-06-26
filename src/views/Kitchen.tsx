@@ -1,12 +1,18 @@
 import { useEffect, useState, useCallback } from 'react';
+import { createClient } from '@supabase/supabase-js';
 import {
-  ArrowLeft, Loader2, Clock, ChefHat, CheckCircle2, PackageCheck, XCircle, LogOut,
+  ArrowLeft, Loader2, Clock, ChefHat, CheckCircle2, PackageCheck, XCircle, LogOut, UserPlus, X, Mail, KeyRound,
 } from 'lucide-react';
-import { supabase, type OrderWithItems, type OrderStatus, type Location } from '../lib/supabase';
+import {
+  supabase, supabaseUrl, supabaseAnonKey, type OrderWithItems, type OrderStatus, type Location,
+} from '../lib/supabase';
 
 type Props = {
   onBack: () => void;
 };
+
+// Correo con privilegios para crear nuevos usuarios de cocina desde el panel.
+const ADMIN_EMAIL = 'baex10@icloud.com';
 
 const STATUS_CONFIG: Record<
   OrderStatus,
@@ -78,6 +84,58 @@ export default function Kitchen({ onBack }: Props) {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [locations, setLocations] = useState<Location[]>([]);
   const [activeLocationId, setActiveLocationId] = useState<string | null>(null);
+
+  // --- Administración de usuarios (solo ADMIN_EMAIL) ---
+  const [currentEmail, setCurrentEmail] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [creating, setCreating] = useState(false);
+  const [createMsg, setCreateMsg] = useState<{ type: 'ok' | 'err' | 'info'; text: string } | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setCurrentEmail(data.user?.email ?? null));
+  }, []);
+
+  const isAdmin = currentEmail?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+
+  const createKitchenUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const email = newEmail.trim();
+    if (!email || newPassword.length < 6) {
+      setCreateMsg({ type: 'err', text: 'Ingresa un correo válido y una contraseña de al menos 6 caracteres.' });
+      return;
+    }
+    setCreating(true);
+    setCreateMsg(null);
+    try {
+      // Cliente aislado: crea la cuenta sin tocar la sesión del administrador actual.
+      const tmpClient = createClient(supabaseUrl, supabaseAnonKey, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      });
+      const { data, error } = await tmpClient.auth.signUp({ email, password: newPassword });
+      if (error) throw error;
+
+      if (data.user && data.user.identities && data.user.identities.length === 0) {
+        setCreateMsg({ type: 'err', text: 'Ese correo ya está registrado.' });
+      } else if (data.session) {
+        setCreateMsg({ type: 'ok', text: `Usuario ${email} creado y listo para iniciar sesión.` });
+        setNewEmail('');
+        setNewPassword('');
+      } else {
+        setCreateMsg({
+          type: 'info',
+          text: `Usuario ${email} creado. Debe abrir el enlace de confirmación enviado a su correo antes de poder entrar.`,
+        });
+        setNewEmail('');
+        setNewPassword('');
+      }
+    } catch (err) {
+      setCreateMsg({ type: 'err', text: err instanceof Error ? err.message : 'No se pudo crear el usuario.' });
+    } finally {
+      setCreating(false);
+    }
+  };
 
   const defaultLocation: Location = {
     id: 'default',
@@ -248,6 +306,15 @@ export default function Kitchen({ onBack }: Props) {
                 </option>
               ))}
             </select>
+            {isAdmin && (
+              <button
+                onClick={() => { setCreateMsg(null); setCreateOpen(true); }}
+                className="flex items-center gap-2 rounded-2xl bg-yellow-cta px-3 py-3 sm:py-2.5 text-ink font-extrabold text-sm shadow-glow-gold transition-all hover:brightness-105 active:scale-95 min-h-[44px]"
+              >
+                <UserPlus className="h-4 w-4" />
+                <span className="hidden md:inline">Crear usuario</span>
+              </button>
+            )}
             <span className="hidden sm:flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-xs text-emerald-300 font-bold">En vivo</span>
@@ -390,6 +457,103 @@ export default function Kitchen({ onBack }: Props) {
           })}
         </div>
       </div>
+
+      {/* Modal: crear usuario de cocina (solo admin) */}
+      {isAdmin && createOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in"
+            onClick={() => !creating && setCreateOpen(false)}
+          />
+          <div className="relative w-full max-w-md rounded-[28px] border border-white/10 glass-strong p-6 shadow-card animate-pop-in">
+            <div className="mb-5 flex items-center justify-between">
+              <h2 className="flex items-center gap-2 font-display text-xl font-extrabold text-white">
+                <UserPlus className="h-5 w-5 text-gold" />
+                Crear usuario de cocina
+              </h2>
+              <button
+                onClick={() => !creating && setCreateOpen(false)}
+                aria-label="Cerrar"
+                className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-white transition-colors hover:bg-white/10"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <p className="mb-5 text-[13px] leading-relaxed text-white/50">
+              Crea una cuenta con acceso al panel de cocina. El nuevo usuario podrá iniciar
+              sesión con el correo y la contraseña que definas aquí.
+            </p>
+
+            <form onSubmit={createKitchenUser} className="space-y-4">
+              <div>
+                <label className="mb-2 block text-sm font-bold text-white/80">Correo</label>
+                <div className="relative">
+                  <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/35" />
+                  <input
+                    type="email"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    placeholder="empleado@correo.com"
+                    autoComplete="off"
+                    className="w-full rounded-2xl border border-white/10 bg-white/[0.05] py-3.5 pl-12 pr-4 text-[15px] text-white placeholder-white/30 outline-none transition-all focus:border-gold/50 focus:ring-2 focus:ring-gold/15"
+                    disabled={creating}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-bold text-white/80">Contraseña</label>
+                <div className="relative">
+                  <KeyRound className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/35" />
+                  <input
+                    type="text"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Mínimo 6 caracteres"
+                    autoComplete="off"
+                    className="w-full rounded-2xl border border-white/10 bg-white/[0.05] py-3.5 pl-12 pr-4 text-[15px] text-white placeholder-white/30 outline-none transition-all focus:border-gold/50 focus:ring-2 focus:ring-gold/15"
+                    disabled={creating}
+                  />
+                </div>
+              </div>
+
+              {createMsg && (
+                <div
+                  className={`rounded-2xl border px-4 py-3 text-sm font-semibold ${
+                    createMsg.type === 'ok'
+                      ? 'border-emerald-400/40 bg-emerald-500/10 text-emerald-200'
+                      : createMsg.type === 'info'
+                        ? 'border-gold/40 bg-gold/10 text-gold-light'
+                        : 'border-brand-light/40 bg-brand/15 text-red-200'
+                  }`}
+                >
+                  {createMsg.type === 'ok' ? '✅ ' : createMsg.type === 'info' ? 'ℹ️ ' : '⚠️ '}
+                  {createMsg.text}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={creating}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-yellow-cta py-4 text-base font-extrabold uppercase tracking-wide text-ink shadow-glow-gold transition-all hover:brightness-105 active:scale-95 disabled:opacity-50"
+              >
+                {creating ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Creando…
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="h-5 w-5" />
+                    Crear usuario
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
