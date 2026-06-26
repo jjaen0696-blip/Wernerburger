@@ -83,7 +83,7 @@ export default function KitchenLock({ onUnlock, onBack }: Props) {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="josecod10"
                 required
                 autoComplete="current-password"
                 className="w-full px-4 py-4 sm:py-3 rounded-xl bg-black/30 border-2 border-yellow-400/40 text-white placeholder-white/30 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 outline-none transition-all text-base min-h-[48px] sm:min-h-auto"
