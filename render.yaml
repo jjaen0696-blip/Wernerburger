@@ -13,7 +13,7 @@ services:
     # por eso van inline y el deploy funciona desde GitHub sin config manual.
     envVars:
       - key: VITE_SUPABASE_URL
-        value: https://efmtffyajdxzvsdfmbzj.supabase.co
+        value: https://uhodpfcajtnrmofabyyt.supabase.co
       - key: VITE_SUPABASE_ANON_KEY
         value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmbXRmZnlhamR4enZzZGZtYnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MjE4MTAsImV4cCI6MjA5Nzk5NzgxMH0.YI-0knzsgBZy0hPSaY4uD7YDndJS129uErtB-lx1kCc
     # La app usa hash routing (#/cocina), así que este rewrite no es imprescindible,
