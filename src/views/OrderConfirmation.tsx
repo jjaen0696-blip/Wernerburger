@@ -12,7 +12,11 @@ export default function OrderConfirmation({ orderNumber, onBackHome, onOrderAgai
     <div className="min-h-screen bg-[#c8102e] flex items-center justify-center px-4 sm:px-6 py-8">
       <div className="max-w-md w-full text-center">
         <div className="flex justify-center mb-6">
-          <WernerLogo size="lg" />
+          <img
+            src="/image.png"
+            alt="WernerBurguer logo"
+            className="w-24 h-24 sm:w-20 sm:h-20 rounded-full border-4 border-yellow-400 object-cover shadow-lg"
+          />
         </div>
         <div className="w-24 h-24 sm:w-20 sm:h-20 rounded-full bg-yellow-400 flex items-center justify-center mx-auto mb-6 animate-bounce-in">
           <CheckCircle2 className="w-14 h-14 sm:w-11 sm:h-11 text-black" />

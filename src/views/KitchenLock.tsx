@@ -34,7 +34,11 @@ export default function KitchenLock({ onUnlock, onBack }: Props) {
     <div className="min-h-screen bg-[#c8102e] flex items-center justify-center px-4 sm:px-6 py-8">
       <div className="max-w-sm w-full">
         <div className="flex justify-center mb-8">
-          <WernerLogo size="lg" />
+          <img
+            src="/image.png"
+            alt="WernerBurguer logo"
+            className="w-24 h-24 sm:w-20 sm:h-20 rounded-full border-4 border-yellow-400 object-cover shadow-lg"
+          />
         </div>
 
         <div className="bg-black/20 rounded-2xl border-2 border-yellow-400/40 p-8 sm:p-8">

@@ -262,8 +262,15 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
 
       {/* Menu board */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-        {/* Title banner */}
-        <div className="text-center mb-8">
+        {/* Logo and Title banner */}
+        <div className="text-center mb-12">
+          <div className="flex justify-center mb-6">
+            <img
+              src="/image.png"
+              alt="WernerBurguer logo"
+              className="w-24 h-24 sm:w-20 sm:h-20 rounded-full border-4 border-yellow-400 object-cover shadow-lg"
+            />
+          </div>
           <h1
             className="text-4xl sm:text-5xl font-black uppercase text-white"
             style={{

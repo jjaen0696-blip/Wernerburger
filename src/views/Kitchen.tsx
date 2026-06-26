@@ -220,7 +220,11 @@ export default function Kitchen({ onBack }: Props) {
               <ArrowLeft className="w-6 h-6 sm:w-5 sm:h-5" />
             </button>
             <div className="flex items-center gap-2 sm:gap-3">
-              <WernerLogo size="sm" />
+              <img
+                src="/image.png"
+                alt="WernerBurguer logo"
+                className="w-12 h-12 sm:w-10 sm:h-10 rounded-full border-2 border-yellow-400 object-cover"
+              />
               <div className="h-8 w-px bg-white/20 hidden sm:block" />
               <div className="hidden sm:block">
                 <h1 className="font-black leading-tight text-white" style={{ fontFamily: "'Arial Black', sans-serif" }}>Cocina</h1>
