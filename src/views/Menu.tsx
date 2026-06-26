@@ -11,7 +11,7 @@ type Props = {
   locationId: string;
 };
 
-const CATEGORY_ORDER = ['Hot Dogs', 'Salchipapas', 'Hamburguesas', 'Arepas', 'Papas', 'Bebidas', 'Postres', 'Extras'];
+const CATEGORY_ORDER = ['Hot Dogs', 'Pepitos', 'Salchipapas', 'Hamburguesas', 'Arepas', 'Papas', 'Bebidas', 'Postres', 'Extras'];
 
 export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
   const [items, setItems] = useState<MenuItem[]>([]);
