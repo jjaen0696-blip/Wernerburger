@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import {
-  ArrowLeft, Plus, Minus, Trash2, ShoppingBag, X, Check, Loader2,
+  ArrowLeft, Plus, Minus, Trash2, ShoppingBag, X, Check, Loader2, Search, Heart, Filter,
 } from 'lucide-react';
 import WernerLogo from '../components/WernerLogo';
 import { supabase, type MenuItem, type CartItem } from '../lib/supabase';
@@ -24,6 +24,10 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
   const [orderNotes, setOrderNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [itemNotes, setItemNotes] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const load = async () => {
@@ -63,9 +67,30 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
     load();
   }, [locationId]);
 
+  const filteredItems = useMemo(() => {
+    let filtered = items;
+
+    // Filtrar por búsqueda
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (item) =>
+          item.name.toLowerCase().includes(query) ||
+          item.description.toLowerCase().includes(query),
+      );
+    }
+
+    // Filtrar por categoría
+    if (selectedCategory) {
+      filtered = filtered.filter((item) => item.category === selectedCategory);
+    }
+
+    return filtered;
+  }, [items, searchQuery, selectedCategory]);
+
   const grouped = useMemo(() => {
     const map = new Map<string, MenuItem[]>();
-    for (const item of items) {
+    for (const item of filteredItems) {
       if (!map.has(item.category)) map.set(item.category, []);
       map.get(item.category)!.push(item);
     }
@@ -73,6 +98,14 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
       category: c,
       items: map.get(c)!,
     }));
+  }, [filteredItems]);
+
+  const categories = useMemo(() => {
+    const cats = new Set<string>();
+    for (const item of items) {
+      cats.add(item.category);
+    }
+    return CATEGORY_ORDER.filter((c) => cats.has(c));
   }, [items]);
 
   const cartCount = cart.reduce((sum, c) => sum + c.quantity, 0);
@@ -87,6 +120,18 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
         );
       }
       return [...prev, { menu_item: item, quantity: 1, notes: '' }];
+    });
+  };
+
+  const toggleFavorite = (itemId: string) => {
+    setFavorites((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId);
+      } else {
+        newSet.add(itemId);
+      }
+      return newSet;
     });
   };
 
@@ -231,6 +276,49 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
           <div className="w-24 h-1 bg-yellow-400 mx-auto mt-3 rounded-full" />
         </div>
 
+        {/* Search and filters */}
+        <div className="mb-8 space-y-4">
+          {/* Search bar */}
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Buscar en el menú..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 rounded-xl bg-black/20 border-2 border-yellow-400/40 text-white placeholder-white/40 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 outline-none transition-all"
+            />
+          </div>
+
+          {/* Category filters */}
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                selectedCategory === null
+                  ? 'bg-yellow-400 text-black'
+                  : 'bg-black/20 border-2 border-yellow-400/40 text-white hover:border-yellow-400'
+              }`}
+            >
+              <Filter className="w-4 h-4 inline mr-2" />
+              Todas
+            </button>
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                  selectedCategory === cat
+                    ? 'bg-yellow-400 text-black'
+                    : 'bg-black/20 border-2 border-yellow-400/40 text-white hover:border-yellow-400'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Category columns */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {grouped.map((col) => (
@@ -256,34 +344,50 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
                 {col.items.map((item) => (
                   <div
                     key={item.id}
-                    className="flex gap-3 p-4 hover:bg-black/30 transition-colors group"
+                    className="flex gap-3 p-4 hover:bg-black/40 transition-all group relative"
                   >
-                    <img
-                      src={item.image_url}
-                      alt={item.name}
-                      className="w-16 h-16 rounded-lg object-cover flex-shrink-0 border-2 border-yellow-400/50"
-                    />
+                    <div className="relative flex-shrink-0">
+                      <img
+                        src={item.image_url}
+                        alt={item.name}
+                        className="w-16 h-16 rounded-lg object-cover border-2 border-yellow-400/50 group-hover:border-yellow-400 transition-all"
+                      />
+                      <button
+                        onClick={() => toggleFavorite(item.id)}
+                        className="absolute -top-2 -right-2 p-1.5 rounded-full bg-black border-2 border-yellow-400 hover:bg-yellow-400 hover:text-black transition-all"
+                      >
+                        <Heart
+                          className={`w-4 h-4 ${
+                            favorites.has(item.id)
+                              ? 'fill-current text-red-500'
+                              : 'text-yellow-400'
+                          }`}
+                        />
+                      </button>
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
-                        <h3
-                          className="font-black text-white leading-tight"
-                          style={{ fontFamily: "'Arial Black', sans-serif" }}
-                        >
-                          {item.name}
-                        </h3>
+                        <div className="flex-1">
+                          <h3
+                            className="font-black text-white leading-tight text-sm sm:text-base"
+                            style={{ fontFamily: "'Arial Black', sans-serif" }}
+                          >
+                            {item.name}
+                          </h3>
+                          <p className="text-xs text-white/70 leading-snug mt-0.5 mb-2 line-clamp-2">
+                            {item.description}
+                          </p>
+                        </div>
                         <span
-                          className="font-black text-yellow-400 whitespace-nowrap"
+                          className="font-black text-yellow-400 whitespace-nowrap text-sm sm:text-base"
                           style={{ fontFamily: "'Arial Black', sans-serif" }}
                         >
                           ${item.price.toFixed(2)}
                         </span>
                       </div>
-                      <p className="text-sm text-white/70 leading-snug mt-0.5 mb-2">
-                        {item.description}
-                      </p>
                       <button
                         onClick={() => addToCart(item)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-yellow-400 text-black font-black text-xs uppercase hover:bg-yellow-300 transition-all active:scale-95"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-yellow-400 text-black font-black text-xs uppercase hover:bg-yellow-300 transition-all active:scale-95 hover:shadow-lg"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         Agregar
@@ -297,15 +401,17 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
         </div>
       </div>
 
-      {/* Floating cart button */}
+      {/* Floating cart button with animation */}
       {cartCount > 0 && !cartOpen && (
         <button
           onClick={() => setCartOpen(true)}
-          className="fixed bottom-5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-black text-white font-black shadow-2xl hover:bg-stone-800 transition-all active:scale-95 border-2 border-yellow-400"
+          className="fixed bottom-5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-black text-white font-black shadow-2xl hover:bg-stone-800 hover:shadow-yellow-400/50 transition-all active:scale-95 border-2 border-yellow-400 animate-pulse"
         >
           <ShoppingBag className="w-5 h-5 text-yellow-400" />
-          {cartCount} {cartCount === 1 ? 'artículo' : 'artículos'}
-          <span className="text-yellow-400">${cartTotal.toFixed(2)}</span>
+          <span>
+            {cartCount} {cartCount === 1 ? 'artículo' : 'artículos'}
+          </span>
+          <span className="text-yellow-400 font-black">${cartTotal.toFixed(2)}</span>
         </button>
       )}
 
@@ -346,48 +452,57 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
                 <div className="space-y-3">
                   {cart.map((c) => (
                     <div
-                      key={c.menu_item.id}
-                      className="flex gap-3 p-3 rounded-xl bg-black/20 border border-yellow-400/30"
+                      key={`${c.menu_item.id}-${c.notes}`}
+                      className="flex gap-3 p-4 rounded-xl bg-black/30 border-2 border-yellow-400/30 hover:border-yellow-400/60 transition-all group"
                     >
                       <img
                         src={c.menu_item.image_url}
                         alt={c.menu_item.name}
-                        className="w-16 h-16 rounded-lg object-cover border border-yellow-400/40"
+                        className="w-14 h-14 rounded-lg object-cover border border-yellow-400/40 flex-shrink-0"
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
-                          <h4
-                            className="font-black text-white text-sm leading-tight"
-                            style={{ fontFamily: "'Arial Black', sans-serif" }}
-                          >
-                            {c.menu_item.name}
-                          </h4>
+                          <div className="flex-1 min-w-0">
+                            <h4
+                              className="font-black text-white text-sm leading-tight"
+                              style={{ fontFamily: "'Arial Black', sans-serif" }}
+                            >
+                              {c.menu_item.name}
+                            </h4>
+                            {c.notes && (
+                              <p className="text-xs text-yellow-300 mt-1 italic">
+                                Nota: {c.notes}
+                              </p>
+                            )}
+                          </div>
                           <button
                             onClick={() => removeItem(c.menu_item.id)}
-                            className="text-white/50 hover:text-red-300 transition-colors"
+                            className="text-white/50 hover:text-red-300 transition-colors flex-shrink-0"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
-                        <p className="text-yellow-400 font-black text-sm mt-1">
-                          ${(c.menu_item.price * c.quantity).toFixed(2)}
-                        </p>
-                        <div className="flex items-center gap-2 mt-2">
-                          <button
-                            onClick={() => updateQty(c.menu_item.id, -1)}
-                            className="w-7 h-7 rounded-lg bg-black/30 hover:bg-black/50 flex items-center justify-center transition-colors"
-                          >
-                            <Minus className="w-3.5 h-3.5 text-white" />
-                          </button>
-                          <span className="font-black text-white w-6 text-center">
-                            {c.quantity}
+                        <div className="flex items-center justify-between mt-2">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => updateQty(c.menu_item.id, -1)}
+                              className="w-6 h-6 rounded-md bg-black/50 hover:bg-black transition-colors flex items-center justify-center"
+                            >
+                              <Minus className="w-3 h-3 text-white" />
+                            </button>
+                            <span className="font-black text-white w-5 text-center text-sm">
+                              {c.quantity}
+                            </span>
+                            <button
+                              onClick={() => updateQty(c.menu_item.id, 1)}
+                              className="w-6 h-6 rounded-md bg-yellow-400/30 hover:bg-yellow-400/50 transition-colors flex items-center justify-center"
+                            >
+                              <Plus className="w-3 h-3 text-white" />
+                            </button>
+                          </div>
+                          <span className="font-black text-yellow-400 text-sm">
+                            ${(c.menu_item.price * c.quantity).toFixed(2)}
                           </span>
-                          <button
-                            onClick={() => updateQty(c.menu_item.id, 1)}
-                            className="w-7 h-7 rounded-lg bg-black/30 hover:bg-black/50 flex items-center justify-center transition-colors"
-                          >
-                            <Plus className="w-3.5 h-3.5 text-white" />
-                          </button>
                         </div>
                       </div>
                     </div>
@@ -397,9 +512,12 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
             </div>
 
             {cart.length > 0 && (
-              <div className="border-t-2 border-yellow-400 px-5 py-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-white font-bold">Total</span>
+              <div className="border-t-2 border-yellow-400 px-5 py-4 space-y-3 bg-gradient-to-t from-black/20">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <p className="text-white/70 text-xs font-bold">SUBTOTAL</p>
+                    <p className="text-sm text-white/60">{cartCount} {cartCount === 1 ? 'ítem' : 'ítems'}</p>
+                  </div>
                   <span
                     className="text-2xl font-black text-yellow-400"
                     style={{ fontFamily: "'Arial Black', sans-serif" }}
@@ -412,9 +530,16 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
                     setCartOpen(false);
                     setCheckoutOpen(true);
                   }}
-                  className="w-full py-3.5 rounded-xl bg-yellow-400 text-black font-black uppercase hover:bg-yellow-300 transition-all active:scale-95"
+                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-yellow-400 to-yellow-300 text-black font-black uppercase hover:from-yellow-300 hover:to-yellow-200 transition-all active:scale-95 shadow-lg shadow-yellow-400/30"
                 >
+                  <ShoppingBag className="w-5 h-5 inline mr-2" />
                   Realizar Pedido
+                </button>
+                <button
+                  onClick={() => setCartOpen(false)}
+                  className="w-full py-2 rounded-xl bg-black/50 text-white font-bold uppercase hover:bg-black/70 transition-all text-sm"
+                >
+                  Continuar Comprando
                 </button>
               </div>
             )}
@@ -447,45 +572,59 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-bold text-white mb-1.5">
-                  Tu nombre
+                <label className="block text-sm font-bold text-white mb-2">
+                  👤 Tu nombre
                 </label>
                 <input
                   type="text"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
                   placeholder="Ej. María González"
-                  className="w-full px-4 py-3 rounded-xl bg-black/20 border-2 border-yellow-400/40 text-white placeholder-white/40 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl bg-black/20 border-2 border-yellow-400/40 text-white placeholder-white/40 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 outline-none transition-all font-bold"
+                  disabled={submitting}
                 />
               </div>
+
               <div>
-                <label className="block text-sm font-bold text-white mb-1.5">
-                  Notas del pedido (opcional)
+                <label className="block text-sm font-bold text-white mb-2">
+                  📝 Notas especiales (opcional)
                 </label>
                 <textarea
                   value={orderNotes}
                   onChange={(e) => setOrderNotes(e.target.value)}
-                  placeholder="Ej. Sin cebolla, extra queso..."
+                  placeholder="Ej. Sin cebolla, extra queso, que sea rápido..."
                   rows={3}
                   className="w-full px-4 py-3 rounded-xl bg-black/20 border-2 border-yellow-400/40 text-white placeholder-white/40 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 outline-none transition-all resize-none"
+                  disabled={submitting}
                 />
               </div>
 
-              <div className="bg-black/20 rounded-xl p-4 space-y-2 border border-yellow-400/30">
-                {cart.map((c) => (
-                  <div key={c.menu_item.id} className="flex justify-between text-sm">
-                    <span className="text-white/80">
-                      {c.quantity}× {c.menu_item.name}
-                    </span>
-                    <span className="font-black text-yellow-400">
-                      ${(c.menu_item.price * c.quantity).toFixed(2)}
-                    </span>
-                  </div>
-                ))}
-                <div className="border-t border-yellow-400/30 pt-2 flex justify-between">
-                  <span className="font-black text-white">Total</span>
+              {/* Order summary */}
+              <div className="bg-black/40 rounded-xl p-4 space-y-3 border-2 border-yellow-400/30">
+                <h4 className="font-black text-white uppercase text-sm">📦 Resumen del Pedido</h4>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {cart.map((c) => (
+                    <div key={`${c.menu_item.id}-${c.notes}`} className="flex justify-between text-sm">
+                      <div className="flex-1">
+                        <span className="text-white/80">
+                          {c.quantity}× {c.menu_item.name}
+                        </span>
+                        {c.notes && (
+                          <p className="text-xs text-yellow-300 italic">
+                            ({c.notes})
+                          </p>
+                        )}
+                      </div>
+                      <span className="font-black text-yellow-400 flex-shrink-0 ml-2">
+                        ${(c.menu_item.price * c.quantity).toFixed(2)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <div className="border-t border-yellow-400/30 pt-3 flex justify-between items-end">
+                  <span className="font-black text-white uppercase text-sm">Total a pagar</span>
                   <span
-                    className="font-black text-yellow-400 text-lg"
+                    className="font-black text-yellow-400 text-2xl"
                     style={{ fontFamily: "'Arial Black', sans-serif" }}
                   >
                     ${cartTotal.toFixed(2)}
@@ -494,22 +633,35 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
               </div>
 
               {submitError && (
-                <p className="text-sm text-red-200 font-bold">{submitError}</p>
+                <div className="p-3 rounded-lg bg-red-500/20 border-2 border-red-400 text-red-200 text-sm font-bold">
+                  ⚠️ {submitError}
+                </div>
               )}
 
               <button
                 onClick={placeOrder}
-                disabled={submitting}
-                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-yellow-400 text-black font-black uppercase hover:bg-yellow-300 transition-all active:scale-95 disabled:opacity-60 disabled:active:scale-100"
+                disabled={submitting || !customerName.trim()}
+                className="w-full py-4 rounded-xl bg-gradient-to-r from-yellow-400 to-yellow-300 text-black font-black uppercase hover:from-yellow-300 hover:to-yellow-200 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-yellow-400/30"
               >
                 {submitting ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Procesando...
+                  </>
                 ) : (
                   <>
                     <Check className="w-5 h-5" />
-                    Enviar Pedido
+                    Confirmar Pedido
                   </>
                 )}
+              </button>
+
+              <button
+                onClick={() => !submitting && setCheckoutOpen(false)}
+                disabled={submitting}
+                className="w-full py-2.5 rounded-xl bg-black/50 text-white font-bold uppercase hover:bg-black/70 transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Volver al Carrito
               </button>
             </div>
           </div>
