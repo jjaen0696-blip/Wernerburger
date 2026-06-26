@@ -1,4 +1,6 @@
 # Render Blueprint — despliega WernerBurguer (Vite + React) como Static Site.
+# No usa puerto: Render solo sirve los archivos pre-compilados de ./dist,
+# por eso NO da el error "port scan timeout" propio de los Web Service.
 # Docs: https://render.com/docs/blueprint-spec
 services:
   - type: web
@@ -6,13 +8,14 @@ services:
     runtime: static
     buildCommand: npm run build
     staticPublishPath: ./dist
-    # Vite incrusta estas variables EN BUILD. sync:false => Render las pide al crear
-    # el Blueprint y se guardan en el dashboard (no se versionan en el repo).
+    # Vite incrusta estas variables EN BUILD. Ambas son claves PÚBLICAS
+    # (la anon key ya viaja dentro del bundle JS que se sirve al navegador),
+    # por eso van inline y el deploy funciona desde GitHub sin config manual.
     envVars:
       - key: VITE_SUPABASE_URL
-        sync: false
+        value: https://efmtffyajdxzvsdfmbzj.supabase.co
       - key: VITE_SUPABASE_ANON_KEY
-        sync: false
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmbXRmZnlhamR4enZzZGZtYnpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MjE4MTAsImV4cCI6MjA5Nzk5NzgxMH0.YI-0knzsgBZy0hPSaY4uD7YDndJS129uErtB-lx1kCc
     # La app usa hash routing (#/cocina), así que este rewrite no es imprescindible,
     # pero deja listo el fallback SPA por si se añaden rutas por path más adelante.
     routes:
