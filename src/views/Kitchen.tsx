@@ -80,16 +80,36 @@ export default function Kitchen({ onBack }: Props) {
   const [locations, setLocations] = useState<Location[]>([]);
   const [activeLocationId, setActiveLocationId] = useState<string | null>(null);
 
+  const defaultLocation: Location = {
+    id: 'default',
+    slug: 'default',
+    name: 'WernerBurguer',
+    address: 'Sucursal por defecto',
+    is_active: true,
+    created_at: new Date().toISOString(),
+  };
+
   useEffect(() => {
     const loadLocations = async () => {
-      const { data } = await supabase
-        .from('locations')
-        .select('*')
-        .eq('is_active', true)
-        .order('name');
-      if (data && data.length > 0) {
-        setLocations(data);
-        setActiveLocationId(data[0].id);
+      try {
+        const { data, error } = await supabase
+          .from('locations')
+          .select('*')
+          .eq('is_active', true)
+          .order('name');
+        if (error) {
+          throw error;
+        }
+        if (data && data.length > 0) {
+          setLocations(data);
+          setActiveLocationId(data[0].id);
+        } else {
+          setLocations([defaultLocation]);
+          setActiveLocationId(defaultLocation.id);
+        }
+      } catch {
+        setLocations([defaultLocation]);
+        setActiveLocationId(defaultLocation.id);
       }
     };
     loadLocations();
@@ -97,13 +117,26 @@ export default function Kitchen({ onBack }: Props) {
 
   const loadOrders = useCallback(async () => {
     if (!activeLocationId) return;
-    const { data, error } = await supabase
+    const baseQuery = supabase
       .from('orders')
       .select('*, order_items(*)')
-      .eq('location_id', activeLocationId)
       .in('status', ['pending', 'preparing', 'ready'])
       .order('created_at', { ascending: true });
-    if (error) {
+
+    const query = activeLocationId === 'default'
+      ? baseQuery
+      : baseQuery.eq('location_id', activeLocationId);
+
+    const { data, error } = await query;
+    if (error && activeLocationId !== 'default') {
+      const fallback = await baseQuery;
+      if (fallback.error) {
+        setError('No se pudieron cargar los pedidos.');
+      } else {
+        setOrders(fallback.data ?? []);
+        setError(null);
+      }
+    } else if (error) {
       setError('No se pudieron cargar los pedidos.');
     } else {
       setOrders(data ?? []);

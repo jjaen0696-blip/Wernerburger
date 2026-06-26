@@ -27,19 +27,38 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
 
   useEffect(() => {
     const load = async () => {
-      const { data, error } = await supabase
-        .from('menu_items')
-        .select('*')
-        .eq('available', true)
-        .eq('location_id', locationId)
-        .order('category')
-        .order('sort_order');
-      if (error) {
+      try {
+        const fetchQuery = supabase
+          .from('menu_items')
+          .select('*')
+          .eq('available', true)
+          .order('category')
+          .order('sort_order');
+
+        const { data: itemsByLocation, error: queryError } = locationId === 'default'
+          ? { data: null, error: null }
+          : await fetchQuery.eq('location_id', locationId);
+
+        if (queryError) {
+          const { data, error } = await fetchQuery;
+          if (error) {
+            throw error;
+          }
+          setItems(data ?? []);
+        } else if (itemsByLocation && itemsByLocation.length > 0) {
+          setItems(itemsByLocation);
+        } else {
+          const { data, error } = await fetchQuery;
+          if (error) {
+            throw error;
+          }
+          setItems(data ?? []);
+        }
+      } catch (err) {
         setError('No se pudo cargar el menú. Inténtalo de nuevo.');
-      } else {
-        setItems(data ?? []);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     load();
   }, [locationId]);
@@ -90,21 +109,29 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
     setSubmitting(true);
     setSubmitError(null);
     try {
-      const { data: numResult } = await supabase.rpc('next_order_number', {
-        p_location_id: locationId,
+      const rpcLocationId = locationId === 'default' ? null : locationId;
+      const { data: numResult, error: rpcError } = await supabase.rpc('next_order_number', {
+        p_location_id: rpcLocationId,
       });
       const orderNumber = typeof numResult === 'number' ? numResult : 1;
+      if (rpcError && rpcError.message) {
+        console.warn('next_order_number fallback:', rpcError.message);
+      }
+
+      const orderPayload: Record<string, unknown> = {
+        number: orderNumber,
+        status: 'pending',
+        customer_name: customerName.trim() || 'Cliente',
+        notes: orderNotes.trim(),
+        total: Number(cartTotal.toFixed(2)),
+      };
+      if (rpcLocationId) {
+        orderPayload.location_id = rpcLocationId;
+      }
 
       const { data: order, error: orderError } = await supabase
         .from('orders')
-        .insert({
-          number: orderNumber,
-          status: 'pending',
-          customer_name: customerName.trim() || 'Cliente',
-          notes: orderNotes.trim(),
-          total: Number(cartTotal.toFixed(2)),
-          location_id: locationId,
-        })
+        .insert(orderPayload)
         .select()
         .single();
 

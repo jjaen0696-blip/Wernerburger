@@ -9,24 +9,116 @@ type Props = {
 };
 
 export default function Home({ onOrder, onKitchenAccess }: Props) {
+  const defaultLocation: Location = {
+    id: 'default',
+    slug: 'default',
+    name: 'WernerBurguer',
+    address: 'Sucursal por defecto',
+    is_active: true,
+    created_at: new Date().toISOString(),
+  };
+
   const [locations, setLocations] = useState<Location[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [warning, setWarning] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase
-        .from('locations')
-        .select('*')
-        .eq('is_active', true)
-        .order('name');
-      if (data && data.length > 0) {
-        setLocations(data);
-        setSelectedLocation(data[0]);
+      try {
+        const { data, error: loadError } = await supabase
+          .from('locations')
+          .select('*')
+          .eq('is_active', true)
+          .order('name');
+
+        if (loadError) {
+          throw loadError;
+        }
+
+        if (data && data.length > 0) {
+          setLocations(data);
+          setSelectedLocation(data[0]);
+        } else {
+          setLocations([defaultLocation]);
+          setSelectedLocation(defaultLocation);
+          setWarning('No se encontraron sucursales activas. Usando sucursal por defecto.');
+        }
+      } catch (err) {
+        const message =
+          err instanceof Error
+            ? err.message
+            : 'No se pudo cargar las sucursales. Usando sucursal por defecto.';
+        setLocations([defaultLocation]);
+        setSelectedLocation(defaultLocation);
+        setWarning(message);
+      } finally {
+        setLoading(false);
       }
     };
     load();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#c8102e] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-14 h-14 rounded-full border-4 border-yellow-400 border-t-transparent animate-spin mx-auto mb-4" />
+          <p className="text-white font-bold">Cargando sucursales...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#c8102e] flex items-center justify-center px-6">
+        <div className="max-w-lg w-full bg-black/20 border-2 border-yellow-400/50 rounded-3xl p-8 text-center">
+          <p className="text-white font-black text-xl mb-4">Error al cargar sucursales</p>
+          <p className="text-white/80 mb-6">{error}</p>
+          <button
+            onClick={() => {
+              setError(null);
+              setLoading(true);
+              setLocations([]);
+              setSelectedLocation(null);
+              setDropdownOpen(false);
+              const load = async () => {
+                try {
+                  const { data, error: loadError } = await supabase
+                    .from('locations')
+                    .select('*')
+                    .eq('is_active', true)
+                    .order('name');
+
+                  if (loadError) {
+                    throw new Error(loadError.message);
+                  }
+
+                  if (data && data.length > 0) {
+                    setLocations(data);
+                    setSelectedLocation(data[0]);
+                  } else {
+                    setError('No se encontraron sucursales activas. Revisa la configuración de Supabase.');
+                  }
+                } catch (err) {
+                  setError(err instanceof Error ? err.message : 'No se pudo cargar las sucursales.');
+                } finally {
+                  setLoading(false);
+                }
+              };
+              load();
+            }}
+            className="px-6 py-3 rounded-2xl bg-yellow-400 text-black font-black uppercase hover:bg-yellow-300 transition-all"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#c8102e] text-white">
@@ -114,6 +206,12 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
                 </div>
               )}
             </div>
+
+            {warning && (
+              <div className="mb-4 rounded-2xl bg-yellow-400/10 border border-yellow-400/40 px-4 py-3 text-yellow-100 text-sm">
+                {warning}
+              </div>
+            )}
 
             <div className="flex flex-col sm:flex-row gap-4">
               <button
