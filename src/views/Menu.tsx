@@ -416,12 +416,12 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
 
       {/* Cart drawer */}
       {cartOpen && (
-        <div className="fixed inset-0 z-40 flex">
+        <div className="fixed inset-0 z-40 flex items-end sm:items-center">
           <div
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setCartOpen(false)}
           />
-          <div className="relative ml-auto w-full max-w-md bg-[#c8102e] h-full flex flex-col shadow-2xl animate-slide-in">
+          <div className="relative ml-auto w-full max-w-md max-h-screen bg-[#c8102e] flex flex-col shadow-2xl animate-slide-in rounded-t-3xl sm:rounded-2xl">
             <div className="flex items-center justify-between px-5 py-4 border-b-2 border-yellow-400">
               <h2
                 className="text-xl font-black text-white flex items-center gap-2"
@@ -438,9 +438,9 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-5 py-4">
+            <div className="flex-1 overflow-y-auto px-5 py-4 min-h-[100px]">
               {cart.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center">
+                <div className="flex flex-col items-center justify-center text-center py-8">
                   <div className="w-16 h-16 rounded-full bg-black/20 flex items-center justify-center mb-4">
                     <ShoppingBag className="w-8 h-8 text-yellow-400/50" />
                   </div>
@@ -553,7 +553,7 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => !submitting && setCheckoutOpen(false)}
           />
-          <div className="relative bg-[#c8102e] rounded-2xl shadow-2xl w-full max-w-md p-6 animate-pop-in border-2 border-yellow-400">
+          <div className="relative bg-[#c8102e] rounded-2xl shadow-2xl w-full max-w-md max-h-screen overflow-y-auto p-6 animate-pop-in border-2 border-yellow-400">
             <div className="flex items-center justify-between mb-5">
               <h2
                 className="text-xl font-black text-white"
