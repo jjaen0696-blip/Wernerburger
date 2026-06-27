@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import {
   ArrowLeft, Loader2, Clock, ChefHat, CheckCircle2, PackageCheck, XCircle, LogOut, UserPlus, X, Mail, KeyRound,
+  Bike, Store, Phone, MapPin, Home,
 } from 'lucide-react';
 import {
   supabase, supabaseUrl, supabaseAnonKey, type OrderWithItems, type OrderStatus, type Location,
@@ -39,6 +40,13 @@ const STATUS_CONFIG: Record<
     border: 'border-emerald-400/40',
     icon: PackageCheck,
   },
+  en_camino: {
+    label: 'En camino',
+    color: 'text-orange-300',
+    bg: 'bg-orange-500/[0.06]',
+    border: 'border-orange-400/40',
+    icon: Bike,
+  },
   completed: {
     label: 'Entregado',
     color: 'text-white/50',
@@ -55,17 +63,28 @@ const STATUS_CONFIG: Record<
   },
 };
 
-const NEXT_STATUS: Partial<Record<OrderStatus, OrderStatus>> = {
-  pending: 'preparing',
-  preparing: 'ready',
-  ready: 'completed',
-};
+// Las transiciones dependen del tipo de pedido: delivery suma el paso "en camino".
+// pickup:   pending -> preparing -> ready -> completed
+// delivery: pending -> preparing -> ready -> en_camino -> completed
+function nextStatusFor(order: OrderWithItems): OrderStatus | undefined {
+  switch (order.status) {
+    case 'pending': return 'preparing';
+    case 'preparing': return 'ready';
+    case 'ready': return order.order_type === 'delivery' ? 'en_camino' : 'completed';
+    case 'en_camino': return 'completed';
+    default: return undefined;
+  }
+}
 
-const ACTION_LABEL: Partial<Record<OrderStatus, string>> = {
-  pending: 'Empezar a preparar',
-  preparing: 'Marcar como listo',
-  ready: 'Marcar entregado',
-};
+function actionLabelFor(order: OrderWithItems): string | undefined {
+  switch (order.status) {
+    case 'pending': return 'Empezar a preparar';
+    case 'preparing': return 'Marcar como listo';
+    case 'ready': return order.order_type === 'delivery' ? 'Asignar delivery' : 'Marcar entregado';
+    case 'en_camino': return 'Marcar entregado';
+    default: return undefined;
+  }
+}
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -177,7 +196,7 @@ export default function Kitchen({ onBack }: Props) {
     const baseQuery = supabase
       .from('orders')
       .select('*, order_items(*)')
-      .in('status', ['pending', 'preparing', 'ready'])
+      .in('status', ['pending', 'preparing', 'ready', 'en_camino'])
       .order('created_at', { ascending: true });
 
     const query = activeLocationId === 'default'
@@ -225,7 +244,7 @@ export default function Kitchen({ onBack }: Props) {
   }, [loadOrders]);
 
   const advanceOrder = async (order: OrderWithItems) => {
-    const next = NEXT_STATUS[order.status];
+    const next = nextStatusFor(order);
     if (!next) return;
     setUpdatingId(order.id);
     const { error } = await supabase
@@ -253,7 +272,8 @@ export default function Kitchen({ onBack }: Props) {
   const columns: { status: OrderStatus; title: string }[] = [
     { status: 'pending', title: 'Recibidos' },
     { status: 'preparing', title: 'En preparación' },
-    { status: 'ready', title: 'Listos para entregar' },
+    { status: 'ready', title: 'Listos' },
+    { status: 'en_camino', title: 'En camino' },
   ];
 
   if (loading) {
@@ -340,7 +360,7 @@ export default function Kitchen({ onBack }: Props) {
 
       {/* Kanban columns */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
           {columns.map((col) => {
             const colOrders = orders.filter((o) => o.status === col.status);
             return (
@@ -360,8 +380,8 @@ export default function Kitchen({ onBack }: Props) {
                     colOrders.map((order) => {
                       const cfg = STATUS_CONFIG[order.status];
                       const Icon = cfg.icon;
-                      const next = NEXT_STATUS[order.status];
-                      const actionLabel = ACTION_LABEL[order.status];
+                      const next = nextStatusFor(order);
+                      const actionLabel = actionLabelFor(order);
                       const isUpdating = updatingId === order.id;
                       return (
                         <div
@@ -386,6 +406,46 @@ export default function Kitchen({ onBack }: Props) {
                           <div className="text-xs text-white/40 mb-3">
                             {timeAgo(order.created_at)}
                           </div>
+
+                          {order.order_type === 'delivery' ? (
+                            <div className="mb-3 space-y-1.5 rounded-xl border border-gold/30 bg-gold/[0.06] px-3 py-2.5">
+                              <div className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wide text-gold">
+                                <Bike className="h-3.5 w-3.5" />
+                                Delivery
+                              </div>
+                              {order.customer_phone && (
+                                <a
+                                  href={`tel:${order.customer_phone}`}
+                                  className="flex items-center gap-1.5 text-sm font-bold text-white transition-colors hover:text-gold"
+                                >
+                                  <Phone className="h-3.5 w-3.5 text-gold" />
+                                  {order.customer_phone}
+                                </a>
+                              )}
+                              {order.delivery_address && (
+                                <p className="flex items-start gap-1.5 text-xs text-white/70">
+                                  <Home className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold" />
+                                  {order.delivery_address}
+                                </p>
+                              )}
+                              {order.delivery_lat != null && order.delivery_lng != null && (
+                                <a
+                                  href={`https://www.google.com/maps/search/?api=1&query=${order.delivery_lat},${order.delivery_lng}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="inline-flex items-center gap-1.5 rounded-lg bg-yellow-cta px-2.5 py-1.5 text-xs font-black text-ink transition-all hover:brightness-105 active:scale-95"
+                                >
+                                  <MapPin className="h-3.5 w-3.5" />
+                                  Ver ubicación en mapa
+                                </a>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.04] px-2.5 py-1 text-[11px] font-bold text-white/60">
+                              <Store className="h-3.5 w-3.5" />
+                              Retiro en local
+                            </div>
+                          )}
 
                           <div className="space-y-1.5 mb-3">
                             {order.order_items.map((item) => (

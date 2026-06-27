@@ -3,9 +3,12 @@ import Home from './views/Home';
 import Menu from './views/Menu';
 import Kitchen from './views/Kitchen';
 import KitchenLock from './views/KitchenLock';
-import OrderConfirmation from './views/OrderConfirmation';
+import OrderTracking from './views/OrderTracking';
+import type { OrderType } from './lib/supabase';
 
 type View = 'home' | 'menu' | 'kitchen-lock' | 'kitchen' | 'confirmation';
+
+type PlacedOrder = { id: string; number: number; type: OrderType };
 
 function getInitialView(): View {
   if (window.location.hash === '#/cocina') return 'kitchen-lock';
@@ -14,7 +17,7 @@ function getInitialView(): View {
 
 export default function App() {
   const [view, setView] = useState<View>(getInitialView);
-  const [orderNumber, setOrderNumber] = useState(0);
+  const [placedOrder, setPlacedOrder] = useState<PlacedOrder | null>(null);
   const [selectedLocationId, setSelectedLocationId] = useState<string>('');
 
   useEffect(() => {
@@ -59,8 +62,8 @@ export default function App() {
         <Menu
           locationId={selectedLocationId}
           onBack={() => setView('home')}
-          onOrderPlaced={(num) => {
-            setOrderNumber(num);
+          onOrderPlaced={(order) => {
+            setPlacedOrder(order);
             setView('confirmation');
           }}
         />
@@ -69,9 +72,11 @@ export default function App() {
         <KitchenLock onUnlock={unlockKitchen} onBack={goHome} />
       )}
       {view === 'kitchen' && <Kitchen onBack={goHome} />}
-      {view === 'confirmation' && (
-        <OrderConfirmation
-          orderNumber={orderNumber}
+      {view === 'confirmation' && placedOrder && (
+        <OrderTracking
+          orderId={placedOrder.id}
+          orderNumber={placedOrder.number}
+          orderType={placedOrder.type}
           onBackHome={() => setView('home')}
           onOrderAgain={() => setView('menu')}
         />

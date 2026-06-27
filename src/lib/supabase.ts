@@ -35,7 +35,9 @@ export type MenuItem = {
   created_at: string;
 };
 
-export type OrderStatus = 'pending' | 'preparing' | 'ready' | 'completed' | 'cancelled';
+export type OrderStatus = 'pending' | 'preparing' | 'ready' | 'en_camino' | 'completed' | 'cancelled';
+
+export type OrderType = 'pickup' | 'delivery';
 
 export type Order = {
   id: string;
@@ -45,6 +47,13 @@ export type Order = {
   notes: string;
   total: number;
   location_id: string | null;
+  // Retiro en local ('pickup') o entrega a domicilio ('delivery').
+  order_type: OrderType;
+  // Datos de delivery (vacíos / null cuando es retiro en local).
+  customer_phone: string;
+  delivery_address: string;
+  delivery_lat: number | null;
+  delivery_lng: number | null;
   created_at: string;
   updated_at: string;
 };
