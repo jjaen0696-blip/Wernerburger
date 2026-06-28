@@ -143,12 +143,10 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
           <img
             src="https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg?auto=compress&cs=tinysrgb&w=1600"
             alt=""
-            className="w-full h-full object-cover opacity-40"
+            className="w-full h-full object-cover opacity-60"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/95 to-brand-deep/40" />
-          <div className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-ink/60" />
-          <div className="absolute -right-40 top-10 h-[480px] w-[480px] rounded-full bg-brand/25 blur-[140px]" />
-          <div className="absolute -left-40 bottom-0 h-[420px] w-[420px] rounded-full bg-gold/10 blur-[140px]" />
+          <div className="absolute inset-0 bg-gradient-to-r from-ink/85 via-ink/70 to-ink/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-transparent to-transparent" />
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-8 w-full pt-24 pb-12">
