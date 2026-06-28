@@ -141,7 +141,7 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
       <section className="relative min-h-screen flex items-center overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src="https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg?auto=compress&cs=tinysrgb&w=1600"
+            src="/werner-banner.jpg"
             alt=""
             className="w-full h-full object-cover opacity-60"
           />
@@ -151,6 +151,11 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
 
         <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-8 w-full pt-24 pb-12">
           <div className="max-w-2xl animate-fade-up">
+            <img
+              src="/werner-chef.png"
+              alt="Werner Burger"
+              className="mb-6 h-24 w-24 sm:h-28 sm:w-28 rounded-full object-cover border-2 border-gold/50 shadow-glow-gold"
+            />
             <div className="inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold/10 px-4 py-1.5 mb-6">
               <Flame className="h-4 w-4 text-gold-light" />
               <span className="text-[13px] font-bold uppercase tracking-wider text-gold-light">Comida hecha al momento</span>

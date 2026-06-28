@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, type ReactNode } from 'react';
 import {
   Building2, Users, ChefHat, Home as HomeIcon, LogOut, Menu as MenuIcon, X,
-  Shield, Store, ShieldAlert, Boxes, Truck, Send, ArrowLeftRight, LayoutDashboard, BarChart3, History, ShoppingCart, DollarSign,
+  Shield, Store, ShieldAlert, Boxes, Truck, Send, ArrowLeftRight, LayoutDashboard, BarChart3, History, ShoppingCart, DollarSign, Trash2,
 } from 'lucide-react';
 import { supabase, getCurrentProfile, type Profile } from '../lib/supabase';
 import WernerLogo from '../components/WernerLogo';
@@ -20,6 +20,7 @@ import Historial from '../admin/Historial';
 import Proveedores from '../admin/Proveedores';
 import VentasLocal from '../admin/VentasLocal';
 import Ventas from '../admin/Ventas';
+import ResetDatos from '../admin/ResetDatos';
 
 type Props = {
   onBack: () => void;       // volver al inicio (home)
@@ -49,6 +50,7 @@ const SECTIONS: Section[] = [
   { key: 'proveedores', label: 'Proveedores', icon: Truck, adminOnly: true, render: () => <Proveedores /> },
   { key: 'sucursales', label: 'Sucursales', icon: Building2, adminOnly: true, render: () => <Sucursales /> },
   { key: 'usuarios', label: 'Usuarios y roles', icon: Users, adminOnly: true, render: ({ profile }) => <Usuarios currentEmail={profile.email} /> },
+  { key: 'reset', label: 'Reiniciar datos', icon: Trash2, adminOnly: true, render: () => <ResetDatos /> },
 ];
 
 export default function Admin({ onBack, onGoKitchen }: Props) {

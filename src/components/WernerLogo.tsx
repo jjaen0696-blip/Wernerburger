@@ -13,7 +13,7 @@ export default function WernerLogo({ size = 'md' }: Props) {
   return (
     <div className="flex items-center gap-2.5">
       <img
-        src="/image.png"
+        src="/werner-chef.png"
         alt="WernerBurguer logo"
         className={`${s.img} rounded-full object-cover flex-shrink-0 border border-white/10`}
       />
