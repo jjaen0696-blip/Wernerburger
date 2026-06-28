@@ -82,7 +82,7 @@ function ProductCard({
 
       {/* Body */}
       <div className="flex flex-1 flex-col gap-1.5 p-4 sm:p-5">
-        <h3 className="font-display text-[15px] font-bold leading-tight text-white line-clamp-1 sm:text-base">
+        <h3 className="font-display text-[15px] font-bold leading-tight text-white sm:text-base">
           {item.name}
         </h3>
         <p className="line-clamp-2 text-[12.5px] leading-snug text-white/50">
@@ -237,7 +237,7 @@ function CartRow({
       />
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">
-          <h4 className="font-display text-[13.5px] font-bold leading-tight text-white line-clamp-1">
+          <h4 className="font-display text-[13.5px] font-bold leading-tight text-white line-clamp-2">
             {line.menu_item.name}
           </h4>
           <button
