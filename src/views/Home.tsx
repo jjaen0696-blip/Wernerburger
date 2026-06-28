@@ -125,7 +125,9 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
     <div className="min-h-screen bg-premium text-white">
       {/* Nav */}
       <nav className="absolute top-0 left-0 right-0 z-20 px-5 sm:px-8 py-5 flex items-center justify-between">
-        <WernerLogo size="md" />
+        <div className="rounded-2xl bg-white/10 backdrop-blur-sm px-3 py-2 border border-white/15">
+          <WernerLogo size="md" />
+        </div>
         <button
           onClick={onKitchenAccess}
           className="flex items-center gap-2 rounded-2xl border border-white/10 glass px-4 py-2.5 font-bold text-sm text-white/90 transition-all hover:border-gold/40 hover:text-white min-h-[44px]"
