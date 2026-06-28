@@ -40,7 +40,7 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
 
         if (data && data.length > 0) {
           setLocations(data);
-          setSelectedLocation(data[0]);
+          // No se pre-selecciona: el cliente debe elegir una sucursal a propósito.
         } else {
           setLocations([defaultLocation]);
           setSelectedLocation(defaultLocation);
@@ -100,7 +100,7 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
 
                   if (data && data.length > 0) {
                     setLocations(data);
-                    setSelectedLocation(data[0]);
+                    // No se pre-selecciona: el cliente debe elegir una sucursal.
                   } else {
                     setError('No se encontraron sucursales activas. Revisa la configuración de Supabase.');
                   }
@@ -177,7 +177,9 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
               >
                 <span className="flex items-center gap-2">
                   <MapPin className="h-5 w-5 text-gold" />
-                  {selectedLocation ? selectedLocation.name : 'Cargando…'}
+                  <span className={selectedLocation ? '' : 'text-white/45'}>
+                    {selectedLocation ? selectedLocation.name : 'Selecciona una sucursal'}
+                  </span>
                 </span>
                 <ChevronDown className={`h-5 w-5 text-gold transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
               </button>
@@ -220,6 +222,12 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
                 <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
               </button>
             </div>
+            {!selectedLocation && (
+              <p className="mt-3 text-[13px] text-white/45 flex items-center gap-1.5">
+                <MapPin className="h-4 w-4 text-gold" />
+                Elige una sucursal para continuar.
+              </p>
+            )}
           </div>
         </div>
       </section>

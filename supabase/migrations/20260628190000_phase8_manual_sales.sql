@@ -92,7 +92,7 @@ BEGIN
     RAISE EXCEPTION 'La venta no tiene productos';
   END IF;
 
-  SELECT email INTO v_email FROM auth.users WHERE id = v_uid;
+  SELECT u.email INTO v_email FROM auth.users u WHERE u.id = v_uid;
 
   -- Total calculado en el servidor a partir de los ítems.
   SELECT COALESCE(SUM(

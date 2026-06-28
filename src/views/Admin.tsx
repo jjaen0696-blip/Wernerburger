@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, type ReactNode } from 'react';
 import {
   Building2, Users, ChefHat, Home as HomeIcon, LogOut, Menu as MenuIcon, X,
-  Shield, Store, ShieldAlert, Boxes, Truck, Send, ArrowLeftRight, LayoutDashboard, BarChart3, History, ShoppingCart,
+  Shield, Store, ShieldAlert, Boxes, Truck, Send, ArrowLeftRight, LayoutDashboard, BarChart3, History, ShoppingCart, DollarSign,
 } from 'lucide-react';
 import { supabase, getCurrentProfile, type Profile } from '../lib/supabase';
 import WernerLogo from '../components/WernerLogo';
@@ -19,6 +19,7 @@ import Reportes from '../admin/Reportes';
 import Historial from '../admin/Historial';
 import Proveedores from '../admin/Proveedores';
 import VentasLocal from '../admin/VentasLocal';
+import Ventas from '../admin/Ventas';
 
 type Props = {
   onBack: () => void;       // volver al inicio (home)
@@ -42,6 +43,7 @@ const SECTIONS: Section[] = [
   { key: 'distribucion', label: 'Distribución', icon: Send, adminOnly: true, render: () => <Distribucion /> },
   { key: 'transferencias', label: 'Transferencias', icon: ArrowLeftRight, adminOnly: false, render: ({ profile }) => <Transferencias profile={profile} /> },
   { key: 'recetas', label: 'Recetas', icon: ChefHat, adminOnly: true, render: () => <Recetas /> },
+  { key: 'ventas', label: 'Ventas', icon: DollarSign, adminOnly: false, render: ({ profile }) => <Ventas profile={profile} /> },
   { key: 'reportes', label: 'Reportes', icon: BarChart3, adminOnly: false, render: ({ profile }) => <Reportes profile={profile} /> },
   { key: 'historial', label: 'Historial', icon: History, adminOnly: false, render: ({ profile }) => <Historial profile={profile} /> },
   { key: 'proveedores', label: 'Proveedores', icon: Truck, adminOnly: true, render: () => <Proveedores /> },
