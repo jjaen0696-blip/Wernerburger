@@ -76,3 +76,41 @@ export type CartItem = {
   quantity: number;
   notes: string;
 };
+
+// ===================== Roles / perfiles (módulo administrativo) =====================
+export type Role = 'admin' | 'encargado';
+
+export type Profile = {
+  id: string;
+  email: string | null;
+  role: Role;
+  location_id: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+// Devuelve el perfil del usuario autenticado (rol + sucursal). null si no hay sesión.
+export async function getCurrentProfile(): Promise<Profile | null> {
+  const { data: userData } = await supabase.auth.getUser();
+  const user = userData.user;
+  if (!user) return null;
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (error || !data) {
+    // Si el perfil aún no existe (p. ej. trigger recién creado), asumimos rol básico.
+    return {
+      id: user.id,
+      email: user.email ?? null,
+      role: 'encargado',
+      location_id: null,
+      created_at: '',
+      updated_at: '',
+    };
+  }
+  return data as Profile;
+}

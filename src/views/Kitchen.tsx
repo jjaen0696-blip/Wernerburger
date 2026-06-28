@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import {
   ArrowLeft, Loader2, Clock, ChefHat, CheckCircle2, PackageCheck, XCircle, LogOut, UserPlus, X, Mail, KeyRound,
-  Bike, Store, Phone, MapPin, Home,
+  Bike, Store, Phone, MapPin, Home, Boxes,
 } from 'lucide-react';
 import {
   supabase, supabaseUrl, supabaseAnonKey, type OrderWithItems, type OrderStatus, type Location,
@@ -10,6 +10,7 @@ import {
 
 type Props = {
   onBack: () => void;
+  onGoAdmin: () => void;
 };
 
 // Correo con privilegios para crear nuevos usuarios de cocina desde el panel.
@@ -96,7 +97,7 @@ function timeAgo(dateStr: string): string {
   return `hace ${hrs}h ${mins % 60}m`;
 }
 
-export default function Kitchen({ onBack }: Props) {
+export default function Kitchen({ onBack, onGoAdmin }: Props) {
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -326,6 +327,13 @@ export default function Kitchen({ onBack }: Props) {
                 </option>
               ))}
             </select>
+            <button
+              onClick={onGoAdmin}
+              className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-3 sm:py-2.5 text-white font-bold text-sm transition-colors hover:border-gold/40 hover:text-gold min-h-[44px]"
+            >
+              <Boxes className="h-4 w-4" />
+              <span className="hidden md:inline">Inventario</span>
+            </button>
             {isAdmin && (
               <button
                 onClick={() => { setCreateMsg(null); setCreateOpen(true); }}

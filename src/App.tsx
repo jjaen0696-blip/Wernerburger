@@ -1,18 +1,33 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
+import { Loader2 } from 'lucide-react';
 import Home from './views/Home';
-import Menu from './views/Menu';
-import Kitchen from './views/Kitchen';
-import KitchenLock from './views/KitchenLock';
-import OrderTracking from './views/OrderTracking';
 import type { OrderType } from './lib/supabase';
 
-type View = 'home' | 'menu' | 'kitchen-lock' | 'kitchen' | 'confirmation';
+// Code-splitting: la app del cliente sólo carga Home al inicio.
+// El menú, la cocina y el panel de inventario se cargan bajo demanda.
+const Menu = lazy(() => import('./views/Menu'));
+const Kitchen = lazy(() => import('./views/Kitchen'));
+const KitchenLock = lazy(() => import('./views/KitchenLock'));
+const OrderTracking = lazy(() => import('./views/OrderTracking'));
+const Admin = lazy(() => import('./views/Admin'));
+
+type View = 'home' | 'menu' | 'kitchen-lock' | 'kitchen' | 'confirmation' | 'admin';
 
 type PlacedOrder = { id: string; number: number; type: OrderType };
 
 function getInitialView(): View {
-  if (window.location.hash === '#/cocina') return 'kitchen-lock';
+  const h = window.location.hash;
+  if (h === '#/admin') return 'admin';
+  if (h === '#/cocina') return 'kitchen-lock';
   return 'home';
+}
+
+function Loading() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-premium">
+      <Loader2 className="h-8 w-8 animate-spin text-gold" />
+    </div>
+  );
 }
 
 export default function App() {
@@ -22,39 +37,27 @@ export default function App() {
 
   useEffect(() => {
     const onHashChange = () => {
-      if (window.location.hash === '#/cocina') {
-        setView('kitchen-lock');
-      }
+      const h = window.location.hash;
+      if (h === '#/admin') setView('admin');
+      else if (h === '#/cocina') setView('kitchen-lock');
+      else if (h === '') setView('home');
     };
     window.addEventListener('hashchange', onHashChange);
-
-    return () => {
-      window.removeEventListener('hashchange', onHashChange);
-    };
+    return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
-  const goHome = () => {
-    window.location.hash = '';
-    setView('home');
-  };
-
-  const goKitchenLock = () => {
-    window.location.hash = '#/cocina';
-    setView('kitchen-lock');
-  };
-
-  const unlockKitchen = () => {
-    setView('kitchen');
-  };
+  const goHome = () => { window.location.hash = ''; setView('home'); };
+  const goKitchenLock = () => { window.location.hash = '#/cocina'; setView('kitchen-lock'); };
+  const unlockKitchen = () => setView('kitchen');
+  // El personal ya está autenticado al moverse entre paneles → sin pasar de nuevo por el lock.
+  const goAdmin = () => { window.location.hash = '#/admin'; setView('admin'); };
+  const goKitchen = () => { window.location.hash = '#/cocina'; setView('kitchen'); };
 
   return (
-    <>
+    <Suspense fallback={<Loading />}>
       {view === 'home' && (
         <Home
-          onOrder={(locId) => {
-            setSelectedLocationId(locId);
-            setView('menu');
-          }}
+          onOrder={(locId) => { setSelectedLocationId(locId); setView('menu'); }}
           onKitchenAccess={goKitchenLock}
         />
       )}
@@ -62,16 +65,12 @@ export default function App() {
         <Menu
           locationId={selectedLocationId}
           onBack={() => setView('home')}
-          onOrderPlaced={(order) => {
-            setPlacedOrder(order);
-            setView('confirmation');
-          }}
+          onOrderPlaced={(order) => { setPlacedOrder(order); setView('confirmation'); }}
         />
       )}
-      {view === 'kitchen-lock' && (
-        <KitchenLock onUnlock={unlockKitchen} onBack={goHome} />
-      )}
-      {view === 'kitchen' && <Kitchen onBack={goHome} />}
+      {view === 'kitchen-lock' && <KitchenLock onUnlock={unlockKitchen} onBack={goHome} />}
+      {view === 'kitchen' && <Kitchen onBack={goHome} onGoAdmin={goAdmin} />}
+      {view === 'admin' && <Admin onBack={goHome} onGoKitchen={goKitchen} />}
       {view === 'confirmation' && placedOrder && (
         <OrderTracking
           orderId={placedOrder.id}
@@ -81,6 +80,6 @@ export default function App() {
           onOrderAgain={() => setView('menu')}
         />
       )}
-    </>
+    </Suspense>
   );
 }

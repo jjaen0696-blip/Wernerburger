@@ -314,6 +314,8 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  // Advertencia de stock por sucursal (no bloquea el pedido).
+  const [stockShort, setStockShort] = useState<{ product_name: string }[]>([]);
 
   useEffect(() => {
     const load = async () => {
@@ -575,6 +577,24 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
       setSubmitting(false);
     }
   };
+
+  // Verifica disponibilidad de ingredientes en la sucursal antes de confirmar (advertencia previa).
+  useEffect(() => {
+    if (!checkoutOpen || locationId === 'default' || cart.length === 0) {
+      setStockShort([]);
+      return;
+    }
+    let active = true;
+    (async () => {
+      const items = cart.map((c) => ({ name: c.menu_item.name, qty: c.quantity }));
+      const { data, error } = await supabase.rpc('check_stock_for_order', {
+        p_location_id: locationId,
+        p_items: items,
+      });
+      if (active && !error) setStockShort((data ?? []) as { product_name: string }[]);
+    })();
+    return () => { active = false; };
+  }, [checkoutOpen, cart, locationId]);
 
   const isFiltering = selectedCategory !== null || searchQuery.trim() !== '';
 
@@ -1256,6 +1276,14 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
                   <span className="font-display text-2xl font-extrabold text-gold-grad">${cartTotal.toFixed(2)}</span>
                 </div>
               </div>
+
+              {stockShort.length > 0 && (
+                <div className="rounded-2xl border border-amber-400/40 bg-amber-500/10 p-3 text-sm font-semibold text-amber-200">
+                  ⚠️ Algunos ingredientes podrían estar por agotarse en esta sucursal
+                  {' '}({stockShort.map((s) => s.product_name).join(', ')}).
+                  Puedes enviar el pedido; la cocina lo confirmará.
+                </div>
+              )}
 
               {submitError && (
                 <div className="rounded-2xl border border-brand-light/40 bg-brand/15 p-3 text-sm font-semibold text-red-200">
