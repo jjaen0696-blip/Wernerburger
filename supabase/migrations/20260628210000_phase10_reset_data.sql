@@ -36,8 +36,10 @@ DECLARE
   v_products   integer := 0;
   v_branch     integer := 0;
 BEGIN
-  IF NOT public.is_admin() THEN
-    RAISE EXCEPTION 'Solo el administrador puede reiniciar datos';
+  -- Solo el PROPIETARIO (baex10@icloud.com) puede reiniciar datos, aunque otros
+  -- usuarios tengan rol de administrador. Se valida con el email del JWT.
+  IF lower(coalesce(auth.jwt() ->> 'email', '')) <> 'baex10@icloud.com' THEN
+    RAISE EXCEPTION 'Solo el propietario puede reiniciar datos';
   END IF;
 
   IF p_orders THEN

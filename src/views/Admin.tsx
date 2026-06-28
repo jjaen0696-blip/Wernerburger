@@ -27,11 +27,16 @@ type Props = {
   onGoKitchen: () => void;  // ir al panel de cocina
 };
 
+// Correo del propietario. La sección "Reiniciar datos" SOLO es visible para él,
+// aunque otros usuarios tengan rol de administrador.
+const OWNER_EMAIL = 'baex10@icloud.com';
+
 type Section = {
   key: string;
   label: string;
   icon: typeof Building2;
   adminOnly: boolean;
+  ownerOnly?: boolean; // visible únicamente para OWNER_EMAIL
   render: (ctx: { profile: Profile }) => ReactNode;
 };
 
@@ -50,7 +55,7 @@ const SECTIONS: Section[] = [
   { key: 'proveedores', label: 'Proveedores', icon: Truck, adminOnly: true, render: () => <Proveedores /> },
   { key: 'sucursales', label: 'Sucursales', icon: Building2, adminOnly: true, render: () => <Sucursales /> },
   { key: 'usuarios', label: 'Usuarios y roles', icon: Users, adminOnly: true, render: ({ profile }) => <Usuarios currentEmail={profile.email} /> },
-  { key: 'reset', label: 'Reiniciar datos', icon: Trash2, adminOnly: true, render: () => <ResetDatos /> },
+  { key: 'reset', label: 'Reiniciar datos', icon: Trash2, adminOnly: true, ownerOnly: true, render: () => <ResetDatos /> },
 ];
 
 export default function Admin({ onBack, onGoKitchen }: Props) {
@@ -82,7 +87,11 @@ export default function Admin({ onBack, onGoKitchen }: Props) {
   }
 
   const isAdmin = profile.role === 'admin';
-  const visible = SECTIONS.filter((s) => !s.adminOnly || isAdmin);
+  const isOwner = (profile.email ?? '').trim().toLowerCase() === OWNER_EMAIL;
+  const visible = SECTIONS.filter((s) => {
+    if (s.ownerOnly) return isOwner;     // p. ej. "Reiniciar datos": solo el propietario
+    return !s.adminOnly || isAdmin;
+  });
   const active = visible.find((s) => s.key === activeKey) ?? visible[0];
 
   const NavList = () => (
