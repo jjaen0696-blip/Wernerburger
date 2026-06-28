@@ -39,6 +39,12 @@ export type OrderStatus = 'pending' | 'preparing' | 'ready' | 'en_camino' | 'com
 
 export type OrderType = 'pickup' | 'delivery';
 
+// Origen del pedido: 'web' (desde la página) | 'local' (venta de mostrador registrada manualmente).
+export type OrderChannel = 'web' | 'local';
+
+// Método de pago (solo se registra en ventas de mostrador). '' = sin especificar.
+export type PaymentMethod = '' | 'efectivo' | 'transferencia' | 'tarjeta' | 'otro';
+
 export type Order = {
   id: string;
   number: number;
@@ -54,6 +60,10 @@ export type Order = {
   delivery_address: string;
   delivery_lat: number | null;
   delivery_lng: number | null;
+  // Venta de mostrador (Fase 8).
+  channel: OrderChannel;
+  payment_method: PaymentMethod;
+  sold_by_email: string;
   created_at: string;
   updated_at: string;
 };

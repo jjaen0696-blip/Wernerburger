@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, type ReactNode } from 'react';
 import {
   Building2, Users, ChefHat, Home as HomeIcon, LogOut, Menu as MenuIcon, X,
-  Shield, Store, ShieldAlert, Boxes, Truck, Send, ArrowLeftRight, LayoutDashboard, BarChart3, History,
+  Shield, Store, ShieldAlert, Boxes, Truck, Send, ArrowLeftRight, LayoutDashboard, BarChart3, History, ShoppingCart,
 } from 'lucide-react';
 import { supabase, getCurrentProfile, type Profile } from '../lib/supabase';
 import WernerLogo from '../components/WernerLogo';
@@ -18,6 +18,7 @@ import Recetas from '../admin/Recetas';
 import Reportes from '../admin/Reportes';
 import Historial from '../admin/Historial';
 import Proveedores from '../admin/Proveedores';
+import VentasLocal from '../admin/VentasLocal';
 
 type Props = {
   onBack: () => void;       // volver al inicio (home)
@@ -35,6 +36,7 @@ type Section = {
 // Secciones del panel. Se irán sumando en cada fase (distribución, transferencias, dashboard, etc.).
 const SECTIONS: Section[] = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, adminOnly: false, render: ({ profile }) => <Dashboard profile={profile} /> },
+  { key: 'ventas-local', label: 'Ventas en local', icon: ShoppingCart, adminOnly: false, render: ({ profile }) => <VentasLocal profile={profile} /> },
   { key: 'central', label: 'Inventario central', icon: Boxes, adminOnly: true, render: () => <InventarioCentral /> },
   { key: 'sucursal-inv', label: 'Inventario sucursal', icon: Store, adminOnly: false, render: ({ profile }) => <InventarioSucursal profile={profile} /> },
   { key: 'distribucion', label: 'Distribución', icon: Send, adminOnly: true, render: () => <Distribucion /> },
