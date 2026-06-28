@@ -140,13 +140,21 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
       {/* Hero */}
       <section className="relative min-h-screen flex items-center overflow-hidden">
         <div className="absolute inset-0">
+          {/* Relleno ambiental: copia difuminada que cubre toda el área sin mostrar el pixelado */}
           <img
             src="/werner-banner.jpg"
             alt=""
-            className="w-full h-full object-cover opacity-60"
+            aria-hidden="true"
+            className="absolute inset-0 h-full w-full object-cover scale-125 blur-3xl opacity-50 saturate-150"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-ink/85 via-ink/70 to-ink/30" />
-          <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-transparent to-transparent" />
+          {/* Banner real: centrado y completo (object-contain ≈ tamaño nativo = más nítido) */}
+          <img
+            src="/werner-banner.jpg"
+            alt="Werner Burger"
+            className="absolute inset-0 h-full w-full object-contain object-center sm:object-right opacity-95 drop-shadow-2xl [image-rendering:auto]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-ink/92 via-ink/72 to-ink/35" />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink/95 via-transparent to-ink/20" />
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-8 w-full pt-24 pb-12">
