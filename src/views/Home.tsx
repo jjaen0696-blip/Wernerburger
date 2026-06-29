@@ -139,22 +139,23 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
 
       {/* Hero */}
       <section className="relative min-h-screen flex items-center overflow-hidden">
-        <div className="absolute inset-0">
-          {/* Relleno ambiental: copia difuminada que cubre toda el área sin mostrar el pixelado */}
+        <div className="absolute inset-0 bg-[#c5110f]">
+          {/* Relleno ambiental: copia difuminada que cubre toda el área sin bordes duros */}
           <img
-            src="/werner-banner.jpg"
+            src="/werner-banner.png"
             alt=""
             aria-hidden="true"
-            className="absolute inset-0 h-full w-full object-cover scale-125 blur-3xl opacity-50 saturate-150"
+            className="absolute inset-0 h-full w-full object-cover scale-125 blur-3xl opacity-60 saturate-150"
           />
-          {/* Banner real: centrado y completo (object-contain ≈ tamaño nativo = más nítido) */}
+          {/* Banner real: completo y centrado (object-contain = sin recorte, máxima nitidez) */}
           <img
-            src="/werner-banner.jpg"
-            alt="Werner Burger"
-            className="absolute inset-0 h-full w-full object-contain object-center sm:object-right opacity-95 drop-shadow-2xl [image-rendering:auto]"
+            src="/werner-banner.png"
+            alt="Werner Burger — Más que una hamburguesa"
+            className="absolute inset-0 h-full w-full object-contain object-center sm:object-right opacity-100 drop-shadow-[0_25px_60px_rgba(0,0,0,0.55)]"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-ink/92 via-ink/72 to-ink/35" />
-          <div className="absolute inset-0 bg-gradient-to-t from-ink/95 via-transparent to-ink/20" />
+          {/* Oscurecido para legibilidad del texto a la izquierda */}
+          <div className="absolute inset-0 bg-gradient-to-r from-ink/92 via-ink/70 to-ink/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-transparent to-ink/10" />
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-8 w-full pt-24 pb-12">
