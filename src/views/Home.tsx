@@ -198,7 +198,7 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
                 <ChevronDown className={`h-5 w-5 text-gold transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
               </button>
               {dropdownOpen && (
-                <div className="absolute left-0 top-full mt-2 w-72 max-w-sm rounded-2xl glass-strong shadow-card overflow-y-auto z-20 max-h-96 animate-scale-in">
+                <div className="absolute left-0 top-full mt-2 w-72 max-w-sm rounded-2xl glass-strong shadow-card overflow-y-auto z-50 max-h-[min(22rem,60vh)] overscroll-contain animate-scale-in">
                   {locations.map((loc) => (
                     <button
                       key={loc.id}

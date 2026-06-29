@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
-  Boxes, Plus, Pencil, ShoppingCart, Search, PackageX, AlertTriangle, Wallet, Package, Check,
+  Boxes, Plus, Pencil, ShoppingCart, Search, PackageX, AlertTriangle, Wallet, Package, Check, Trash2,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import {
@@ -38,6 +38,10 @@ export default function InventarioCentral() {
   const [buyForm, setBuyForm] = useState<PurchaseForm>(emptyPurchase({ last_cost: 0, supplier_id: null } as Product));
   const [buying, setBuying] = useState(false);
   const [buyErr, setBuyErr] = useState<string | null>(null);
+
+  const [delFor, setDelFor] = useState<Product | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [delErr, setDelErr] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const [{ data: prods }, { data: sups }] = await Promise.all([
@@ -125,6 +129,20 @@ export default function InventarioCentral() {
     setBuyFor(null); load();
   };
 
+  const doDelete = async () => {
+    if (!delFor) return;
+    setDeleting(true); setDelErr(null);
+    const { error } = await supabase.from('inv_products').delete().eq('id', delFor.id);
+    setDeleting(false);
+    if (error) {
+      setDelErr(/foreign key|violates|referenced/i.test(error.message)
+        ? 'No se puede borrar: el producto tiene compras o movimientos registrados. Edítalo y desmárcalo como activo para ocultarlo.'
+        : error.message);
+      return;
+    }
+    setDelFor(null); load();
+  };
+
   return (
     <div>
       <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
@@ -193,6 +211,7 @@ export default function InventarioCentral() {
                         <div className="flex justify-end gap-2">
                           <PrimaryButton onClick={() => openBuy(p)} className="!px-3 !py-1.5 !text-xs"><ShoppingCart className="h-3.5 w-3.5" /> Comprar</PrimaryButton>
                           <GhostButton onClick={() => openEdit(p)} className="!px-2.5 !py-1.5 !text-xs"><Pencil className="h-3.5 w-3.5" /></GhostButton>
+                          <GhostButton onClick={() => { setDelFor(p); setDelErr(null); }} className="!px-2.5 !py-1.5 !text-xs !text-red-300 hover:!border-red-400/40 hover:!text-red-200"><Trash2 className="h-3.5 w-3.5" /></GhostButton>
                         </div>
                       </td>
                     </tr>
@@ -252,6 +271,15 @@ export default function InventarioCentral() {
           </div>
           <Field label="Observaciones"><TextInput value={buyForm.notes} onChange={(e) => setBuyForm((f) => ({ ...f, notes: e.target.value }))} placeholder="Opcional" disabled={buying} /></Field>
           <p className="text-[12px] text-white/40">Al registrar, se suma al inventario central y se recalcula el costo promedio ponderado.</p>
+        </div>
+      </Modal>
+
+      {/* Modal borrar */}
+      <Modal open={!!delFor} onClose={() => !deleting && setDelFor(null)} title="Borrar producto"
+        footer={<><GhostButton onClick={() => !deleting && setDelFor(null)} disabled={deleting}>Cancelar</GhostButton><PrimaryButton onClick={doDelete} disabled={deleting} className="!bg-red-500 !text-white shadow-none hover:!brightness-110">{deleting ? 'Borrando…' : (<><Trash2 className="h-4 w-4" /> Borrar</>)}</PrimaryButton></>}>
+        <div className="space-y-4">
+          {delErr && <Banner tone="err">⚠️ {delErr}</Banner>}
+          <p className="text-sm text-white/70">¿Seguro que quieres borrar <span className="font-bold text-white">{delFor?.name}</span> del inventario central? Esta acción no se puede deshacer.</p>
         </div>
       </Modal>
     </div>
