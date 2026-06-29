@@ -154,8 +154,8 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
             className="absolute inset-0 h-full w-full object-contain object-center opacity-100 drop-shadow-[0_25px_60px_rgba(0,0,0,0.55)]"
           />
           {/* Oscurecido para legibilidad del texto a la izquierda */}
-          <div className="absolute inset-0 bg-gradient-to-r from-ink/92 via-ink/70 to-ink/20" />
-          <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-transparent to-ink/10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-ink/95 via-ink/80 to-ink/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/45 to-ink/20" />
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-8 w-full pt-24 pb-12">
@@ -169,12 +169,12 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
               <Flame className="h-4 w-4 text-gold-light" />
               <span className="text-[13px] font-bold uppercase tracking-wider text-gold-light">Comida hecha al momento</span>
             </div>
-            <h1 className="font-display text-[44px] sm:text-7xl font-extrabold leading-[0.95] tracking-tight mb-6 text-balance">
+            <h1 className="font-display text-[44px] sm:text-7xl font-extrabold leading-[0.95] tracking-tight mb-6 text-balance [text-shadow:0_2px_16px_rgba(0,0,0,0.75)]">
               PIDE TU COMIDA
               <br />
               <span className="text-gold-grad">FAVORITA EN MINUTOS</span>
             </h1>
-            <p className="text-[15px] sm:text-lg text-white/60 mb-8 leading-relaxed max-w-lg">
+            <p className="text-[15px] sm:text-lg text-white/75 mb-8 leading-relaxed max-w-lg [text-shadow:0_1px_10px_rgba(0,0,0,0.8)]">
               Hamburguesas a la parrilla, hot dogs cargados, salchipapas y más.
               Arma tu pedido y la cocina lo recibe al instante.
             </p>
