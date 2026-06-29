@@ -1,5 +1,5 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, PackageSearch, X } from 'lucide-react';
 import Home from './views/Home';
 import type { OrderType } from './lib/supabase';
 
@@ -14,6 +14,25 @@ const Admin = lazy(() => import('./views/Admin'));
 type View = 'home' | 'menu' | 'kitchen-lock' | 'kitchen' | 'confirmation' | 'admin';
 
 type PlacedOrder = { id: string; number: number; type: OrderType };
+
+// El último pedido realizado se guarda en localStorage para que el acceso al
+// seguimiento persista aunque el cliente vuelva al inicio, haga otro pedido o
+// recargue la página.
+const PLACED_ORDER_KEY = 'werner:placedOrder';
+
+function loadPlacedOrder(): PlacedOrder | null {
+  try {
+    const raw = localStorage.getItem(PLACED_ORDER_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as PlacedOrder;
+    if (parsed && parsed.id && typeof parsed.number === 'number' && parsed.type) {
+      return parsed;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 function getInitialView(): View {
   const h = window.location.hash;
@@ -32,8 +51,21 @@ function Loading() {
 
 export default function App() {
   const [view, setView] = useState<View>(getInitialView);
-  const [placedOrder, setPlacedOrder] = useState<PlacedOrder | null>(null);
+  const [placedOrder, setPlacedOrder] = useState<PlacedOrder | null>(loadPlacedOrder);
   const [selectedLocationId, setSelectedLocationId] = useState<string>('');
+
+  // Sincroniza el pedido activo con localStorage para que el seguimiento persista.
+  useEffect(() => {
+    try {
+      if (placedOrder) {
+        localStorage.setItem(PLACED_ORDER_KEY, JSON.stringify(placedOrder));
+      } else {
+        localStorage.removeItem(PLACED_ORDER_KEY);
+      }
+    } catch {
+      /* almacenamiento no disponible: el seguimiento sólo durará la sesión */
+    }
+  }, [placedOrder]);
 
   useEffect(() => {
     const onHashChange = () => {
@@ -52,6 +84,11 @@ export default function App() {
   // El personal ya está autenticado al moverse entre paneles → sin pasar de nuevo por el lock.
   const goAdmin = () => { window.location.hash = '#/admin'; setView('admin'); };
   const goKitchen = () => { window.location.hash = '#/cocina'; setView('kitchen'); };
+  const goTracking = () => { window.location.hash = ''; setView('confirmation'); };
+
+  // El acceso flotante al seguimiento sólo se muestra en las vistas del cliente
+  // (inicio y menú) cuando hay un pedido activo y no se está viendo ya.
+  const showTrackingFab = placedOrder && (view === 'home' || view === 'menu');
 
   return (
     <Suspense fallback={<Loading />}>
@@ -76,9 +113,31 @@ export default function App() {
           orderId={placedOrder.id}
           orderNumber={placedOrder.number}
           orderType={placedOrder.type}
-          onBackHome={() => setView('home')}
+          onBackHome={() => { window.location.hash = ''; setView('home'); }}
           onOrderAgain={() => setView('menu')}
         />
+      )}
+
+      {showTrackingFab && placedOrder && (
+        <div className="fixed bottom-5 left-1/2 z-50 -translate-x-1/2 animate-fade-up sm:left-5 sm:translate-x-0">
+          <div className="flex items-center gap-1 rounded-2xl border border-gold/40 bg-ink/95 pl-1 pr-1 shadow-glow-gold backdrop-blur">
+            <button
+              onClick={goTracking}
+              className="flex items-center gap-2.5 rounded-2xl px-4 py-3 text-sm font-extrabold text-white transition-colors hover:text-gold min-h-[48px]"
+            >
+              <PackageSearch className="h-5 w-5 text-gold" />
+              Seguir mi pedido
+              <span className="font-display text-gold">#{placedOrder.number}</span>
+            </button>
+            <button
+              onClick={() => setPlacedOrder(null)}
+              aria-label="Ocultar seguimiento"
+              className="grid h-9 w-9 place-items-center rounded-xl text-white/45 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
       )}
     </Suspense>
   );

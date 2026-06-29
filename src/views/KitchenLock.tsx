@@ -34,7 +34,7 @@ export default function KitchenLock({ onUnlock, onBack }: Props) {
       <div className="max-w-sm w-full animate-fade-up">
         <div className="flex justify-center mb-7">
           <img
-            src="/image.png"
+            src="/werner-chef.png"
             alt="WernerBurguer logo"
             className="w-20 h-20 rounded-full border-2 border-gold/60 object-cover shadow-glow-gold"
           />

@@ -299,7 +299,7 @@ export default function Kitchen({ onBack, onGoAdmin }: Props) {
             </button>
             <div className="flex items-center gap-2 sm:gap-3">
               <img
-                src="/image.png"
+                src="/werner-chef.png"
                 alt="WernerBurguer logo"
                 className="w-11 h-11 rounded-full border-2 border-gold/50 object-cover"
               />

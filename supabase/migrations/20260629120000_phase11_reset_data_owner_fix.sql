@@ -1,9 +1,20 @@
-// Crea/actualiza la RPC public.inv_reset_data (borrado controlado de datos de prueba).
-// Uso (PowerShell):
-//   $env:PGPASSWORD="tu_password_de_la_DB"; node scripts/apply_reset_data.cjs
-const { Client } = require('pg');
+/*
+# Fase 11 — Corrige el reinicio de datos para el PROPIETARIO
 
-const SQL = `
+Problema: `public.inv_reset_data` validaba al propietario con
+`auth.jwt() ->> 'email'`. Ese claim no siempre llega con el valor esperado, por
+lo que ni siquiera el propietario (baex10@icloud.com) podía borrar: la función
+lanzaba "Solo el propietario puede reiniciar datos".
+
+Solución: validar usando exactamente la MISMA fuente que la interfaz para
+mostrar/ocultar la sección "Reiniciar datos": el correo en `public.profiles`
+buscado por `auth.uid()` (normalizado con lower+trim). Así, si el panel le
+muestra la opción al propietario, la función también lo autoriza.
+
+La opción sigue siendo EXCLUSIVA del propietario; ningún otro admin puede borrar.
+Idempotente: sólo redefine la función.
+*/
+
 CREATE OR REPLACE FUNCTION public.inv_reset_data(
   p_orders    boolean DEFAULT false,
   p_purchases boolean DEFAULT false,
@@ -34,7 +45,7 @@ BEGIN
   END IF;
 
   IF p_orders THEN
-    DELETE FROM public.orders;
+    DELETE FROM public.orders;               -- order_items cae en cascada
     GET DIAGNOSTICS v_orders = ROW_COUNT;
   END IF;
 
@@ -59,10 +70,10 @@ BEGIN
   END IF;
 
   RETURN jsonb_build_object(
-    'orders',             v_orders,
-    'purchases',          v_purchases,
-    'movements',          v_movements,
-    'products_reset',     v_products,
+    'orders',           v_orders,
+    'purchases',        v_purchases,
+    'movements',        v_movements,
+    'products_reset',   v_products,
     'branch_stock_reset', v_branch
   );
 END;
@@ -71,25 +82,3 @@ $$;
 GRANT EXECUTE ON FUNCTION public.inv_reset_data(boolean, boolean, boolean, boolean) TO authenticated;
 
 NOTIFY pgrst, 'reload schema';
-`;
-
-async function main() {
-  if (!process.env.PGPASSWORD) {
-    console.error('Falta PGPASSWORD. Ejecuta:  $env:PGPASSWORD="tu_password"; node scripts/apply_reset_data.cjs');
-    process.exit(1);
-  }
-  const client = new Client({
-    host: 'aws-1-us-east-1.pooler.supabase.com',
-    port: 5432,
-    database: 'postgres',
-    user: 'postgres.uhodpfcajtnrmofabyyt',
-    password: process.env.PGPASSWORD,
-    ssl: { rejectUnauthorized: false },
-  });
-  await client.connect();
-  await client.query(SQL);
-  console.log('OK: inv_reset_data creada. Ya puedes usar "Reiniciar datos" en el panel.');
-  await client.end();
-}
-
-main().catch((e) => { console.error('ERROR:', e.message); process.exit(1); });

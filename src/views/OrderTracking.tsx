@@ -81,7 +81,7 @@ export default function OrderTracking({ orderId, orderNumber, orderType, onBackH
         {/* Logo */}
         <div className="flex justify-center mb-6">
           <img
-            src="/image.png"
+            src="/werner-chef.png"
             alt="WernerBurguer logo"
             className="w-20 h-20 rounded-full border-2 border-gold/60 object-cover shadow-glow-gold"
           />
