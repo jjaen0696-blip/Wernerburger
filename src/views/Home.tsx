@@ -139,7 +139,7 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
 
       {/* Hero */}
       <section className="relative min-h-screen flex items-center overflow-hidden">
-        <div className="absolute inset-0 bg-[#c5110f]">
+        <div className="absolute inset-0 bg-[#5e0a0c]">
           {/* Relleno ambiental: copia difuminada que cubre toda el área sin bordes duros */}
           <img
             src="/werner-banner.png"
@@ -151,7 +151,7 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
           <img
             src="/werner-banner.png"
             alt="Werner Burger — Más que una hamburguesa"
-            className="absolute inset-0 h-full w-full object-contain object-center sm:object-right opacity-100 drop-shadow-[0_25px_60px_rgba(0,0,0,0.55)]"
+            className="absolute inset-0 h-full w-full object-contain object-center opacity-100 drop-shadow-[0_25px_60px_rgba(0,0,0,0.55)]"
           />
           {/* Oscurecido para legibilidad del texto a la izquierda */}
           <div className="absolute inset-0 bg-gradient-to-r from-ink/92 via-ink/70 to-ink/20" />
