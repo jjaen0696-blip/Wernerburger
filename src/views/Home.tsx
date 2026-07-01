@@ -199,7 +199,7 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
             </p>
 
             {/* Location selector */}
-            <div className="relative mb-14 w-full max-w-sm sm:mb-16">
+            <div className="relative z-[100] mb-14 w-full max-w-sm sm:mb-16">
               <p className="mb-2 flex items-center gap-1.5 text-[13px] font-bold uppercase tracking-wider text-white/45">
                 <MapPin className="h-4 w-4 text-gold" />
                 Elige tu sucursal
@@ -222,7 +222,7 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
               {dropdownOpen && (
                 <div
                   data-location-dropdown
-                  className="absolute left-0 right-0 top-full z-[70] mt-2 overflow-hidden rounded-[20px] border border-white/10 bg-[#0b0809] shadow-[0_16px_42px_rgba(0,0,0,0.72)]"
+                  className="absolute left-0 right-0 top-full z-[110] mt-2 overflow-hidden rounded-[20px] border border-white/10 bg-[#0b0809] shadow-[0_16px_42px_rgba(0,0,0,0.72)]"
                 >
                   <div className="max-h-[min(320px,72svh)] overflow-y-auto overscroll-contain bg-[#0b0809]">
                     {locations.map((loc) => (
