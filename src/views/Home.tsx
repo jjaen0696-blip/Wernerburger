@@ -74,9 +74,8 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
       const rect = button.getBoundingClientRect();
       const width = Math.min(rect.width, window.innerWidth - 24);
       const left = Math.max(12, Math.min(rect.left, window.innerWidth - width - 12));
-      const viewportBottom = window.innerHeight + window.scrollY;
-      const maxTop = Math.max(12, viewportBottom - 320 - 12);
-      const top = Math.min(rect.bottom + window.scrollY + 8, maxTop);
+      const maxTop = Math.max(12, window.innerHeight - 320 - 12);
+      const top = Math.min(rect.bottom + 8, maxTop);
 
       setDropdownPosition({ top, left, width });
     };
@@ -89,7 +88,7 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
 
     const handlePointerDown = (event: MouseEvent) => {
       const target = event.target as HTMLElement | null;
-      if (target && target.closest('[data-location-dropdown]')) return;
+      if (target && (target.closest('[data-location-dropdown]') || target.closest('[data-location-trigger]'))) return;
       setDropdownOpen(false);
     };
 
@@ -238,6 +237,8 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
                 <button
                   ref={triggerRef}
                   id="branch-selector-trigger"
+                  data-location-trigger
+                  type="button"
                   onClick={() => {
                     setDropdownOpen((prev) => !prev);
                   }}
