@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ShoppingBag, Clock, Star, ArrowRight, LogIn, MapPin, ChevronDown, Check, Flame, Sparkles } from 'lucide-react';
 import WernerLogo from '../components/WernerLogo';
@@ -23,7 +23,7 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 0 });
-  const [triggerRect, setTriggerRect] = useState<DOMRect | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
   const [loading, setLoading] = useState(true);
   const [warning, setWarning] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -67,28 +67,36 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
   useEffect(() => {
     if (!dropdownOpen) return;
 
+    const updateDropdownPosition = () => {
+      const button = triggerRef.current;
+      if (!button) return;
+
+      const rect = button.getBoundingClientRect();
+      const menuHeight = Math.min(320, window.innerHeight * 0.72);
+      const maxTop = Math.max(12, window.innerHeight - menuHeight - 12);
+      const top = Math.min(rect.bottom + 8, maxTop);
+      const left = Math.max(12, Math.min(rect.left, window.innerWidth - rect.width - 12));
+      const width = Math.min(rect.width, window.innerWidth - 24);
+
+      setDropdownPosition({ top, left, width });
+    };
+
     const handlePointerDown = (event: MouseEvent) => {
       const target = event.target as HTMLElement | null;
       if (target && target.closest('[data-location-dropdown]')) return;
       setDropdownOpen(false);
     };
 
-    const handleResize = () => {
-      if (!triggerRect) return;
-      const rect = triggerRect;
-      setDropdownPosition({ top: rect.bottom + 8, left: rect.left, width: rect.width });
-    };
-
     document.addEventListener('mousedown', handlePointerDown);
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('scroll', handleResize, true);
-    handleResize();
+    window.addEventListener('resize', updateDropdownPosition);
+    window.addEventListener('scroll', updateDropdownPosition, true);
+    updateDropdownPosition();
     return () => {
       document.removeEventListener('mousedown', handlePointerDown);
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('scroll', handleResize, true);
+      window.removeEventListener('resize', updateDropdownPosition);
+      window.removeEventListener('scroll', updateDropdownPosition, true);
     };
-  }, [dropdownOpen, triggerRect]);
+  }, [dropdownOpen]);
 
   if (loading) {
     return (
@@ -211,11 +219,9 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
                 Elige tu sucursal
               </p>
               <button
+                ref={triggerRef}
                 id="branch-selector-trigger"
-                onClick={(event) => {
-                  const rect = (event.currentTarget as HTMLButtonElement).getBoundingClientRect();
-                  setTriggerRect(rect);
-                  setDropdownPosition({ top: rect.bottom + 8, left: rect.left, width: rect.width });
+                onClick={() => {
                   setDropdownOpen((prev) => !prev);
                 }}
                 className="flex min-h-[48px] w-full items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#120e0f]/70 px-4 py-3.5 text-left font-semibold text-white shadow-[0_12px_32px_rgba(0,0,0,0.25)] transition-all hover:border-gold/40"
