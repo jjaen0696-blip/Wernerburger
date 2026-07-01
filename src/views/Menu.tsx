@@ -50,7 +50,7 @@ function ProductCard({
   onToggleFav: (id: string) => void;
 }) {
   return (
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-[26px] border border-white/10 bg-white/[0.04] shadow-[0_20px_60px_rgba(0,0,0,0.24)] backdrop-blur-xl transition-all duration-300 ease-out hover:-translate-y-1.5 hover:border-gold/30 hover:shadow-[0_24px_70px_rgba(234,171,8,0.14)]">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-[26px] border border-white/10 bg-white/[0.04] shadow-[0_20px_60px_rgba(0,0,0,0.24)] backdrop-blur-xl transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:border-gold/30 hover:shadow-[0_24px_70px_rgba(234,171,8,0.14)]">
       {/* Image — ocupa casi la mitad de la tarjeta */}
       <div className="relative aspect-[5/4] overflow-hidden bg-gradient-to-br from-brand-dark/50 to-ink">
         <img
@@ -58,7 +58,7 @@ function ProductCard({
           alt={item.name}
           loading="lazy"
           onError={hideBroken}
-          className="h-full w-full object-cover transition-transform duration-[900ms] ease-out group-hover:scale-110"
+          className="h-full w-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
         />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/5 to-transparent" />
         {/* Brillo ligero al hover */}
@@ -74,7 +74,7 @@ function ProductCard({
         <button
           onClick={() => onToggleFav(item.id)}
           aria-label="Agregar a favoritos"
-          className="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full border border-white/15 bg-ink/50 backdrop-blur-md transition-all duration-200 hover:scale-110 hover:border-white/30 active:scale-90"
+          className="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full border border-white/15 bg-ink/50 backdrop-blur-md transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-105 hover:border-white/30 active:scale-95"
         >
           <Heart className={`h-[18px] w-[18px] transition-colors ${favorite ? 'fill-brand-light text-brand-light' : 'text-white/90'}`} />
         </button>
@@ -89,19 +89,19 @@ function ProductCard({
           {item.description}
         </p>
 
-        <div className="mt-auto flex items-end justify-between gap-2 pt-3">
-          <div className="flex flex-col leading-none">
+        <div className="mt-auto flex flex-wrap items-end justify-between gap-2 pt-3">
+          <div className="flex min-w-0 flex-col leading-none">
             <span className="mb-1 text-[9px] font-bold uppercase tracking-[0.15em] text-white/35">Precio</span>
-            <span className="font-display text-gold-grad text-[26px] font-extrabold leading-none">
+            <span className="font-display text-gold-grad text-[24px] font-extrabold leading-none sm:text-[26px]">
               ${item.price.toFixed(2)}
             </span>
           </div>
           <button
             onClick={() => onAdd(item)}
-            className="inline-flex items-center gap-1.5 rounded-2xl bg-gradient-to-r from-[#f7d878] via-[#e5b04a] to-[#b87b08] px-3.5 py-2.5 text-[13px] font-extrabold uppercase tracking-[0.2em] text-ink shadow-[0_14px_35px_rgba(234,171,8,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:brightness-105 active:scale-90"
+            className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-2xl bg-gradient-to-r from-[#f7d878] via-[#e5b04a] to-[#b87b08] px-3 py-2.5 text-[12px] font-extrabold uppercase tracking-[0.16em] text-ink shadow-[0_14px_35px_rgba(234,171,8,0.25)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:brightness-105 active:scale-95 sm:px-3.5 sm:text-[13px]"
           >
-            <Plus className="h-4 w-4" strokeWidth={3} />
-            Agregar
+            <Plus className="h-4 w-4 shrink-0" strokeWidth={3} />
+            <span className="whitespace-nowrap">Agregar</span>
           </button>
         </div>
       </div>
@@ -686,7 +686,7 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
             {/* Carrito */}
             <button
               onClick={() => setCartOpen(true)}
-              className="relative ml-auto flex shrink-0 items-center gap-2 rounded-2xl bg-gradient-to-r from-[#f7d878] via-[#e5b04a] to-[#b87b08] px-3.5 py-3 font-extrabold text-ink shadow-[0_14px_35px_rgba(234,171,8,0.25)] transition-all hover:-translate-y-0.5 hover:brightness-105 active:scale-95 sm:px-5"
+              className="relative ml-auto flex shrink-0 items-center gap-2 rounded-2xl bg-gradient-to-r from-[#f7d878] via-[#e5b04a] to-[#b87b08] px-3.5 py-3 font-extrabold text-ink shadow-[0_14px_35px_rgba(234,171,8,0.25)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:brightness-105 active:scale-95 sm:px-5"
             >
               <ShoppingBag className="h-5 w-5" />
               <span className="hidden sm:inline">Carrito</span>
@@ -849,7 +849,7 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
                         <button
                           key={cat}
                           onClick={() => goToCategory(cat)}
-                          className={`group reveal relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br ${meta.ring} p-5 text-left transition-all duration-300 hover:-translate-y-1.5 hover:border-gold/30 hover:shadow-[0_20px_50px_rgba(234,171,8,0.12)]`}
+                          className={`group reveal relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br ${meta.ring} p-5 text-left transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:border-gold/30 hover:shadow-[0_20px_50px_rgba(234,171,8,0.12)]`}
                           style={{ animationDelay: `${i * 60}ms` }}
                         >
                           <div className="absolute inset-0 bg-ink-800/40" />
@@ -989,7 +989,7 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
                   </div>
                   <button
                     onClick={() => setCheckoutOpen(true)}
-                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#f7d878] via-[#e5b04a] to-[#b87b08] py-4 text-base font-extrabold uppercase tracking-[0.2em] text-ink shadow-[0_14px_35px_rgba(234,171,8,0.25)] transition-all hover:-translate-y-0.5 hover:brightness-105 active:scale-95"
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#f7d878] via-[#e5b04a] to-[#b87b08] py-4 text-base font-extrabold uppercase tracking-[0.2em] text-ink shadow-[0_14px_35px_rgba(234,171,8,0.25)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:brightness-105 active:scale-95"
                   >
                     Finalizar pedido
                     <ArrowRightIcon className="h-5 w-5" />
@@ -1008,7 +1008,7 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
       {cartCount > 0 && !cartOpen && (
         <button
           onClick={() => setCartOpen(true)}
-          className="fixed bottom-5 left-1/2 z-30 flex -translate-x-1/2 items-center gap-3 rounded-2xl bg-gradient-to-r from-[#f7d878] via-[#e5b04a] to-[#b87b08] px-6 py-4 font-extrabold text-ink shadow-[0_14px_35px_rgba(234,171,8,0.25)] transition-all active:scale-95 lg:hidden"
+          className="fixed bottom-5 left-1/2 z-30 flex -translate-x-1/2 items-center gap-3 rounded-2xl bg-gradient-to-r from-[#f7d878] via-[#e5b04a] to-[#b87b08] px-6 py-4 font-extrabold text-ink shadow-[0_14px_35px_rgba(234,171,8,0.25)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-95 lg:hidden"
         >
           <span className="grid h-7 w-7 place-items-center rounded-full bg-ink text-[12px] font-black text-gold">
             {cartCount}
@@ -1066,7 +1066,7 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
                     setCartOpen(false);
                     setCheckoutOpen(true);
                   }}
-                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#f7d878] via-[#e5b04a] to-[#b87b08] py-4 text-base font-extrabold uppercase tracking-[0.2em] text-ink shadow-[0_14px_35px_rgba(234,171,8,0.25)] transition-all active:scale-95"
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#f7d878] via-[#e5b04a] to-[#b87b08] py-4 text-base font-extrabold uppercase tracking-[0.2em] text-ink shadow-[0_14px_35px_rgba(234,171,8,0.25)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-95"
                 >
                   <ShoppingBag className="h-5 w-5" />
                   Realizar Pedido
