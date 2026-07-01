@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ShoppingBag, Clock, Star, ArrowRight, LogIn, MapPin, ChevronDown, Check, Flame, Sparkles } from 'lucide-react';
 import WernerLogo from '../components/WernerLogo';
 import { supabase, type Location } from '../lib/supabase';
@@ -21,9 +22,11 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
   const [locations, setLocations] = useState<Location[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
   const [loading, setLoading] = useState(true);
   const [warning, setWarning] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -64,6 +67,18 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
   useEffect(() => {
     if (!dropdownOpen) return;
 
+    const updateDropdownPosition = () => {
+      const button = triggerRef.current;
+      if (!button) return;
+
+      const rect = button.getBoundingClientRect();
+      const width = Math.min(rect.width, window.innerWidth - 24);
+      const left = Math.max(12, Math.min(rect.left, window.innerWidth - width - 12));
+      const top = Math.min(rect.bottom + 8, window.innerHeight - 320 - 12);
+
+      setDropdownPosition({ top, left, width });
+    };
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setDropdownOpen(false);
@@ -78,9 +93,15 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
 
     document.addEventListener('mousedown', handlePointerDown);
     document.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('resize', updateDropdownPosition);
+    window.addEventListener('scroll', updateDropdownPosition, true);
+    updateDropdownPosition();
+
     return () => {
       document.removeEventListener('mousedown', handlePointerDown);
       document.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('resize', updateDropdownPosition);
+      window.removeEventListener('scroll', updateDropdownPosition, true);
     };
   }, [dropdownOpen]);
 
@@ -147,10 +168,7 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
   return (
     <div className="min-h-screen bg-premium text-white">
       {/* Nav */}
-      <nav className="absolute left-0 right-0 top-0 z-30 flex items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-        <div className="rounded-2xl border border-white/15 bg-white/10 px-3 py-2 backdrop-blur-sm">
-          <WernerLogo size="md" />
-        </div>
+      <nav className="absolute left-0 right-0 top-0 z-30 flex items-center justify-end px-4 py-4 sm:px-6 lg:px-8">
         <button
           onClick={onKitchenAccess}
           className="flex min-h-[44px] items-center gap-2 rounded-2xl border border-white/10 glass px-4 py-2.5 text-sm font-bold text-white/90 transition-all hover:border-gold/40 hover:text-white"
@@ -179,11 +197,9 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
 
         <div className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-7xl items-center px-4 pb-12 pt-24 sm:px-6 lg:px-8">
           <div className="w-full max-w-2xl animate-fade-up">
-            <img
-              src="/werner-chef.png"
-              alt="Werner Burger"
-              className="mb-6 h-24 w-24 rounded-full border-2 border-gold/50 object-cover shadow-glow-gold sm:h-28 sm:w-28"
-            />
+            <div className="mb-6 flex justify-start">
+              <WernerLogo size="lg" />
+            </div>
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold/10 px-4 py-1.5">
               <Flame className="h-4 w-4 text-gold-light" />
               <span className="text-[13px] font-bold uppercase tracking-wider text-gold-light">Comida hecha al momento</span>
@@ -205,6 +221,7 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
                 Elige tu sucursal
               </p>
               <button
+                ref={triggerRef}
                 id="branch-selector-trigger"
                 onClick={() => {
                   setDropdownOpen((prev) => !prev);
@@ -219,30 +236,40 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
                 </span>
                 <ChevronDown className={`h-5 w-5 shrink-0 text-gold transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
               </button>
-              {dropdownOpen && (
-                <div
-                  data-location-dropdown
-                  className="absolute left-0 right-0 top-full z-[110] mt-2 overflow-hidden rounded-[20px] border border-white/10 bg-[#0b0809] shadow-[0_16px_42px_rgba(0,0,0,0.72)]"
-                >
-                  <div className="max-h-[min(320px,72svh)] overflow-y-auto overscroll-contain bg-[#0b0809]">
-                    {locations.map((loc) => (
-                      <button
-                        key={loc.id}
-                        onClick={() => {
-                          setSelectedLocation(loc);
-                          setDropdownOpen(false);
-                        }}
-                        className="flex min-h-[48px] w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-white/[0.08]"
-                      >
-                        <div className="min-w-0">
-                          <p className="truncate font-bold text-white">{loc.name}</p>
-                          <p className="truncate text-xs text-white/45">{loc.address}</p>
-                        </div>
-                        {selectedLocation?.id === loc.id && <Check className="h-5 w-5 shrink-0 text-gold" />}
-                      </button>
-                    ))}
+              {dropdownOpen && typeof document !== 'undefined' && createPortal(
+                <div className="fixed inset-0 z-[99999]" onClick={() => setDropdownOpen(false)}>
+                  <div
+                    data-location-dropdown
+                    className="fixed z-[99999] overflow-hidden rounded-[20px] border border-white/10 bg-[#0b0809] shadow-[0_16px_42px_rgba(0,0,0,0.72)]"
+                    style={{
+                      top: `${dropdownPosition.top}px`,
+                      left: `${dropdownPosition.left}px`,
+                      width: `${dropdownPosition.width}px`,
+                      maxHeight: 'min(320px, 72svh)',
+                    }}
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    <div className="max-h-[min(320px,72svh)] overflow-y-auto overscroll-contain bg-[#0b0809]">
+                      {locations.map((loc) => (
+                        <button
+                          key={loc.id}
+                          onClick={() => {
+                            setSelectedLocation(loc);
+                            setDropdownOpen(false);
+                          }}
+                          className="flex min-h-[48px] w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-white/[0.08]"
+                        >
+                          <div className="min-w-0">
+                            <p className="truncate font-bold text-white">{loc.name}</p>
+                            <p className="truncate text-xs text-white/45">{loc.address}</p>
+                          </div>
+                          {selectedLocation?.id === loc.id && <Check className="h-5 w-5 shrink-0 text-gold" />}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                </div>,
+                document.body,
               )}
             </div>
 
