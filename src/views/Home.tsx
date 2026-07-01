@@ -209,9 +209,9 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
               {dropdownOpen && (
                 <div
                   data-location-dropdown
-                  className="absolute left-0 right-0 top-full z-[70] mt-2 isolate overflow-hidden rounded-[20px] border border-transparent bg-[#0b0809] shadow-[0_16px_42px_rgba(0,0,0,0.72)] animate-scale-in"
+                  className="absolute left-0 right-0 top-full z-[70] mt-2 isolate overflow-hidden rounded-[20px] border border-white/10 bg-[#0b0809] shadow-[0_16px_42px_rgba(0,0,0,0.72)] animate-scale-in"
                 >
-                  <div className="max-h-[min(300px,70svh)] overflow-y-auto overscroll-contain">
+                  <div className="max-h-[min(320px,72svh)] overflow-y-auto overscroll-contain bg-[#0b0809]">
                     {locations.map((loc) => (
                       <button
                         key={loc.id}
