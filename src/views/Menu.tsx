@@ -50,7 +50,7 @@ function ProductCard({
   onToggleFav: (id: string) => void;
 }) {
   return (
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-[26px] border border-white/10 bg-ink-800/80 shadow-card transition-all duration-300 ease-out hover:-translate-y-1.5 hover:border-gold/40 hover:shadow-glow-gold">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-[26px] border border-white/10 bg-white/[0.04] shadow-[0_20px_60px_rgba(0,0,0,0.24)] backdrop-blur-xl transition-all duration-300 ease-out hover:-translate-y-1.5 hover:border-gold/30 hover:shadow-[0_24px_70px_rgba(234,171,8,0.14)]">
       {/* Image — ocupa casi la mitad de la tarjeta */}
       <div className="relative aspect-[5/4] overflow-hidden bg-gradient-to-br from-brand-dark/50 to-ink">
         <img
@@ -98,7 +98,7 @@ function ProductCard({
           </div>
           <button
             onClick={() => onAdd(item)}
-            className="inline-flex items-center gap-1.5 rounded-2xl bg-yellow-cta px-3.5 py-2.5 text-[13px] font-extrabold uppercase tracking-wide text-ink shadow-glow-gold transition-all duration-200 hover:brightness-105 active:scale-90"
+            className="inline-flex items-center gap-1.5 rounded-2xl bg-gradient-to-r from-[#f7d878] via-[#e5b04a] to-[#b87b08] px-3.5 py-2.5 text-[13px] font-extrabold uppercase tracking-[0.2em] text-ink shadow-[0_14px_35px_rgba(234,171,8,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:brightness-105 active:scale-90"
           >
             <Plus className="h-4 w-4" strokeWidth={3} />
             Agregar
@@ -646,7 +646,7 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
   return (
     <div className="min-h-screen bg-premium text-white">
       {/* ===================== HEADER FIJO ===================== */}
-      <header className="sticky top-0 z-40 glass-strong border-b border-white/8">
+      <header className="sticky top-0 z-40 border-b border-white/10 bg-[#0b0809]/80 backdrop-blur-2xl">
         <div className="mx-auto max-w-[1400px] px-3 sm:px-6">
           {/* Row 1 */}
           <div className="flex items-center gap-3 py-3">
@@ -686,7 +686,7 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
             {/* Carrito */}
             <button
               onClick={() => setCartOpen(true)}
-              className="relative ml-auto flex shrink-0 items-center gap-2 rounded-2xl bg-yellow-cta px-3.5 py-3 font-extrabold text-ink shadow-glow-gold transition-all hover:brightness-105 active:scale-95 sm:px-5"
+              className="relative ml-auto flex shrink-0 items-center gap-2 rounded-2xl bg-gradient-to-r from-[#f7d878] via-[#e5b04a] to-[#b87b08] px-3.5 py-3 font-extrabold text-ink shadow-[0_14px_35px_rgba(234,171,8,0.25)] transition-all hover:-translate-y-0.5 hover:brightness-105 active:scale-95 sm:px-5"
             >
               <ShoppingBag className="h-5 w-5" />
               <span className="hidden sm:inline">Carrito</span>
@@ -760,7 +760,7 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
           {!isFiltering && (
             <>
               {/* ===== HERO ===== */}
-              <section className="relative mt-6 overflow-hidden rounded-[32px] border border-white/10 shadow-card">
+              <section className="relative mt-6 overflow-hidden rounded-[32px] border border-white/10 shadow-[0_24px_80px_rgba(0,0,0,0.28)]">
                 {/* Fondo oscuro con imagen real de producto */}
                 <div className="absolute inset-0">
                   {heroImages.burger?.image_url && (
@@ -795,7 +795,7 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
                     <div className="mt-7 flex flex-wrap items-center gap-3">
                       <button
                         onClick={scrollToMenu}
-                        className="group inline-flex items-center gap-2.5 rounded-2xl bg-yellow-cta px-7 py-4 text-base font-extrabold uppercase tracking-wide text-ink shadow-glow-gold transition-all hover:brightness-105 active:scale-95"
+                        className="group inline-flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-[#f7d878] via-[#e5b04a] to-[#b87b08] px-7 py-4 text-base font-extrabold uppercase tracking-[0.2em] text-ink shadow-[0_14px_35px_rgba(234,171,8,0.25)] transition-all hover:-translate-y-0.5 hover:brightness-105 active:scale-95"
                       >
                         <ShoppingBag className="h-5 w-5" />
                         Ordenar ahora
@@ -849,7 +849,7 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
                         <button
                           key={cat}
                           onClick={() => goToCategory(cat)}
-                          className={`group reveal relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br ${meta.ring} p-5 text-left transition-all duration-300 hover:-translate-y-1.5 hover:border-gold/40 hover:shadow-glow-gold`}
+                          className={`group reveal relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br ${meta.ring} p-5 text-left transition-all duration-300 hover:-translate-y-1.5 hover:border-gold/30 hover:shadow-[0_20px_50px_rgba(234,171,8,0.12)]`}
                           style={{ animationDelay: `${i * 60}ms` }}
                         >
                           <div className="absolute inset-0 bg-ink-800/40" />
@@ -948,7 +948,7 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
         {/* ---- Carrito sticky (desktop, estilo Uber Eats) ---- */}
         <aside className="hidden w-[360px] shrink-0 lg:block">
           <div className="sticky top-[150px] py-6">
-            <div className="glass-strong overflow-hidden rounded-[28px] shadow-card">
+            <div className="overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.04] shadow-[0_24px_80px_rgba(0,0,0,0.25)] backdrop-blur-xl">
               <div className="flex items-center justify-between border-b border-white/8 px-5 py-4">
                 <h2 className="flex items-center gap-2 font-display text-lg font-extrabold text-white">
                   <ShoppingBag className="h-5 w-5 text-gold" />
@@ -989,7 +989,7 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
                   </div>
                   <button
                     onClick={() => setCheckoutOpen(true)}
-                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-yellow-cta py-4 text-base font-extrabold uppercase tracking-wide text-ink shadow-glow-gold transition-all hover:brightness-105 active:scale-95"
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#f7d878] via-[#e5b04a] to-[#b87b08] py-4 text-base font-extrabold uppercase tracking-[0.2em] text-ink shadow-[0_14px_35px_rgba(234,171,8,0.25)] transition-all hover:-translate-y-0.5 hover:brightness-105 active:scale-95"
                   >
                     Finalizar pedido
                     <ArrowRightIcon className="h-5 w-5" />
@@ -1008,7 +1008,7 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
       {cartCount > 0 && !cartOpen && (
         <button
           onClick={() => setCartOpen(true)}
-          className="fixed bottom-5 left-1/2 z-30 flex -translate-x-1/2 items-center gap-3 rounded-2xl bg-yellow-cta px-6 py-4 font-extrabold text-ink shadow-glow-gold transition-all active:scale-95 lg:hidden"
+          className="fixed bottom-5 left-1/2 z-30 flex -translate-x-1/2 items-center gap-3 rounded-2xl bg-gradient-to-r from-[#f7d878] via-[#e5b04a] to-[#b87b08] px-6 py-4 font-extrabold text-ink shadow-[0_14px_35px_rgba(234,171,8,0.25)] transition-all active:scale-95 lg:hidden"
         >
           <span className="grid h-7 w-7 place-items-center rounded-full bg-ink text-[12px] font-black text-gold">
             {cartCount}
@@ -1066,7 +1066,7 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
                     setCartOpen(false);
                     setCheckoutOpen(true);
                   }}
-                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-yellow-cta py-4 text-base font-extrabold uppercase tracking-wide text-ink shadow-glow-gold transition-all active:scale-95"
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#f7d878] via-[#e5b04a] to-[#b87b08] py-4 text-base font-extrabold uppercase tracking-[0.2em] text-ink shadow-[0_14px_35px_rgba(234,171,8,0.25)] transition-all active:scale-95"
                 >
                   <ShoppingBag className="h-5 w-5" />
                   Realizar Pedido
@@ -1087,7 +1087,7 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
       {checkoutOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in" onClick={() => !submitting && setCheckoutOpen(false)} />
-          <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto rounded-[28px] border border-white/10 glass-strong p-6 shadow-card animate-pop-in">
+          <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto rounded-[28px] border border-white/10 bg-white/[0.04] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.28)] backdrop-blur-xl animate-pop-in">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="font-display text-xl font-extrabold text-white">Confirmar pedido</h2>
               <button

@@ -288,7 +288,7 @@ export default function Kitchen({ onBack, onGoAdmin }: Props) {
   return (
     <div className="min-h-screen bg-premium text-white">
       {/* Header */}
-      <header className="sticky top-0 z-20 glass-strong border-b border-white/8">
+      <header className="sticky top-0 z-20 border-b border-white/10 bg-[#0b0809]/80 backdrop-blur-2xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-2 sm:gap-4">
           <div className="flex items-center gap-2 sm:gap-3">
             <button
@@ -319,7 +319,7 @@ export default function Kitchen({ onBack, onGoAdmin }: Props) {
                 setActiveLocationId(e.target.value);
                 setLoading(true);
               }}
-              className="rounded-2xl border border-white/10 bg-white/[0.05] px-3 py-2.5 text-white font-bold text-sm outline-none focus:border-gold/50 cursor-pointer min-h-[44px]"
+              className="rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-2.5 text-white font-bold text-sm outline-none focus:border-gold/50 cursor-pointer min-h-[44px] backdrop-blur-sm"
             >
               {locations.map((loc) => (
                 <option key={loc.id} value={loc.id} className="bg-ink-800">
@@ -329,7 +329,7 @@ export default function Kitchen({ onBack, onGoAdmin }: Props) {
             </select>
             <button
               onClick={onGoAdmin}
-              className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-3 sm:py-2.5 text-white font-bold text-sm transition-colors hover:border-gold/40 hover:text-gold min-h-[44px]"
+              className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-3 sm:py-2.5 text-white font-bold text-sm transition-all hover:-translate-y-0.5 hover:border-gold/40 hover:text-gold min-h-[44px] backdrop-blur-sm"
             >
               <Boxes className="h-4 w-4" />
               <span className="hidden md:inline">Inventario</span>
@@ -337,7 +337,7 @@ export default function Kitchen({ onBack, onGoAdmin }: Props) {
             {isAdmin && (
               <button
                 onClick={() => { setCreateMsg(null); setCreateOpen(true); }}
-                className="flex items-center gap-2 rounded-2xl bg-yellow-cta px-3 py-3 sm:py-2.5 text-ink font-extrabold text-sm shadow-glow-gold transition-all hover:brightness-105 active:scale-95 min-h-[44px]"
+                className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#f7d878] via-[#e5b04a] to-[#b87b08] px-3 py-3 sm:py-2.5 text-ink font-extrabold text-sm shadow-[0_14px_35px_rgba(234,171,8,0.25)] transition-all hover:-translate-y-0.5 hover:brightness-105 active:scale-95 min-h-[44px]"
               >
                 <UserPlus className="h-4 w-4" />
                 <span className="hidden md:inline">Crear usuario</span>
@@ -349,7 +349,7 @@ export default function Kitchen({ onBack, onGoAdmin }: Props) {
             </span>
             <button
               onClick={async () => { await supabase.auth.signOut(); onBack(); }}
-              className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-3 sm:py-2.5 text-white font-bold text-sm transition-colors hover:bg-white/10 min-h-[44px]"
+              className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-3 sm:py-2.5 text-white font-bold text-sm transition-all hover:-translate-y-0.5 hover:bg-white/10 min-h-[44px] backdrop-blur-sm"
             >
               <LogOut className="h-4 w-4" />
               <span className="hidden md:inline">Salir</span>
@@ -381,7 +381,7 @@ export default function Kitchen({ onBack, onGoAdmin }: Props) {
                 </div>
                 <div className="space-y-3 min-h-[200px]">
                   {colOrders.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-white/15 py-10 text-center">
+                    <div className="rounded-[24px] border border-dashed border-white/15 bg-white/[0.03] py-10 text-center backdrop-blur-sm">
                       <p className="text-white/35 text-sm">Sin pedidos</p>
                     </div>
                   ) : (
@@ -394,7 +394,7 @@ export default function Kitchen({ onBack, onGoAdmin }: Props) {
                       return (
                         <div
                           key={order.id}
-                          className={`reveal rounded-2xl border ${cfg.border} ${cfg.bg} glass p-4 shadow-soft`}
+                          className={`reveal rounded-[24px] border ${cfg.border} ${cfg.bg} bg-white/[0.04] p-4 shadow-[0_20px_60px_rgba(0,0,0,0.22)] backdrop-blur-xl`}
                         >
                           <div className="flex items-start justify-between mb-3">
                             <div>
@@ -494,7 +494,7 @@ export default function Kitchen({ onBack, onGoAdmin }: Props) {
                                 <button
                                   onClick={() => cancelOrder(order)}
                                   disabled={isUpdating}
-                                  className="rounded-xl px-4 py-3 sm:px-3 sm:py-1.5 text-sm sm:text-xs font-bold text-red-300 bg-brand/15 border border-brand-light/30 hover:bg-brand/25 transition-colors disabled:opacity-50 min-h-[44px] sm:min-h-auto"
+                                  className="rounded-xl px-4 py-3 sm:px-3 sm:py-1.5 text-sm sm:text-xs font-bold text-red-300 bg-brand/15 border border-brand-light/30 hover:bg-brand/25 transition-all disabled:opacity-50 min-h-[44px] sm:min-h-auto"
                                 >
                                   Cancelar
                                 </button>
@@ -503,7 +503,7 @@ export default function Kitchen({ onBack, onGoAdmin }: Props) {
                                 <button
                                   onClick={() => advanceOrder(order)}
                                   disabled={isUpdating}
-                                  className="flex items-center justify-center gap-1.5 rounded-xl px-4 py-3 sm:px-4 sm:py-1.5 text-sm sm:text-xs font-black bg-yellow-cta text-ink hover:brightness-105 transition-all disabled:opacity-50 min-h-[44px] sm:min-h-auto"
+                                  className="flex items-center justify-center gap-1.5 rounded-xl px-4 py-3 sm:px-4 sm:py-1.5 text-sm sm:text-xs font-black bg-gradient-to-r from-[#f7d878] via-[#e5b04a] to-[#b87b08] text-ink hover:-translate-y-0.5 hover:brightness-105 transition-all disabled:opacity-50 min-h-[44px] sm:min-h-auto"
                                 >
                                   {isUpdating ? (
                                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -533,7 +533,7 @@ export default function Kitchen({ onBack, onGoAdmin }: Props) {
             className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in"
             onClick={() => !creating && setCreateOpen(false)}
           />
-          <div className="relative w-full max-w-md rounded-[28px] border border-white/10 glass-strong p-6 shadow-card animate-pop-in">
+          <div className="relative w-full max-w-md rounded-[28px] border border-white/10 bg-white/[0.04] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.28)] backdrop-blur-xl animate-pop-in">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="flex items-center gap-2 font-display text-xl font-extrabold text-white">
                 <UserPlus className="h-5 w-5 text-gold" />
@@ -604,7 +604,7 @@ export default function Kitchen({ onBack, onGoAdmin }: Props) {
               <button
                 type="submit"
                 disabled={creating}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-yellow-cta py-4 text-base font-extrabold uppercase tracking-wide text-ink shadow-glow-gold transition-all hover:brightness-105 active:scale-95 disabled:opacity-50"
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#f7d878] via-[#e5b04a] to-[#b87b08] py-4 text-base font-extrabold uppercase tracking-[0.2em] text-ink shadow-[0_14px_35px_rgba(234,171,8,0.25)] transition-all hover:-translate-y-0.5 hover:brightness-105 active:scale-95 disabled:opacity-50"
               >
                 {creating ? (
                   <>

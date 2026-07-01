@@ -74,7 +74,9 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
       const rect = button.getBoundingClientRect();
       const width = Math.min(rect.width, window.innerWidth - 24);
       const left = Math.max(12, Math.min(rect.left, window.innerWidth - width - 12));
-      const top = Math.min(rect.bottom + 8, window.innerHeight - 320 - 12);
+      const viewportBottom = window.innerHeight + window.scrollY;
+      const maxTop = Math.max(12, viewportBottom - 320 - 12);
+      const top = Math.min(rect.bottom + window.scrollY + 8, maxTop);
 
       setDropdownPosition({ top, left, width });
     };
@@ -95,6 +97,7 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
     document.addEventListener('keydown', handleKeyDown);
     window.addEventListener('resize', updateDropdownPosition);
     window.addEventListener('scroll', updateDropdownPosition, true);
+    document.addEventListener('scroll', updateDropdownPosition, true);
     updateDropdownPosition();
 
     return () => {
@@ -102,6 +105,7 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
       document.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('resize', updateDropdownPosition);
       window.removeEventListener('scroll', updateDropdownPosition, true);
+      document.removeEventListener('scroll', updateDropdownPosition, true);
     };
   }, [dropdownOpen]);
 
