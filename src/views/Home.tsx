@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ShoppingBag, Clock, Star, ArrowRight, LogIn, MapPin, ChevronDown, Check, Flame, Sparkles } from 'lucide-react';
 import WernerLogo from '../components/WernerLogo';
 import { supabase, type Location } from '../lib/supabase';
@@ -21,6 +22,8 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
   const [locations, setLocations] = useState<Location[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 0 });
+  const [triggerRect, setTriggerRect] = useState<DOMRect | null>(null);
   const [loading, setLoading] = useState(true);
   const [warning, setWarning] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -70,9 +73,22 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
       setDropdownOpen(false);
     };
 
+    const handleResize = () => {
+      if (!triggerRect) return;
+      const rect = triggerRect;
+      setDropdownPosition({ top: rect.bottom + 8, left: rect.left, width: rect.width });
+    };
+
     document.addEventListener('mousedown', handlePointerDown);
-    return () => document.removeEventListener('mousedown', handlePointerDown);
-  }, [dropdownOpen]);
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('scroll', handleResize, true);
+    handleResize();
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('scroll', handleResize, true);
+    };
+  }, [dropdownOpen, triggerRect]);
 
   if (loading) {
     return (
@@ -189,13 +205,19 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
             </p>
 
             {/* Location selector */}
-            <div className="relative mb-8 w-full max-w-sm">
+            <div className="relative mb-14 w-full max-w-sm sm:mb-16">
               <p className="mb-2 flex items-center gap-1.5 text-[13px] font-bold uppercase tracking-wider text-white/45">
                 <MapPin className="h-4 w-4 text-gold" />
                 Elige tu sucursal
               </p>
               <button
-                onClick={() => setDropdownOpen(!dropdownOpen)}
+                id="branch-selector-trigger"
+                onClick={(event) => {
+                  const rect = (event.currentTarget as HTMLButtonElement).getBoundingClientRect();
+                  setTriggerRect(rect);
+                  setDropdownPosition({ top: rect.bottom + 8, left: rect.left, width: rect.width });
+                  setDropdownOpen((prev) => !prev);
+                }}
                 className="flex min-h-[48px] w-full items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#120e0f]/70 px-4 py-3.5 text-left font-semibold text-white shadow-[0_12px_32px_rgba(0,0,0,0.25)] transition-all hover:border-gold/40"
               >
                 <span className="flex min-w-0 items-center gap-2">
@@ -206,31 +228,6 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
                 </span>
                 <ChevronDown className={`h-5 w-5 shrink-0 text-gold transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
               </button>
-              {dropdownOpen && (
-                <div
-                  data-location-dropdown
-                  className="absolute left-0 right-0 top-full z-[70] mt-2 isolate overflow-hidden rounded-[20px] border border-white/10 bg-[#0b0809] shadow-[0_16px_42px_rgba(0,0,0,0.72)] animate-scale-in"
-                >
-                  <div className="max-h-[min(320px,72svh)] overflow-y-auto overscroll-contain bg-[#0b0809]">
-                    {locations.map((loc) => (
-                      <button
-                        key={loc.id}
-                        onClick={() => {
-                          setSelectedLocation(loc);
-                          setDropdownOpen(false);
-                        }}
-                        className="flex min-h-[48px] w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-white/[0.08]"
-                      >
-                        <div className="min-w-0">
-                          <p className="truncate font-bold text-white">{loc.name}</p>
-                          <p className="truncate text-xs text-white/45">{loc.address}</p>
-                        </div>
-                        {selectedLocation?.id === loc.id && <Check className="h-5 w-5 shrink-0 text-gold" />}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
             {warning && (
@@ -259,6 +256,43 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
           </div>
         </div>
       </section>
+
+      {dropdownOpen && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[9999]" onClick={() => setDropdownOpen(false)}>
+          <div
+            data-location-dropdown
+            className="fixed overflow-hidden rounded-[20px] border border-white/10 bg-[#0b0809] shadow-[0_16px_42px_rgba(0,0,0,0.72)]"
+            style={{
+              top: `${Math.min(dropdownPosition.top, window.innerHeight - 320)}px`,
+              left: `${Math.max(12, dropdownPosition.left)}px`,
+              width: `${Math.min(dropdownPosition.width, window.innerWidth - 24)}px`,
+              maxHeight: 'min(320px, 72svh)',
+              zIndex: 9999,
+            }}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="max-h-[min(320px,72svh)] overflow-y-auto overscroll-contain bg-[#0b0809]">
+              {locations.map((loc) => (
+                <button
+                  key={loc.id}
+                  onClick={() => {
+                    setSelectedLocation(loc);
+                    setDropdownOpen(false);
+                  }}
+                  className="flex min-h-[48px] w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-white/[0.08]"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate font-bold text-white">{loc.name}</p>
+                    <p className="truncate text-xs text-white/45">{loc.address}</p>
+                  </div>
+                  {selectedLocation?.id === loc.id && <Check className="h-5 w-5 shrink-0 text-gold" />}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>,
+        document.body,
+      )}
 
       {/* Features */}
       <section className="relative border-t border-white/8 px-4 py-14 sm:px-6 sm:py-20">
