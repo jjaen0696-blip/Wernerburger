@@ -196,7 +196,7 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
               </p>
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex min-h-[48px] w-full items-center justify-between gap-3 rounded-2xl border border-white/10 glass px-4 py-3.5 text-left font-semibold text-white transition-all hover:border-gold/40"
+                className="flex min-h-[48px] w-full items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#120e0f]/70 px-4 py-3.5 text-left font-semibold text-white shadow-[0_12px_32px_rgba(0,0,0,0.25)] transition-all hover:border-gold/40"
               >
                 <span className="flex min-w-0 items-center gap-2">
                   <MapPin className="h-5 w-5 shrink-0 text-gold" />
@@ -209,9 +209,9 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
               {dropdownOpen && (
                 <div
                   data-location-dropdown
-                  className="absolute left-0 top-full z-[60] mt-2 w-full max-w-[min(24rem,calc(100vw-2rem))] rounded-2xl border border-white/10 bg-[#120e0f]/95 p-1 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl animate-scale-in"
+                  className="absolute left-0 right-0 top-full z-[70] mt-2 overflow-hidden rounded-[20px] border-0 bg-[#120e0f]/95 shadow-[0_18px_50px_rgba(0,0,0,0.6)] backdrop-blur-xl animate-scale-in"
                 >
-                  <div className="max-h-[300px] overflow-y-auto overscroll-contain">
+                  <div className="max-h-[min(300px,70svh)] overflow-y-auto overscroll-contain">
                     {locations.map((loc) => (
                       <button
                         key={loc.id}
