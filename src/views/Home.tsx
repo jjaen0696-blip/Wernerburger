@@ -209,7 +209,7 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
               {dropdownOpen && (
                 <div
                   data-location-dropdown
-                  className="absolute left-0 right-0 top-full z-[70] mt-2 overflow-hidden rounded-[20px] border-0 bg-[#120e0f]/95 shadow-[0_18px_50px_rgba(0,0,0,0.6)] backdrop-blur-xl animate-scale-in"
+                  className="absolute left-0 right-0 top-full z-[70] mt-2 isolate overflow-hidden rounded-[20px] border border-transparent bg-[#0b0809] shadow-[0_16px_42px_rgba(0,0,0,0.72)] animate-scale-in"
                 >
                   <div className="max-h-[min(300px,70svh)] overflow-y-auto overscroll-contain">
                     {locations.map((loc) => (
@@ -219,7 +219,7 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
                           setSelectedLocation(loc);
                           setDropdownOpen(false);
                         }}
-                        className="flex min-h-[48px] w-full items-center justify-between gap-3 border-b border-white/[0.06] px-4 py-3.5 text-left transition-colors last:border-b-0 hover:bg-white/[0.06]"
+                        className="flex min-h-[48px] w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-white/[0.08]"
                       >
                         <div className="min-w-0">
                           <p className="truncate font-bold text-white">{loc.name}</p>
