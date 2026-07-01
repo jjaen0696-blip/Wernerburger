@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowLeft, Loader2, LogIn, Lock } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -12,6 +12,20 @@ export default function KitchenLock({ onUnlock, onBack }: Props) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (mounted && session?.user) {
+        onUnlock();
+      }
+    };
+    void checkSession();
+    return () => {
+      mounted = false;
+    };
+  }, [onUnlock]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

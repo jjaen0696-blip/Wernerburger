@@ -1,7 +1,7 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { Loader2, PackageSearch, X } from 'lucide-react';
 import Home from './views/Home';
-import type { OrderType } from './lib/supabase';
+import { supabase, type OrderType } from './lib/supabase';
 
 // Code-splitting: la app del cliente sólo carga Home al inicio.
 // El menú, la cocina y el panel de inventario se cargan bajo demanda.
@@ -68,18 +68,38 @@ export default function App() {
   }, [placedOrder]);
 
   useEffect(() => {
-    const onHashChange = () => {
+    const syncViewFromHash = async () => {
       const h = window.location.hash;
-      if (h === '#/admin') setView('admin');
-      else if (h === '#/cocina') setView('kitchen-lock');
-      else if (h === '') setView('home');
+      if (h === '#/admin') {
+        setView('admin');
+        return;
+      }
+      if (h === '#/cocina') {
+        const { data: { session } } = await supabase.auth.getSession();
+        setView(session?.user ? 'kitchen' : 'kitchen-lock');
+        return;
+      }
+      if (h === '') {
+        setView('home');
+      }
     };
+
+    syncViewFromHash();
+
+    const onHashChange = () => {
+      void syncViewFromHash();
+    };
+
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
   const goHome = () => { window.location.hash = ''; setView('home'); };
-  const goKitchenLock = () => { window.location.hash = '#/cocina'; setView('kitchen-lock'); };
+  const goKitchenLock = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    window.location.hash = '#/cocina';
+    setView(session?.user ? 'kitchen' : 'kitchen-lock');
+  };
   const unlockKitchen = () => setView('kitchen');
   // El personal ya está autenticado al moverse entre paneles → sin pasar de nuevo por el lock.
   const goAdmin = () => { window.location.hash = '#/admin'; setView('admin'); };
