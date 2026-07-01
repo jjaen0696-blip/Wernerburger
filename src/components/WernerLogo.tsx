@@ -12,11 +12,14 @@ export default function WernerLogo({ size = 'md' }: Props) {
   const s = sizes[size];
   return (
     <div className="flex items-center gap-2.5">
-      <img
-        src="/werner-chef.png"
-        alt="WernerBurguer logo"
-        className={`${s.img} rounded-full object-cover flex-shrink-0 border border-white/10`}
-      />
+      <div className="relative flex-shrink-0">
+        <img
+          src="/werner-chef.png"
+          alt="WernerBurguer logo"
+          className={`${s.img} rounded-full border border-white/15 object-cover shadow-[0_8px_28px_rgba(0,0,0,0.35)]`}
+        />
+        <div className="absolute inset-0 rounded-full bg-gold/20 blur-md" />
+      </div>
       <div className="flex flex-col leading-none">
         <span
           className={`${s.werner} font-black uppercase tracking-wide`}

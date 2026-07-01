@@ -197,132 +197,168 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
 
         <div className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-7xl items-center px-4 pb-12 pt-24 sm:px-6 lg:px-8">
           <div className="w-full max-w-2xl animate-fade-up">
-            <div className="mb-6 flex justify-start">
-              <WernerLogo size="lg" />
-            </div>
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold/10 px-4 py-1.5">
-              <Flame className="h-4 w-4 text-gold-light" />
-              <span className="text-[13px] font-bold uppercase tracking-wider text-gold-light">Comida hecha al momento</span>
-            </div>
-            <h1 className="mb-6 max-w-2xl font-display text-[40px] font-extrabold leading-[0.95] tracking-tight text-balance text-white [text-shadow:0_2px_16px_rgba(0,0,0,0.75)] sm:text-6xl lg:text-7xl">
-              PIDE TU COMIDA
-              <br />
-              <span className="text-gold-grad">FAVORITA EN MINUTOS</span>
-            </h1>
-            <p className="mb-8 max-w-lg text-[15px] leading-relaxed text-white/75 [text-shadow:0_1px_10px_rgba(0,0,0,0.8)] sm:text-lg">
-              Hamburguesas a la parrilla, hot dogs cargados, salchipapas y más.
-              Arma tu pedido y la cocina lo recibe al instante.
-            </p>
+            <div className="rounded-[32px] border border-white/10 bg-[#0f0a0b]/55 p-6 shadow-[0_30px_90px_rgba(0,0,0,0.35)] backdrop-blur-2xl sm:p-8 lg:p-10">
+              <div className="mb-6 flex justify-start">
+                <WernerLogo size="lg" />
+              </div>
 
-            {/* Location selector */}
-            <div className="relative z-[100] mb-14 w-full max-w-sm sm:mb-16">
-              <p className="mb-2 flex items-center gap-1.5 text-[13px] font-bold uppercase tracking-wider text-white/45">
-                <MapPin className="h-4 w-4 text-gold" />
-                Elige tu sucursal
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/10 px-4 py-1.5 shadow-[0_0_24px_rgba(234,171,8,0.15)]">
+                <Flame className="h-4 w-4 text-gold-light" />
+                <span className="text-[13px] font-bold uppercase tracking-[0.25em] text-gold-light">Comida hecha al momento</span>
+              </div>
+
+              <h1 className="mb-6 max-w-2xl font-display text-[40px] font-extrabold leading-[0.95] tracking-tight text-balance text-white [text-shadow:0_2px_16px_rgba(0,0,0,0.75)] sm:text-6xl lg:text-7xl">
+                PIDE TU COMIDA
+                <br />
+                <span className="text-gold-grad">FAVORITA EN MINUTOS</span>
+              </h1>
+
+              <p className="mb-7 max-w-xl text-[15px] leading-relaxed text-white/75 [text-shadow:0_1px_10px_rgba(0,0,0,0.8)] sm:text-lg">
+                Hamburguesas a la parrilla, hot dogs cargados, salchipapas y más. Una experiencia de pedido rápida, elegante y preparada para ti.
               </p>
-              <button
-                ref={triggerRef}
-                id="branch-selector-trigger"
-                onClick={() => {
-                  setDropdownOpen((prev) => !prev);
-                }}
-                className="flex min-h-[48px] w-full items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#120e0f]/70 px-4 py-3.5 text-left font-semibold text-white shadow-[0_12px_32px_rgba(0,0,0,0.25)] transition-all hover:border-gold/40"
-              >
-                <span className="flex min-w-0 items-center gap-2">
-                  <MapPin className="h-5 w-5 shrink-0 text-gold" />
-                  <span className={`truncate ${selectedLocation ? '' : 'text-white/45'}`}>
-                    {selectedLocation ? selectedLocation.name : 'Selecciona una sucursal'}
+
+              <div className="mb-7 flex flex-wrap gap-2">
+                {['Entrega rápida', 'Sabor premium', 'Pago seguro'].map((item) => (
+                  <span key={item} className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-[12px] font-semibold uppercase tracking-[0.2em] text-white/70 backdrop-blur-sm">
+                    {item}
                   </span>
-                </span>
-                <ChevronDown className={`h-5 w-5 shrink-0 text-gold transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
-              {dropdownOpen && typeof document !== 'undefined' && createPortal(
-                <div className="fixed inset-0 z-[99999]" onClick={() => setDropdownOpen(false)}>
-                  <div
-                    data-location-dropdown
-                    className="fixed z-[99999] overflow-hidden rounded-[20px] border border-white/10 bg-[#0b0809] shadow-[0_16px_42px_rgba(0,0,0,0.72)]"
-                    style={{
-                      top: `${dropdownPosition.top}px`,
-                      left: `${dropdownPosition.left}px`,
-                      width: `${dropdownPosition.width}px`,
-                      maxHeight: 'min(320px, 72svh)',
-                    }}
-                    onClick={(event) => event.stopPropagation()}
-                  >
-                    <div className="max-h-[min(320px,72svh)] overflow-y-auto overscroll-contain bg-[#0b0809]">
-                      {locations.map((loc) => (
-                        <button
-                          key={loc.id}
-                          onClick={() => {
-                            setSelectedLocation(loc);
-                            setDropdownOpen(false);
-                          }}
-                          className="flex min-h-[48px] w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-white/[0.08]"
-                        >
-                          <div className="min-w-0">
-                            <p className="truncate font-bold text-white">{loc.name}</p>
-                            <p className="truncate text-xs text-white/45">{loc.address}</p>
-                          </div>
-                          {selectedLocation?.id === loc.id && <Check className="h-5 w-5 shrink-0 text-gold" />}
-                        </button>
-                      ))}
+                ))}
+              </div>
+
+              {/* Location selector */}
+              <div className="relative z-[100] mb-6 w-full max-w-sm">
+                <p className="mb-2 flex items-center gap-1.5 text-[13px] font-bold uppercase tracking-[0.25em] text-white/45">
+                  <MapPin className="h-4 w-4 text-gold" />
+                  Elige tu sucursal
+                </p>
+                <button
+                  ref={triggerRef}
+                  id="branch-selector-trigger"
+                  onClick={() => {
+                    setDropdownOpen((prev) => !prev);
+                  }}
+                  className="flex min-h-[50px] w-full items-center justify-between gap-3 rounded-[20px] border border-white/15 bg-white/[0.08] px-4 py-3.5 text-left font-semibold text-white shadow-[0_16px_40px_rgba(0,0,0,0.28)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/40 hover:bg-white/[0.12]"
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <MapPin className="h-5 w-5 shrink-0 text-gold" />
+                    <span className={`truncate ${selectedLocation ? '' : 'text-white/45'}`}>
+                      {selectedLocation ? selectedLocation.name : 'Selecciona una sucursal'}
+                    </span>
+                  </span>
+                  <ChevronDown className={`h-5 w-5 shrink-0 text-gold transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {dropdownOpen && typeof document !== 'undefined' && createPortal(
+                  <div className="fixed inset-0 z-[99999]" onClick={() => setDropdownOpen(false)}>
+                    <div
+                      data-location-dropdown
+                      className="fixed z-[99999] overflow-hidden rounded-[20px] border border-white/10 bg-[#0b0809] shadow-[0_16px_42px_rgba(0,0,0,0.72)]"
+                      style={{
+                        top: `${dropdownPosition.top}px`,
+                        left: `${dropdownPosition.left}px`,
+                        width: `${dropdownPosition.width}px`,
+                        maxHeight: 'min(320px, 72svh)',
+                      }}
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      <div className="max-h-[min(320px,72svh)] overflow-y-auto overscroll-contain bg-[#0b0809]">
+                        {locations.map((loc) => (
+                          <button
+                            key={loc.id}
+                            onClick={() => {
+                              setSelectedLocation(loc);
+                              setDropdownOpen(false);
+                            }}
+                            className="flex min-h-[48px] w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-white/[0.08]"
+                          >
+                            <div className="min-w-0">
+                              <p className="truncate font-bold text-white">{loc.name}</p>
+                              <p className="truncate text-xs text-white/45">{loc.address}</p>
+                            </div>
+                            {selectedLocation?.id === loc.id && <Check className="h-5 w-5 shrink-0 text-gold" />}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                </div>,
-                document.body,
+                  </div>,
+                  document.body,
+                )}
+              </div>
+
+              {warning && (
+                <div className="mb-5 rounded-2xl border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-gold-light">
+                  {warning}
+                </div>
+              )}
+
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                <button
+                  onClick={() => selectedLocation && onOrder(selectedLocation.id)}
+                  disabled={!selectedLocation}
+                  className="group inline-flex min-h-[54px] items-center justify-center gap-3 rounded-[20px] bg-gradient-to-r from-[#f7d878] via-[#e5b04a] to-[#b87b08] px-8 py-4 text-lg font-extrabold uppercase tracking-[0.2em] text-ink shadow-[0_18px_45px_rgba(234,171,8,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:brightness-105 active:scale-95 disabled:opacity-50 disabled:hover:translate-y-0 disabled:active:scale-100 sm:w-auto"
+                >
+                  <ShoppingBag className="h-6 w-6" />
+                  Pedir ahora
+                  <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                </button>
+
+                <div className="rounded-[18px] border border-white/10 bg-white/[0.05] px-4 py-3 text-sm text-white/70 backdrop-blur-sm">
+                  <p className="font-semibold text-white">Tiempo promedio</p>
+                  <p className="text-gold-light">15–20 minutos</p>
+                </div>
+              </div>
+
+              {!selectedLocation && (
+                <p className="mt-3 flex items-center gap-1.5 text-[13px] text-white/45">
+                  <MapPin className="h-4 w-4 text-gold" />
+                  Elige una sucursal para continuar.
+                </p>
               )}
             </div>
-
-            {warning && (
-              <div className="mb-5 rounded-2xl border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-gold-light">
-                {warning}
-              </div>
-            )}
-
-            <div className="flex flex-col gap-4 sm:flex-row">
-              <button
-                onClick={() => selectedLocation && onOrder(selectedLocation.id)}
-                disabled={!selectedLocation}
-                className="group inline-flex min-h-[52px] items-center justify-center gap-3 rounded-2xl bg-yellow-cta px-8 py-4 text-lg font-extrabold uppercase tracking-wide text-ink shadow-glow-gold transition-all hover:brightness-105 active:scale-95 disabled:opacity-50 disabled:active:scale-100 sm:w-auto"
-              >
-                <ShoppingBag className="h-6 w-6" />
-                Pedir ahora
-                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-              </button>
-            </div>
-            {!selectedLocation && (
-              <p className="mt-3 flex items-center gap-1.5 text-[13px] text-white/45">
-                <MapPin className="h-4 w-4 text-gold" />
-                Elige una sucursal para continuar.
-              </p>
-            )}
           </div>
         </div>
       </section>
 
       {/* Features */}
-      <section className="relative border-t border-white/8 px-4 py-14 sm:px-6 sm:py-20">
-        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 sm:grid-cols-3">
-          {[
-            { icon: ShoppingBag, title: 'Pide fácil', text: 'Explora el menú, agrega al carrito y confirma.' },
-            { icon: Clock, title: 'En tiempo real', text: 'La cocina recibe tu pedido al instante.' },
-            { icon: Star, title: 'Calidad garantizada', text: 'Ingredientes frescos preparados al momento.' },
-          ].map((f) => (
-            <div key={f.title} className="glass rounded-[24px] p-6 text-center transition-all hover:-translate-y-1.5 hover:border-gold/30">
-              <div className="w-16 h-16 rounded-2xl bg-gold/10 border border-gold/25 flex items-center justify-center mx-auto mb-4">
-                <f.icon className="h-7 w-7 text-gold" />
+      <section className="relative border-t border-white/10 bg-[radial-gradient(80%_60%_at_50%_0%,rgba(234,171,8,0.14),transparent_70%)] px-4 py-16 sm:px-6 sm:py-24">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-gold-light">
+                <Sparkles className="h-3.5 w-3.5" />
+                Experiencia premium
               </div>
-              <h3 className="font-display text-lg font-extrabold text-white mb-2 uppercase">{f.title}</h3>
-              <p className="text-white/55 text-sm leading-relaxed">{f.text}</p>
+              <h2 className="font-display text-[28px] font-extrabold leading-tight text-white sm:text-[34px]">
+                Elegancia, velocidad y sabor en cada pedido.
+              </h2>
             </div>
-          ))}
+            <p className="max-w-xl text-sm leading-relaxed text-white/60 sm:text-base">
+              Cada detalle está pensado para que ordenar se sienta tan especial como comer.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            {[
+              { icon: ShoppingBag, title: 'Pide fácil', text: 'Explora el menú, agrega al carrito y confirma en segundos.' },
+              { icon: Clock, title: 'En tiempo real', text: 'La cocina recibe tu pedido al instante y lo prepara con precisión.' },
+              { icon: Star, title: 'Calidad garantizada', text: 'Ingredientes frescos, presentación impecable y sabor consistente.' },
+            ].map((f) => (
+              <div key={f.title} className="group relative overflow-hidden rounded-[26px] border border-white/10 bg-white/[0.04] p-7 text-left shadow-[0_25px_80px_rgba(0,0,0,0.25)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 hover:border-gold/30 hover:shadow-[0_30px_100px_rgba(230,180,80,0.12)]">
+                <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-r from-gold/10 via-transparent to-transparent opacity-80" />
+                <div className="relative mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-gold/20 bg-gold/10">
+                  <f.icon className="h-7 w-7 text-gold" />
+                </div>
+                <h3 className="relative mb-2 font-display text-lg font-extrabold uppercase text-white">{f.title}</h3>
+                <p className="relative text-sm leading-relaxed text-white/60">{f.text}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      <footer className="border-t border-white/8 px-4 py-5 sm:px-6">
-        <div className="mx-auto flex max-w-5xl items-center justify-center gap-2">
+      <footer className="border-t border-white/10 px-4 py-6 sm:px-6">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-center gap-2 text-center sm:flex-row">
           <Sparkles className="h-3.5 w-3.5 text-gold/50" />
-          <p className="text-xs text-white/30">© WernerBurguer · Hecho al momento</p>
+          <p className="text-xs uppercase tracking-[0.25em] text-white/30">© WernerBurguer · Hecho al momento</p>
         </div>
       </footer>
     </div>
