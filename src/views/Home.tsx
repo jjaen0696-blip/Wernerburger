@@ -24,6 +24,7 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 0 });
   const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
   const [loading, setLoading] = useState(true);
   const [warning, setWarning] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -81,6 +82,12 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
       setDropdownPosition({ top, left, width });
     };
 
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setDropdownOpen(false);
+      }
+    };
+
     const handlePointerDown = (event: MouseEvent) => {
       const target = event.target as HTMLElement | null;
       if (target && target.closest('[data-location-dropdown]')) return;
@@ -88,11 +95,13 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
     };
 
     document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
     window.addEventListener('resize', updateDropdownPosition);
     window.addEventListener('scroll', updateDropdownPosition, true);
     updateDropdownPosition();
     return () => {
       document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('resize', updateDropdownPosition);
       window.removeEventListener('scroll', updateDropdownPosition, true);
     };
@@ -266,6 +275,7 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
       {dropdownOpen && typeof document !== 'undefined' && createPortal(
         <div className="fixed inset-0 z-[9999]" onClick={() => setDropdownOpen(false)}>
           <div
+            ref={dropdownRef}
             data-location-dropdown
             className="fixed overflow-hidden rounded-[20px] border border-white/10 bg-[#0b0809] shadow-[0_16px_42px_rgba(0,0,0,0.72)]"
             style={{
@@ -274,10 +284,11 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
               width: `${Math.min(dropdownPosition.width, window.innerWidth - 24)}px`,
               maxHeight: 'min(320px, 72svh)',
               zIndex: 9999,
+              position: 'fixed',
             }}
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="max-h-[min(320px,72svh)] overflow-y-auto overscroll-contain bg-[#0b0809]">
+            <div className="max-h-[min(320px,72svh)] overflow-y-auto overscroll-contain bg-[#0b0809] scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
               {locations.map((loc) => (
                 <button
                   key={loc.id}
