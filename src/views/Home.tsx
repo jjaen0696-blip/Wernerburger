@@ -61,6 +61,19 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
     load();
   }, []);
 
+  useEffect(() => {
+    if (!dropdownOpen) return;
+
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target && target.closest('[data-location-dropdown]')) return;
+      setDropdownOpen(false);
+    };
+
+    document.addEventListener('mousedown', handlePointerDown);
+    return () => document.removeEventListener('mousedown', handlePointerDown);
+  }, [dropdownOpen]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-premium flex items-center justify-center">
@@ -124,13 +137,13 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
   return (
     <div className="min-h-screen bg-premium text-white">
       {/* Nav */}
-      <nav className="absolute top-0 left-0 right-0 z-20 px-5 sm:px-8 py-5 flex items-center justify-between">
-        <div className="rounded-2xl bg-white/10 backdrop-blur-sm px-3 py-2 border border-white/15">
+      <nav className="absolute left-0 right-0 top-0 z-30 flex items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+        <div className="rounded-2xl border border-white/15 bg-white/10 px-3 py-2 backdrop-blur-sm">
           <WernerLogo size="md" />
         </div>
         <button
           onClick={onKitchenAccess}
-          className="flex items-center gap-2 rounded-2xl border border-white/10 glass px-4 py-2.5 font-bold text-sm text-white/90 transition-all hover:border-gold/40 hover:text-white min-h-[44px]"
+          className="flex min-h-[44px] items-center gap-2 rounded-2xl border border-white/10 glass px-4 py-2.5 text-sm font-bold text-white/90 transition-all hover:border-gold/40 hover:text-white"
         >
           <LogIn className="h-4 w-4 text-gold" />
           Login
@@ -138,98 +151,99 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
       </nav>
 
       {/* Hero */}
-      <section className="relative min-h-screen flex items-center overflow-hidden">
+      <section className="relative isolate overflow-visible">
         <div className="absolute inset-0 bg-[#5e0a0c]">
-          {/* Relleno ambiental: copia difuminada que cubre toda el área sin bordes duros */}
-          <img
-            src="/werner-banner.png"
-            alt=""
+          <div
+            className="absolute inset-0 scale-110 bg-cover bg-center bg-no-repeat blur-3xl opacity-60 saturate-150"
+            style={{ backgroundImage: "url('/werner-banner.png')" }}
             aria-hidden="true"
-            className="absolute inset-0 h-full w-full object-cover scale-125 blur-3xl opacity-60 saturate-150"
           />
-          {/* Banner real: completo y centrado (object-contain = sin recorte, máxima nitidez) */}
-          <img
-            src="/werner-banner.png"
-            alt="Werner Burger — Más que una hamburguesa"
-            className="absolute inset-0 h-full w-full object-contain object-center opacity-100 drop-shadow-[0_25px_60px_rgba(0,0,0,0.55)]"
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: "url('/werner-banner.png')" }}
+            aria-hidden="true"
           />
-          {/* Oscurecido para legibilidad del texto a la izquierda */}
           <div className="absolute inset-0 bg-gradient-to-r from-ink/95 via-ink/80 to-ink/30" />
-          <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/45 to-ink/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink/95 via-ink/50 to-ink/20" />
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-8 w-full pt-24 pb-12">
-          <div className="max-w-2xl animate-fade-up">
+        <div className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-7xl items-center px-4 pb-12 pt-24 sm:px-6 lg:px-8">
+          <div className="w-full max-w-2xl animate-fade-up">
             <img
               src="/werner-chef.png"
               alt="Werner Burger"
-              className="mb-6 h-24 w-24 sm:h-28 sm:w-28 rounded-full object-cover border-2 border-gold/50 shadow-glow-gold"
+              className="mb-6 h-24 w-24 rounded-full border-2 border-gold/50 object-cover shadow-glow-gold sm:h-28 sm:w-28"
             />
-            <div className="inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold/10 px-4 py-1.5 mb-6">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold/10 px-4 py-1.5">
               <Flame className="h-4 w-4 text-gold-light" />
               <span className="text-[13px] font-bold uppercase tracking-wider text-gold-light">Comida hecha al momento</span>
             </div>
-            <h1 className="font-display text-[44px] sm:text-7xl font-extrabold leading-[0.95] tracking-tight mb-6 text-balance [text-shadow:0_2px_16px_rgba(0,0,0,0.75)]">
+            <h1 className="mb-6 max-w-2xl font-display text-[40px] font-extrabold leading-[0.95] tracking-tight text-balance text-white [text-shadow:0_2px_16px_rgba(0,0,0,0.75)] sm:text-6xl lg:text-7xl">
               PIDE TU COMIDA
               <br />
               <span className="text-gold-grad">FAVORITA EN MINUTOS</span>
             </h1>
-            <p className="text-[15px] sm:text-lg text-white/75 mb-8 leading-relaxed max-w-lg [text-shadow:0_1px_10px_rgba(0,0,0,0.8)]">
+            <p className="mb-8 max-w-lg text-[15px] leading-relaxed text-white/75 [text-shadow:0_1px_10px_rgba(0,0,0,0.8)] sm:text-lg">
               Hamburguesas a la parrilla, hot dogs cargados, salchipapas y más.
               Arma tu pedido y la cocina lo recibe al instante.
             </p>
 
             {/* Location selector */}
-            <div className="mb-8 relative">
-              <p className="text-[13px] font-bold uppercase tracking-wider text-white/45 mb-2 flex items-center gap-1.5">
+            <div className="relative mb-8 w-full max-w-sm">
+              <p className="mb-2 flex items-center gap-1.5 text-[13px] font-bold uppercase tracking-wider text-white/45">
                 <MapPin className="h-4 w-4 text-gold" />
                 Elige tu sucursal
               </p>
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center justify-between gap-3 w-full max-w-sm rounded-2xl border border-white/10 glass px-4 py-3.5 text-white font-semibold transition-all hover:border-gold/40 min-h-[44px]"
+                className="flex min-h-[48px] w-full items-center justify-between gap-3 rounded-2xl border border-white/10 glass px-4 py-3.5 text-left font-semibold text-white transition-all hover:border-gold/40"
               >
-                <span className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-gold" />
-                  <span className={selectedLocation ? '' : 'text-white/45'}>
+                <span className="flex min-w-0 items-center gap-2">
+                  <MapPin className="h-5 w-5 shrink-0 text-gold" />
+                  <span className={`truncate ${selectedLocation ? '' : 'text-white/45'}`}>
                     {selectedLocation ? selectedLocation.name : 'Selecciona una sucursal'}
                   </span>
                 </span>
-                <ChevronDown className={`h-5 w-5 text-gold transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`h-5 w-5 shrink-0 text-gold transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
               </button>
               {dropdownOpen && (
-                <div className="absolute left-0 top-full mt-2 w-72 max-w-sm rounded-2xl glass-strong shadow-card overflow-y-auto z-50 max-h-[min(22rem,60vh)] overscroll-contain animate-scale-in">
-                  {locations.map((loc) => (
-                    <button
-                      key={loc.id}
-                      onClick={() => {
-                        setSelectedLocation(loc);
-                        setDropdownOpen(false);
-                      }}
-                      className="flex items-center justify-between w-full px-4 py-3.5 text-left hover:bg-white/[0.06] transition-colors min-h-[48px] border-b border-white/[0.06] last:border-b-0"
-                    >
-                      <div>
-                        <p className="font-bold text-white">{loc.name}</p>
-                        <p className="text-xs text-white/45">{loc.address}</p>
-                      </div>
-                      {selectedLocation?.id === loc.id && <Check className="h-5 w-5 text-gold" />}
-                    </button>
-                  ))}
+                <div
+                  data-location-dropdown
+                  className="absolute left-0 top-full z-[60] mt-2 w-full max-w-[min(24rem,calc(100vw-2rem))] rounded-2xl border border-white/10 bg-[#120e0f]/95 p-1 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl animate-scale-in"
+                >
+                  <div className="max-h-[300px] overflow-y-auto overscroll-contain">
+                    {locations.map((loc) => (
+                      <button
+                        key={loc.id}
+                        onClick={() => {
+                          setSelectedLocation(loc);
+                          setDropdownOpen(false);
+                        }}
+                        className="flex min-h-[48px] w-full items-center justify-between gap-3 border-b border-white/[0.06] px-4 py-3.5 text-left transition-colors last:border-b-0 hover:bg-white/[0.06]"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate font-bold text-white">{loc.name}</p>
+                          <p className="truncate text-xs text-white/45">{loc.address}</p>
+                        </div>
+                        {selectedLocation?.id === loc.id && <Check className="h-5 w-5 shrink-0 text-gold" />}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
 
             {warning && (
-              <div className="mb-5 rounded-2xl border border-gold/30 bg-gold/10 px-4 py-3 text-gold-light text-sm">
+              <div className="mb-5 rounded-2xl border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-gold-light">
                 {warning}
               </div>
             )}
 
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row">
               <button
                 onClick={() => selectedLocation && onOrder(selectedLocation.id)}
                 disabled={!selectedLocation}
-                className="group inline-flex items-center justify-center gap-3 rounded-2xl bg-yellow-cta px-8 py-4 text-ink font-extrabold text-lg uppercase tracking-wide shadow-glow-gold transition-all hover:brightness-105 active:scale-95 disabled:opacity-50 disabled:active:scale-100 min-h-[52px]"
+                className="group inline-flex min-h-[52px] items-center justify-center gap-3 rounded-2xl bg-yellow-cta px-8 py-4 text-lg font-extrabold uppercase tracking-wide text-ink shadow-glow-gold transition-all hover:brightness-105 active:scale-95 disabled:opacity-50 disabled:active:scale-100 sm:w-auto"
               >
                 <ShoppingBag className="h-6 w-6" />
                 Pedir ahora
@@ -237,7 +251,7 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
               </button>
             </div>
             {!selectedLocation && (
-              <p className="mt-3 text-[13px] text-white/45 flex items-center gap-1.5">
+              <p className="mt-3 flex items-center gap-1.5 text-[13px] text-white/45">
                 <MapPin className="h-4 w-4 text-gold" />
                 Elige una sucursal para continuar.
               </p>
@@ -247,8 +261,8 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
       </section>
 
       {/* Features */}
-      <section className="relative border-t border-white/8 py-20 px-6">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <section className="relative border-t border-white/8 px-4 py-14 sm:px-6 sm:py-20">
+        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 sm:grid-cols-3">
           {[
             { icon: ShoppingBag, title: 'Pide fácil', text: 'Explora el menú, agrega al carrito y confirma.' },
             { icon: Clock, title: 'En tiempo real', text: 'La cocina recibe tu pedido al instante.' },
@@ -265,8 +279,8 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
         </div>
       </section>
 
-      <footer className="border-t border-white/8 py-5 px-6">
-        <div className="max-w-5xl mx-auto flex items-center justify-center gap-2">
+      <footer className="border-t border-white/8 px-4 py-5 sm:px-6">
+        <div className="mx-auto flex max-w-5xl items-center justify-center gap-2">
           <Sparkles className="h-3.5 w-3.5 text-gold/50" />
           <p className="text-xs text-white/30">© WernerBurguer · Hecho al momento</p>
         </div>
