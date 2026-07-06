@@ -4,18 +4,29 @@ import { createClient } from '@supabase/supabase-js';
 
 const app = express();
 // CORS: permitir orígenes configurables; por defecto permitir Vercel y el propio dominio
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'https://wernerburger.vercel.app,https://wernerburger.onrender.com,http://localhost:5174').split(',');
+const defaultOrigins = 'https://wernerburger.vercel.app,https://wernerburger.onrender.com,http://localhost:5174';
+const envOrigins = process.env.ALLOWED_ORIGINS || process.env.FRONTEND_ORIGIN || defaultOrigins;
+let allowedOrigins = envOrigins.split(',').map(s => String(s || '').trim()).filter(Boolean);
+// Ensure the known Vercel origin is always allowed
+if (!allowedOrigins.includes('https://wernerburger.vercel.app')) allowedOrigins.push('https://wernerburger.vercel.app');
+
 const corsOptions: import('cors').CorsOptions = {
   origin: (origin, callback) => {
-    // Si no hay origin (p. ej. llamadas desde Postman o server-side), permitir
+    // If no origin (Postman, server-side), allow
     if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1) return callback(null, true);
+    // Exact match against trimmed allowedOrigins
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    console.warn('CORS blocked origin:', origin);
     return callback(new Error('Not allowed by CORS'));
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 204
 };
+
+// Log allowed origins at startup for troubleshooting
+console.log('CORS allowed origins:', allowedOrigins);
 
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
