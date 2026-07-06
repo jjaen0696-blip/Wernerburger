@@ -9,17 +9,18 @@ const allowedOrigins = [
   'http://localhost:5173'
 ];
 
-console.log('CORS origins:', allowedOrigins);
-
-app.use(cors({
+const corsOptions = {
   origin: allowedOrigins,
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
-}));
+  optionsSuccessStatus: 204
+};
 
-// Ensure preflight is handled
-app.options('*', cors());
+console.log('CORS allowed origins:', allowedOrigins);
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json());
 app.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
   if (err instanceof SyntaxError && 'body' in err) {
