@@ -30,7 +30,7 @@ export default function Kitchen({ onNavigate }: KitchenProps) {
   };
 
   return (
-    <div className="bg-black min-h-screen pt-20 pb-16 text-white">
+    <div className="bg-black min-h-screen pb-16 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8 rounded-[2rem] border border-amber-400/15 bg-[#080805]/95 p-8 shadow-[0_30px_80px_rgba(0,0,0,0.5)] backdrop-blur-xl">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">

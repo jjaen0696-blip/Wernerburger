@@ -10,7 +10,7 @@ export default function Dashboard() {
   const [section, setSection] = useState<Section>('dashboard');
 
   return (
-    <div className="flex min-h-screen pt-20 bg-gradient-to-b from-[#080706] to-[#050404] text-white">
+    <div className="flex min-h-screen bg-gradient-to-b from-[#080706] to-[#050404] text-white">
       <aside className="w-72 bg-[#0b0a09]/90 border-r border-amber-500/10 p-6">
         <div className="mb-6">
           <h3 className="text-sm uppercase text-amber-300 mb-2 font-bold">Panel Administrativo</h3>

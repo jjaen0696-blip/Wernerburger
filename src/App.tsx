@@ -45,7 +45,7 @@ function App() {
           <button
             type="button"
             onClick={() => setLoginOpen(true)}
-            className="fire-action-button fixed top-20 right-5 z-[70] rounded-full px-5 py-3 text-[12px] font-black uppercase tracking-[0.3em] text-stone-950 transition duration-300 hover:-translate-y-0.5"
+            className="fire-action-button fixed top-5 right-5 z-[70] rounded-full px-5 py-3 text-[12px] font-black uppercase tracking-[0.3em] text-stone-950 transition duration-300 hover:-translate-y-0.5"
           >
             Login
           </button>
