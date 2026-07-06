@@ -1,0 +1,96 @@
+{
+  "branches": [
+    {
+      "id": "branch-1",
+      "name": "Sucursal Central"
+    }
+  ],
+  "ingredients": [
+    {
+      "id": "ing-bread",
+      "name": "Pan"
+    },
+    {
+      "id": "ing-meat",
+      "name": "Carne"
+    }
+  ],
+  "products": [
+    {
+      "id": "prod-burger",
+      "name": "Hamburguesa Clásica",
+      "price": 5.5
+    }
+  ],
+  "recipe_items": [
+    {
+      "product_id": "prod-burger",
+      "ingredient_id": "ing-bread",
+      "qty": 1,
+      "unit": "unidad"
+    },
+    {
+      "product_id": "prod-burger",
+      "ingredient_id": "ing-meat",
+      "qty": 0.2,
+      "unit": "kg"
+    }
+  ],
+  "inventory": [
+    {
+      "id": "branch-1::ing-bread",
+      "branch_id": "branch-1",
+      "ingredient_id": "ing-bread",
+      "qty": 8,
+      "unit": "unidad",
+      "updated_at": "2026-07-06T06:54:41.337Z"
+    },
+    {
+      "id": "branch-1::ing-meat",
+      "branch_id": "branch-1",
+      "ingredient_id": "ing-meat",
+      "qty": 4.6,
+      "unit": "kg",
+      "updated_at": "2026-07-06T06:54:41.337Z"
+    },
+    {
+      "id": "6c2794f0-42b1-46cb-80fa-b0948784c51e",
+      "branch_id": "branch-1",
+      "ingredient_id": "ing-bread",
+      "qty": -2,
+      "unit": "sale",
+      "updated_at": "2026-07-06T06:54:41.337Z"
+    },
+    {
+      "id": "92eb61ef-8f59-4aed-9488-aba8e7c42fb0",
+      "branch_id": "branch-1",
+      "ingredient_id": "ing-meat",
+      "qty": -0.4,
+      "unit": "sale",
+      "updated_at": "2026-07-06T06:54:41.337Z"
+    }
+  ],
+  "inventory_movements": [],
+  "orders": [
+    {
+      "id": "b6fa2cde-2f0d-441a-8617-8bd42101626e",
+      "branch_id": "branch-1",
+      "status": "accepted",
+      "total": 11,
+      "created_at": "2026-07-06T06:54:41.337Z"
+    }
+  ],
+  "order_items": [
+    {
+      "id": "50b5e6be-1309-4662-8c08-28db4fe4ffb9",
+      "order_id": "b6fa2cde-2f0d-441a-8617-8bd42101626e",
+      "product_id": "prod-burger",
+      "qty": 2
+    }
+  ],
+  "users": [],
+  "roles": [],
+  "user_roles": [],
+  "purchases": [],
+  "purchase_items": []
+}

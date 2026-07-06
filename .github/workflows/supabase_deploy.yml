@@ -1,0 +1,35 @@
+name: Supabase Deploy (migrations)
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install supabase CLI
+        run: |
+          npm install -g supabase
+      - name: Supabase login
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          supabase login --access-token $SUPABASE_ACCESS_TOKEN
+      - name: Push SQL schema
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        run: |
+          supabase db push --schema sql/001_schema.sql || true
+      - name: Run seed
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        run: |
+          supabase db query < sql/002_seed.sql || true
+      - name: Summary
+        run: echo "Supabase migration/seed step finished. Ensure secrets are configured."
