@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect, type FormEvent } from 'react';
+import { motion } from 'framer-motion';
 import {
   Plus,
   Trash2,
@@ -13,6 +14,13 @@ import {
   Clock,
   UtensilsCrossed,
   Truck,
+  Star,
+  Sparkles,
+  Gift,
+  Coffee,
+  Package,
+  Activity,
+  Clock3,
 } from 'lucide-react';
 
 import { MENU_ITEMS, CATEGORIES, type MenuItem, type Category } from '../data/menuData';
@@ -23,6 +31,14 @@ import ProductCardPremium from '../components/ProductCardPremium';
 type FilterCategory = 'todas' | Category;
 type PaymentMethod = 'efectivo' | 'yappy';
 type DeliveryType = 'local' | 'delivery' | null;
+
+const badgeWidgets = [
+  { icon: Star, label: 'Más populares', value: `${MENU_ITEMS.filter((item) => item.isPopular).length} ítems` },
+  { icon: Sparkles, label: 'Nuevos', value: 'Tendencias frescas' },
+  { icon: Package, label: 'Combos', value: 'Paquetes exquisitos' },
+  { icon: Gift, label: 'Promociones', value: 'Ofertas exclusivas' },
+  { icon: Coffee, label: 'Bebidas', value: 'Refrescantes' },
+];
 
 // Small inline SVG icons for the categories (single-color, easy to style)
 function AllStarsIcon({ className = 'w-4 h-4' }: { className?: string }) {
@@ -203,32 +219,85 @@ export default function Menu() {
     <div className="bg-black min-h-screen pt-16 pb-32">
       <HeroPremium value={search} onChange={(e) => setSearch(e.target.value)} />
 
-      <div className="sticky top-16 z-30 border-b border-amber-500/5 bg-gradient-to-r from-black via-black/98 to-black/95 py-5 backdrop-blur-3xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <CategoryScroller setActiveCategory={setActiveCategory} activeCategory={activeCategory} />
-        </div>
-      </div>
+      <div className="relative mt-10 overflow-hidden py-10">
+        <div className="absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-black/30 to-transparent" />
+        <div className="absolute right-0 top-0 h-64 w-64 rounded-full bg-amber-500/10 blur-3xl" />
+        <div className="absolute left-0 bottom-0 h-72 w-72 rounded-full bg-white/5 blur-3xl" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="mb-6">
-          <div>
-            <p className="text-gray-200 text-sm font-semibold">{filtered.length} platillo{filtered.length !== 1 ? 's' : ''} disponibles</p>
-            <p className="text-xs text-amber-300/70 mt-1.5 font-medium">Todos listos para preparar</p>
-          </div>
-        </div>
+        <div className="max-w-7xl mx-auto grid gap-8 lg:grid-cols-[320px_minmax(0,1fr)] px-4 sm:px-6 lg:px-8">
+          <aside className="relative rounded-[2rem] border border-white/10 bg-black/40 p-6 shadow-[0_32px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl lg:sticky lg:top-24">
+            <div className="mb-6 space-y-3">
+              <p className="text-xs uppercase tracking-[0.35em] text-amber-200/70">Explora</p>
+              <h2 className="text-2xl font-black text-white">Descubre categorías</h2>
+              <p className="text-sm leading-6 text-gray-300">Navega por las selecciones premium, sabores populares y ofertas especiales de la casa.</p>
+            </div>
 
-        {filtered.length === 0 ? (
-          <div className="text-center py-20 text-gray-500">
-            <p className="text-lg">No encontramos lo que buscas</p>
-            <p className="text-sm mt-2">Intenta con otro nombre o categoría</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {filtered.map((item) => (
-              <ProductCardPremium key={item.id} item={item} onAdd={() => addToCart(item)} compact={activeCategory === 'todas'} />
-            ))}
-          </div>
-        )}
+            <div className="grid gap-3">
+              {badgeWidgets.map((widget) => (
+                <div key={widget.label} className="rounded-[1.75rem] border border-white/10 bg-white/5 p-4 shadow-[0_12px_40px_rgba(0,0,0,0.25)] transition hover:-translate-y-1 hover:border-amber-400/30">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-300/15 text-amber-200 shadow-[0_10px_30px_rgba(245,158,11,0.12)]">
+                      <widget.icon className="h-5 w-5" />
+                    </span>
+                    <div>
+                      <p className="text-sm uppercase tracking-[0.28em] text-amber-200/80">{widget.label}</p>
+                      <p className="mt-1 text-base font-semibold text-white">{widget.value}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-8 rounded-[2rem] border border-amber-300/15 bg-gradient-to-br from-black/80 via-black/70 to-amber-900/10 p-6 shadow-[0_24px_60px_rgba(245,158,11,0.18)]">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.35em] text-amber-200/70">Entrega rápida</p>
+                  <h3 className="mt-3 text-2xl font-black text-white">20-35 minutos</h3>
+                  <p className="mt-2 text-sm leading-6 text-gray-300">Tu pedido llega caliente, directo a tu puerta o listo para recoger.</p>
+                </div>
+                <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-amber-300/10 text-amber-200 shadow-[0_18px_48px_rgba(245,158,11,0.2)]">
+                  <Truck className="h-8 w-8" />
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          <main className="space-y-8">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="rounded-[2rem] border border-white/10 bg-black/40 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur-xl">
+                <p className="text-xs uppercase tracking-[0.35em] text-amber-200/75">Platillos disponibles</p>
+                <p className="mt-4 text-3xl font-black text-white">{filtered.length}</p>
+              </motion.div>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.05 }} className="rounded-[2rem] border border-white/10 bg-gradient-to-br from-black/40 via-black/30 to-amber-900/10 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur-xl">
+                <p className="text-xs uppercase tracking-[0.35em] text-amber-200/75">Orden mínima</p>
+                <p className="mt-4 text-3xl font-black text-amber-300">$2.50</p>
+              </motion.div>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.1 }} className="rounded-[2rem] border border-white/10 bg-black/40 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur-xl">
+                <p className="text-xs uppercase tracking-[0.35em] text-amber-200/75">Mayor categoría</p>
+                <p className="mt-4 text-3xl font-black text-white">{activeCategory === 'todas' ? 'Todos' : activeCategory}</p>
+              </motion.div>
+            </div>
+
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.15 }} className="rounded-[2rem] border border-white/10 bg-black/40 p-6 shadow-[0_18px_60px_rgba(0,0,0,0.25)] backdrop-blur-xl">
+              <CategoryScroller setActiveCategory={setActiveCategory} activeCategory={activeCategory} />
+            </motion.div>
+
+            <div className="space-y-6">
+              {filtered.length === 0 ? (
+                <div className="rounded-[2rem] border border-white/10 bg-black/40 p-12 text-center text-gray-400 shadow-[0_10px_35px_rgba(0,0,0,0.26)]">
+                  <p className="text-lg font-semibold text-white">No encontramos lo que buscas</p>
+                  <p className="mt-3 text-sm text-gray-400">Prueba otro término o cambia de categoría premium.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                  {filtered.map((item) => (
+                    <ProductCardPremium key={item.id} item={item} onAdd={() => addToCart(item)} compact={activeCategory === 'todas'} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </main>
+        </div>
       </div>
 
       {itemCount > 0 && (

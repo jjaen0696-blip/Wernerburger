@@ -290,6 +290,23 @@
     background: radial-gradient(1200px 400px at 10% 30%, rgba(245,158,11,0.06), transparent 8%), radial-gradient(800px 300px at 90% 70%, rgba(183,143,47,0.04), transparent 12%);
     mix-blend-mode: overlay;
   }
+  .hero-smoke {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.04), transparent 25%), radial-gradient(circle at 80% 15%, rgba(255,255,255,0.03), transparent 20%), radial-gradient(circle at 50% 75%, rgba(255,255,255,0.02), transparent 18%);
+    opacity: 0.85;
+    filter: blur(16px);
+  }
+
+  .premium-glow {
+    box-shadow: 0 0 30px rgba(245,158,11,0.16), 0 18px 55px rgba(0,0,0,0.28);
+  }
+
+  .premium-hover-group:hover .premium-glow {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 60px rgba(245,158,11,0.18), 0 12px 30px rgba(0,0,0,0.26);
+  }
 
   @keyframes float-slow { from { transform: translateY(0); } to { transform: translateY(-10px); } }
   .particle { animation: float-slow 6s ease-in-out infinite alternate; opacity: 0.18; }

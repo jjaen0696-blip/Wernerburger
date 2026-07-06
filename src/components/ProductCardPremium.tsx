@@ -1,40 +1,70 @@
 import React from 'react';
-import { Star, Plus } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Star, Plus, Sparkles, BadgeCheck, TrendingUp } from 'lucide-react';
 import { MenuItem } from '../data/menuData';
 
 export default function ProductCardPremium({ item, onAdd, compact }: { item: MenuItem; onAdd: () => void; compact?: boolean }) {
+  const badges = [
+    item.isFeatured ? { label: 'Premium', icon: BadgeCheck } : null,
+    item.isPopular ? { label: 'Top vendido', icon: TrendingUp } : null,
+    !item.isPopular && !item.isFeatured ? { label: 'Nuevo', icon: Sparkles } : null,
+  ].filter(Boolean) as Array<{ label: string; icon: typeof Star }>;
+
   return (
-    <article className="glass-card card-border-gold group p-0 transition-all duration-500 hover:-translate-y-3 hover:shadow-premium-lg">
-      <div className="rounded-[1.25rem] overflow-hidden border-b border-white/6">
+    <motion.article
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.25 }}
+      transition={{ duration: 0.55, ease: 'easeOut' }}
+      className="group relative overflow-hidden rounded-[2rem] border border-white/10 bg-black/40 shadow-[0_24px_90px_rgba(0,0,0,0.4)] backdrop-blur-xl"
+    >
+      <div className="relative overflow-hidden rounded-[2rem] border-b border-white/10">
         <div className="relative aspect-[4/3] overflow-hidden">
-          <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-700 ease-out" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
-
-          {/* Removed legacy 'TODOS' badge and star per design request */}
-        </div>
-
-        <div className="p-5">
-            <div className="mb-3 flex items-start justify-between gap-3">
-            <h3 className="text-white font-black text-lg leading-tight line-clamp-1 group-hover:text-amber-200 transition-colors duration-300">{item.name}</h3>
-            {/* Removed small 'TODOS' tag */}
+          <motion.img
+            src={item.image}
+            alt={item.name}
+            className="h-full w-full object-cover transition-transform duration-700 ease-out"
+            whileHover={{ scale: 1.05 }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+          <div className="absolute left-4 top-4 flex flex-wrap gap-2">
+            {badges.map((badge) => {
+              const Icon = badge.icon;
+              return (
+                <span key={badge.label} className="flex items-center gap-1 rounded-full bg-black/50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-100 shadow-[0_12px_24px_rgba(0,0,0,0.25)] backdrop-blur-md">
+                  <Icon className="h-3.5 w-3.5 text-amber-300" />
+                  {badge.label}
+                </span>
+              );
+            })}
           </div>
-
-          <p className={`text-gray-400 text-sm mb-4 ${compact ? 'h-9' : 'h-12'} leading-relaxed group-hover:text-gray-300 transition-colors duration-300`}>{item.description}</p>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-baseline gap-3">
-              <span className="price-premium">${item.price.toFixed(2)}</span>
-              {item.originalPrice && (
-                <span className="text-gray-500 text-sm line-through group-hover:text-gray-600 transition-colors duration-300">${item.originalPrice.toFixed(2)}</span>
-              )}
-            </div>
-
-            <button onClick={onAdd} className="btn-premium-sm flex items-center justify-center">
-              <Plus className="w-4 h-4" />
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/90 to-transparent" />
+          <div className="absolute right-4 bottom-4 rounded-full border border-amber-200/20 bg-amber-300/15 p-2 shadow-[0_14px_40px_rgba(245,158,11,0.2)]">
+            <button onClick={onAdd} className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-400 text-black shadow-lg transition-transform duration-200 hover:-translate-y-1 hover:shadow-[0_18px_56px_rgba(245,158,11,0.35)]">
+              <Plus className="h-5 w-5" />
             </button>
           </div>
         </div>
       </div>
-    </article>
+
+      <div className="space-y-3 p-5">
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="text-lg font-black uppercase tracking-[0.04em] text-white transition-colors duration-300 group-hover:text-amber-100">{item.name}</h3>
+          <span className="text-xs text-gray-400 uppercase tracking-[0.28em]">{item.category}</span>
+        </div>
+
+        <p className={`text-sm leading-6 ${compact ? 'text-gray-400 line-clamp-2' : 'text-gray-300'} transition-colors duration-300`}>{item.description}</p>
+
+        <div className="mt-4 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-[0.35em] text-amber-200/80">Precio</p>
+            <p className="price-premium mt-1">${item.price.toFixed(2)}</p>
+          </div>
+          <button onClick={onAdd} className="btn-premium-sm inline-flex items-center justify-center">
+            <Plus className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    </motion.article>
   );
 }
