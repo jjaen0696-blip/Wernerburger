@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { CartProvider } from './context/CartContext';
-import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import Menu from './pages/Menu';
@@ -42,8 +41,6 @@ function App() {
   return (
     <CartProvider>
       <div className="min-h-screen bg-transparent font-sans antialiased text-white">
-        <Navbar onNavigate={navigate} />
-        
         {page === 'home' && (
           <button
             type="button"
