@@ -6,25 +6,25 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const USE_LOCAL_SQLITE = process.env.USE_LOCAL_SQLITE === '1';
+const USE_LOCAL_SQLITE = process.env.USE_LOCAL_SQLITE === '1' || (!process.env.SUPABASE_URL && !process.env.SUPABASE_SERVICE_ROLE_KEY && !process.env.SUPABASE_KEY);
 
 let supabase: any = null;
 let localDb: any = null;
 
 if (USE_LOCAL_SQLITE) {
   // Lazy require so server still works when not installed
-  // local_db exports a better-sqlite3 Database instance
+  // local_db exports a simple JSON-backed database adapter
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   localDb = require('./local_db').default;
-  console.log('Using local SQLite DB');
+  console.log('Using local JSON DB');
 } else {
   const SUPABASE_URL = process.env.SUPABASE_URL || '';
   const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || '';
   if (!SUPABASE_URL || !SUPABASE_KEY) {
-    console.error('Set SUPABASE_URL and SUPABASE_KEY in env');
-    process.exit(1);
+    console.warn('Supabase env missing, falling back to local JSON DB');
+  } else {
+    supabase = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } });
   }
-  supabase = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } });
 }
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));

@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: wernerburger-backend
+    env: node
+    plan: free
+    buildCommand: "npm install && npm run build"
+    startCommand: "npm start"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: USE_LOCAL_SQLITE
+        value: "1"
