@@ -41,8 +41,13 @@ El repositorio se ha inicializado y empujado a `https://github.com/jjaen0696-bli
 - `scripts/seed_inventory.js` para crear sucursal, ingredientes, recetas y stock.
 - `scripts/seed_sql_002.cjs` para reproducir el contenido de `sql/002_seed.sql`.
 - `scripts/execute_sql_file.cjs` para ejecutar archivos SQL directamente en Postgres.
+- `scripts/apply_sql_files.cjs` para aplicar el esquema completo y el seed con una sola orden.
 
 ## Notas de seguridad
 
 - No compartas claves de Supabase en el chat.
 - Usa `SUPABASE_SERVICE_ROLE_KEY` solo localmente para los scripts de seed.
+
+## Variables de entorno para Vercel
+
+- `VITE_API_BASE=https://tu-backend-en-render.onrender.com`

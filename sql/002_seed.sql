@@ -27,10 +27,12 @@ insert into ingredients (id, name, category, unit) values (gen_random_uuid(), 'T
 insert into products (id, name, sku, price, description) values (gen_random_uuid(), 'Hamburguesa Clásica', 'HB-CLASSIC', 7.50, 'Pan, carne, queso, salsa y vegetales');
 
 -- Crear receta para Hamburguesa Clásica
-with prod as (select id from products where sku='HB-CLASSIC' limit 1)
-insert into recipes (id, product_id) select gen_random_uuid(), id from prod returning id into temp_recipe;
+with prod as (
+  select id from products where sku='HB-CLASSIC' limit 1
+)
+insert into recipes (id, product_id)
+select gen_random_uuid(), id from prod;
 
--- Nota: para facilitar el seed, recuperamos ids manualmente con subselects
 insert into recipe_items (id, recipe_id, ingredient_id, quantity, unit)
 select gen_random_uuid(), r.id,
   (select i.id from ingredients i where i.name = 'Pan' limit 1), 1, 'unidad'

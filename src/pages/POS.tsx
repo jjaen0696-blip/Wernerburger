@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react';
 
+const API_BASE = import.meta.env.VITE_API_BASE || 'https://wernerburger.onrender.com';
+const api = (path: string) => `${API_BASE}${path}`;
+
 export default function POS() {
   const [products, setProducts] = useState<any[]>([]);
   const [cart, setCart] = useState<{ product: any; qty: number }[]>([]);
   const [branchId, setBranchId] = useState<string>('');
 
   useEffect(() => {
-    fetch('/products').then(r => r.json()).then(setProducts).catch(() => setProducts([]));
+    fetch(api('/products')).then(r => r.json()).then(setProducts).catch(() => setProducts([]));
     // Attempt to pick a branch automatically (first)
-    fetch('/branches').then(r => r.json()).then((b: any[]) => { if (b && b[0]) setBranchId(b[0].id); }).catch(() => {});
+    fetch(api('/branches')).then(r => r.json()).then((b: any[]) => { if (b && b[0]) setBranchId(b[0].id); }).catch(() => {});
   }, []);
 
   function add(product: any) {
@@ -30,7 +33,7 @@ export default function POS() {
       total: cart.reduce((s, i) => s + i.product.price * i.qty, 0),
       items: cart.map(i => ({ product_id: i.product.id, quantity: i.qty, unit_price: i.product.price }))
     };
-    const res = await fetch('/orders', {
+    const res = await fetch(api('/orders'), {
       method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(order)
     });
     if (!res.ok) return alert('Error al registrar venta');

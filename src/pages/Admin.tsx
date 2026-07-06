@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 
+const API_BASE = import.meta.env.VITE_API_BASE || 'https://wernerburger.onrender.com';
+const api = (path: string) => `${API_BASE}${path}`;
+
 export default function Admin() {
   const [alerts, setAlerts] = useState<any[]>([]);
   const [summary, setSummary] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch('/alerts').then(r => r.json()).then(setAlerts).catch(() => setAlerts([]));
-    fetch('/reports/sales-summary').then(r => r.json()).then(setSummary).catch(() => setSummary([]));
+    fetch(api('/alerts')).then(r => r.json()).then(setAlerts).catch(() => setAlerts([]));
+    fetch(api('/reports/sales-summary')).then(r => r.json()).then(setSummary).catch(() => setSummary([]));
   }, []);
 
   return (

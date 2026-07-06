@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MapPin, ChevronDown, Check, Truck, Award, Heart, Flame } from 'lucide-react';
 
 interface HomeProps {
@@ -15,11 +15,35 @@ const BRANCHES = [
   { id: 'wb7', name: 'WernerBurger 7', address: 'Sucursal 7' },
 ];
 
+type Branch = { id: string; name: string; address: string };
+
+const API_BASE = import.meta.env.VITE_API_BASE || 'https://wernerburger.onrender.com';
+const api = (path: string) => `${API_BASE}${path}`;
+
 export default function Home({ onNavigate }: HomeProps) {
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState<typeof BRANCHES[0] | null>(null);
+  const [branches, setBranches] = useState<Branch[]>(BRANCHES);
+  const [selected, setSelected] = useState<Branch | null>(BRANCHES[0] || null);
 
-  const handleSelect = (branch: typeof BRANCHES[0]) => {
+  useEffect(() => {
+    fetch(api('/branches'))
+      .then((response) => {
+        if (!response.ok) throw new Error('Unable to load branches');
+        return response.json();
+      })
+      .then((data: Branch[]) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setBranches(data);
+          setSelected(data[0]);
+        }
+      })
+      .catch(() => {
+        setBranches(BRANCHES);
+        setSelected(BRANCHES[0] || null);
+      });
+  }, []);
+
+  const handleSelect = (branch: Branch) => {
     setSelected(branch);
     setOpen(false);
   };
@@ -116,7 +140,7 @@ export default function Home({ onNavigate }: HomeProps) {
                     >
                       <div className="max-h-72 overflow-y-auto pr-1 [scrollbar-width:thin] [scrollbar-color:#f59e0b_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-white/5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-amber-500/70 [&::-webkit-scrollbar-thumb:hover]:bg-amber-400">
                         <div className="space-y-3 p-3">
-                          {BRANCHES.map(branch => (
+                          {branches.map(branch => (
                             <button
                               key={branch.id}
                               onClick={() => handleSelect(branch)}

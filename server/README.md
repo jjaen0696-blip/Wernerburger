@@ -1,11 +1,12 @@
-# Backend minimal para Werner Burguer
+# Backend para Werner Burger
 
-Este backend es un scaffold mínimo que usa `@supabase/supabase-js` para conectar con la base de datos de Supabase.
+Este backend expone endpoints para productos, sucursales, inventario, órdenes y alertas usando Supabase.
 
 Variables de entorno requeridas:
 
-- `SUPABASE_URL`
-- `SUPABASE_KEY`
+- `SUPABASE_URL=https://yelkwbdxncitagmnnxat.supabase.co`
+- `SUPABASE_SERVICE_ROLE_KEY=tu_clave_service_role`
+- `PORT=5174`
 
 Desarrollo:
 
@@ -31,5 +32,6 @@ Otros endpoints:
 - `GET /reports/sales-summary` (query params: from, to)
 
 Despliegue recomendado:
- - Crear un servicio en Render que apunte al directorio `server/` y configure `SUPABASE_URL` y `SUPABASE_KEY` como secrets.
- - Configurar Vercel para desplegar el frontend y establecer `API_BASE` si necesitas un dominio del backend.
+ - Desplegar la carpeta `server/` en Vercel como un proyecto separado o en Render.
+ - Configurar `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` como secrets/variables de entorno.
+ - Si el frontend está en Vercel, usar el dominio del backend en un archivo de configuración o proxy.
