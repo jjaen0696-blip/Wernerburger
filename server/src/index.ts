@@ -3,7 +3,22 @@ import cors from 'cors';
 import { createClient } from '@supabase/supabase-js';
 
 const app = express();
-app.use(cors());
+// CORS: permitir orígenes configurables; por defecto permitir Vercel y el propio dominio
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'https://wernerburger.vercel.app,https://wernerburger.onrender.com,http://localhost:5174').split(',');
+const corsOptions: import('cors').CorsOptions = {
+  origin: (origin, callback) => {
+    // Si no hay origin (p. ej. llamadas desde Postman o server-side), permitir
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) return callback(null, true);
+    return callback(new Error('Not allowed by CORS'));
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json());
 app.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
   if (err instanceof SyntaxError && 'body' in err) {

@@ -125,6 +125,70 @@
       "username": "operador1",
       "password_hash": null,
       "created_at": "2026-07-06T21:08:05.600Z"
+    },
+    {
+      "id": "2febd4d5-3a7e-4494-819d-9dcb7c604365",
+      "email": "admin@local",
+      "username": "admin",
+      "password_hash": "admin123",
+      "branch_id": "branch-1",
+      "created_at": "2026-07-06T21:31:12.440Z"
+    },
+    {
+      "id": "28efbc87-10b7-4388-bf07-31165e89058f",
+      "email": "mgr@local",
+      "username": "manager1",
+      "password_hash": "pass123",
+      "branch_id": "branch-1",
+      "created_at": "2026-07-06T21:31:12.502Z"
+    },
+    {
+      "id": "a6f0b009-74e1-4f7c-97b4-34d9c86ee342",
+      "email": "cook@local",
+      "username": "kitchen1",
+      "password_hash": "pass123",
+      "branch_id": "branch-1",
+      "created_at": "2026-07-06T21:31:12.517Z"
+    },
+    {
+      "id": "48d69f71-3f09-4efb-9d42-f4e79a5c8d1c",
+      "email": "deli@local",
+      "username": "delivery1",
+      "password_hash": "pass123",
+      "branch_id": "branch-1",
+      "created_at": "2026-07-06T21:31:12.536Z"
+    },
+    {
+      "id": "73ea96b6-1da6-4b0f-aee5-f3d368c25e62",
+      "email": "admin@local",
+      "username": "admin",
+      "password_hash": "admin123",
+      "branch_id": "branch-1",
+      "created_at": "2026-07-06T21:31:17.020Z"
+    },
+    {
+      "id": "e328df2a-e048-4692-b3ec-4f7267b7402f",
+      "email": "mgr@local",
+      "username": "manager1",
+      "password_hash": "pass123",
+      "branch_id": "branch-1",
+      "created_at": "2026-07-06T21:31:17.067Z"
+    },
+    {
+      "id": "524ef140-e53d-4953-9174-81fb7f3bd577",
+      "email": "cook@local",
+      "username": "kitchen1",
+      "password_hash": "pass123",
+      "branch_id": "branch-1",
+      "created_at": "2026-07-06T21:31:17.083Z"
+    },
+    {
+      "id": "9fa0ca99-5df1-4956-abdd-4a778de6be07",
+      "email": "deli@local",
+      "username": "delivery1",
+      "password_hash": "pass123",
+      "branch_id": "branch-1",
+      "created_at": "2026-07-06T21:31:17.104Z"
     }
   ],
   "roles": [],
