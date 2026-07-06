@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Werner Burger logo">
+  <rect width="64" height="64" rx="16" fill="#0f172a"/>
+  <rect x="14" y="18" width="36" height="18" rx="8" fill="#f59e0b"/>
+  <rect x="12" y="24" width="40" height="10" rx="5" fill="#fb923c"/>
+  <rect x="18" y="30" width="28" height="8" rx="4" fill="#fde68a"/>
+  <path d="M20 40h24" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>
+  <text x="32" y="49" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700" fill="#ffffff">WB</text>
+</svg>
