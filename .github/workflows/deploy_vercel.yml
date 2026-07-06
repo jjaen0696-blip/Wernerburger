@@ -1,0 +1,40 @@
+name: Deploy to Vercel
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  deploy-production:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Deploy to Vercel (production)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          args=(--token="$VERCEL_TOKEN" --yes --prod --prebuilt)
+          if [ -n "$VERCEL_ORG_ID" ]; then
+            args+=(--scope="$VERCEL_ORG_ID")
+          fi
+          if [ -n "$VERCEL_PROJECT_ID" ]; then
+            args+=(--project="$VERCEL_PROJECT_ID")
+          fi
+          npx vercel deploy "${args[@]}"
