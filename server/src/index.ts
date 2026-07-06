@@ -27,6 +27,17 @@ if (USE_LOCAL_SQLITE) {
   }
 }
 
+function ensureDefaultBranch() {
+  if (!USE_LOCAL_SQLITE || !localDb) return;
+  const rows = localDb.prepare('SELECT * FROM branches ORDER BY name').all();
+  if (rows.length === 0) {
+    const branchId = require('crypto').randomUUID();
+    localDb.prepare('INSERT INTO branches(id, name) VALUES(?, ?)').run(branchId, 'Sucursal Principal');
+  }
+}
+
+ensureDefaultBranch();
+
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
 app.get('/products', async (_req, res) => {
@@ -50,6 +61,32 @@ app.get('/ingredients', async (_req, res) => {
       return res.json(rows);
     }
     const { data, error } = await supabase.from('ingredients').select('*').order('name');
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/ingredients', async (req, res) => {
+  try {
+    const payload = req.body || {};
+    const name = String(payload.name || '').trim();
+    if (!name) return res.status(400).json({ error: 'Nombre requerido' });
+    if (USE_LOCAL_SQLITE) {
+      const id = require('crypto').randomUUID();
+      const now = new Date().toISOString();
+      localDb.prepare('INSERT INTO ingredients(id, name, unit, created_at) VALUES(?,?,?,?)').run(id, name, payload.unit || 'unidad', now);
+      const initialStock = Number(payload.initial_stock || 0);
+      if (payload.branch_id && initialStock > 0) {
+        const invId = `${payload.branch_id}::${id}`;
+        localDb.prepare('INSERT INTO inventory(id, branch_id, ingredient_id, qty, unit, updated_at) VALUES(?,?,?,?,?,?)').run(invId, payload.branch_id, id, initialStock, payload.unit || 'unidad', now);
+        localDb.prepare('INSERT INTO inventory_movements(id, branch_id, ingredient_id, change, reason, created_at) VALUES(?,?,?,?,?,?)').run(require('crypto').randomUUID(), payload.branch_id, id, initialStock, 'initial', now);
+      }
+      const row = localDb.prepare('SELECT * FROM ingredients WHERE id = ?').get(id);
+      return res.json(row);
+    }
+    const { data, error } = await supabase.from('ingredients').insert([{ name, unit: payload.unit || 'unidad' }]).select().single();
     if (error) return res.status(500).json({ error: error.message });
     res.json(data);
   } catch (err: any) {
@@ -168,6 +205,34 @@ app.get('/inventory/:branchId', async (req, res) => {
   }
 });
 
+app.post('/inventory/:branchId/adjust', async (req, res) => {
+  try {
+    const { branchId } = req.params;
+    const payload = req.body || {};
+    const change = Number(payload.change || 0);
+    const ingredientId = payload.ingredient_id;
+    if (!ingredientId) return res.status(400).json({ error: 'Selecciona un ingrediente' });
+    if (USE_LOCAL_SQLITE) {
+      const now = new Date().toISOString();
+      const invId = `${branchId}::${ingredientId}`;
+      const existing = localDb.prepare('SELECT * FROM inventory WHERE id = ?').get(invId);
+      if (existing) {
+        localDb.prepare('UPDATE inventory SET qty = qty + ?, updated_at = ? WHERE id = ?').run(change, now, invId);
+      } else {
+        localDb.prepare('INSERT INTO inventory(id, branch_id, ingredient_id, qty, unit, updated_at) VALUES(?,?,?,?,?,?)').run(invId, branchId, ingredientId, change, payload.unit || 'unidad', now);
+      }
+      localDb.prepare('INSERT INTO inventory_movements(id, branch_id, ingredient_id, change, reason, created_at) VALUES(?,?,?,?,?,?)').run(require('crypto').randomUUID(), branchId, ingredientId, change, payload.reason || 'ajuste', now);
+      const row = localDb.prepare('SELECT * FROM inventory WHERE id = ?').get(invId);
+      return res.json(row);
+    }
+    const { data, error } = await supabase.from('inventory').upsert([{ branch_id: branchId, ingredient_id: ingredientId, qty: change }], { onConflict: 'branch_id,ingredient_id' }).select().single();
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/purchases', async (req, res) => {
   try {
     const payload = req.body;
@@ -275,23 +340,36 @@ app.get('/alerts', async (_req, res) => {
 
 // Simple sales summary endpoint (ventas por sucursal en rango de fechas)
 app.get('/reports/sales-summary', async (req, res) => {
-  const { from, to } = req.query as any;
-  // Consulta simplificada: total por sucursal entre fechas
-  const query = supabase.from('orders').select('branch_id, total, created_at');
-  let q = query;
-  if (from) q = q.gte('created_at', from);
-  if (to) q = q.lte('created_at', to);
-  const { data, error } = await q;
-  if (error) return res.status(500).json({ error: error.message });
-  // Agrupar en Node (simple)
-  const summary: Record<string, { branch_id: string; total: number; count: number }> = {};
-  (data || []).forEach((o: any) => {
-    const b = o.branch_id || 'unassigned';
-    if (!summary[b]) summary[b] = { branch_id: b, total: 0, count: 0 };
-    summary[b].total += parseFloat(o.total);
-    summary[b].count += 1;
-  });
-  res.json(Object.values(summary));
+  try {
+    if (USE_LOCAL_SQLITE) {
+      const rows = localDb.prepare('SELECT * FROM orders ORDER BY created_at').all();
+      const summary: Record<string, { branch_id: string; total: number; count: number }> = {};
+      (rows || []).forEach((o: any) => {
+        const b = o.branch_id || 'unassigned';
+        if (!summary[b]) summary[b] = { branch_id: b, total: 0, count: 0 };
+        summary[b].total += parseFloat(o.total || 0);
+        summary[b].count += 1;
+      });
+      return res.json(Object.values(summary));
+    }
+    const { from, to } = req.query as any;
+    const query = supabase.from('orders').select('branch_id, total, created_at');
+    let q = query;
+    if (from) q = q.gte('created_at', from);
+    if (to) q = q.lte('created_at', to);
+    const { data, error } = await q;
+    if (error) return res.status(500).json({ error: error.message });
+    const summary: Record<string, { branch_id: string; total: number; count: number }> = {};
+    (data || []).forEach((o: any) => {
+      const b = o.branch_id || 'unassigned';
+      if (!summary[b]) summary[b] = { branch_id: b, total: 0, count: 0 };
+      summary[b].total += parseFloat(o.total);
+      summary[b].count += 1;
+    });
+    res.json(Object.values(summary));
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5174;

@@ -38,6 +38,7 @@ function matchQuery(sql: string) {
   if (s.includes('from branches')) return 'branches';
   if (s.includes('from roles')) return 'roles';
   if (s.includes('from users')) return 'users';
+  if (s.includes('from orders')) return 'orders';
   if (s.includes('from inventory i')) return 'inventory_with_ingredient';
   if (s.includes('from purchases where id')) return 'purchases_by_id';
   if (s.includes('from order_items where order_id')) return 'order_items_by_order';
@@ -57,6 +58,7 @@ const api = {
         if (key === 'branches') return state.branches.slice().sort((a: any, b: any) => (a.name || '').localeCompare(b.name || ''));
         if (key === 'roles') return state.roles.slice();
         if (key === 'users') return state.users.slice();
+        if (key === 'orders') return state.orders.slice().sort((a: any, b: any) => (a.created_at || '').localeCompare(b.created_at || ''));
         if (key === 'inventory_with_ingredient') return state.inventory.filter((i: any) => i.branch_id === params[0]).map((i: any) => ({ ...i, ingredient_name: (state.ingredients.find((ing: any) => ing.id === i.ingredient_id) || {}).name }));
         if (key === 'order_items_by_order') return state.order_items.filter((oi: any) => oi.order_id === params[0]);
         if (key === 'recipe_items_by_product') return state.recipe_items.filter((ri: any) => ri.product_id === params[0]);
@@ -69,10 +71,23 @@ const api = {
         if (s.includes('where id = ?') && s.includes('from orders')) return state.orders.find((o: any) => o.id === params[0]);
         if (s.includes('from inventory where id = ?')) return state.inventory.find((i: any) => i.id === params[0]);
         if (s.includes('from roles where id = ?')) return state.roles.find((r: any) => r.id === params[0]);
+        if (s.includes('from ingredients where id = ?')) return state.ingredients.find((item: any) => item.id === params[0]);
         return undefined;
       },
       run: (...params: any[]) => {
         const s = sql.toLowerCase();
+        if (s.startsWith('insert into branches')) {
+          const [id, name] = params;
+          state.branches.push({ id, name });
+          persist();
+          return { changes: 1 };
+        }
+        if (s.startsWith('insert into ingredients')) {
+          const [id, name, unit, created_at] = params;
+          state.ingredients.push({ id, name, unit, created_at });
+          persist();
+          return { changes: 1 };
+        }
         if (s.startsWith('insert into roles')) {
           const [id, name, description] = params;
           state.roles.push({ id, name, description });
@@ -138,6 +153,17 @@ const api = {
           const inv = state.inventory.find((i: any) => i.id === id);
           if (inv) {
             inv.qty = inv.qty - decrement;
+            inv.updated_at = updated_at;
+            persist();
+            return { changes: 1 };
+          }
+          return { changes: 0 };
+        }
+        if (s.startsWith('update inventory set qty = qty +')) {
+          const [increment, updated_at, id] = params;
+          const inv = state.inventory.find((i: any) => i.id === id);
+          if (inv) {
+            inv.qty = inv.qty + increment;
             inv.updated_at = updated_at;
             persist();
             return { changes: 1 };

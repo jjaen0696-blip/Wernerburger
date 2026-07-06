@@ -13,6 +13,12 @@
     {
       "id": "ing-meat",
       "name": "Carne"
+    },
+    {
+      "id": "d799945d-b723-4d28-9a91-02f92663daee",
+      "name": "Tomate",
+      "unit": "kg",
+      "created_at": "2026-07-06T20:28:23.438Z"
     }
   ],
   "products": [
@@ -68,6 +74,30 @@
       "qty": -0.4,
       "unit": "sale",
       "updated_at": "2026-07-06T06:54:41.337Z"
+    },
+    {
+      "id": "branch-1::d799945d-b723-4d28-9a91-02f92663daee",
+      "branch_id": "branch-1",
+      "ingredient_id": "d799945d-b723-4d28-9a91-02f92663daee",
+      "qty": 22,
+      "unit": "kg",
+      "updated_at": "2026-07-06T20:28:23.505Z"
+    },
+    {
+      "id": "349b5331-4012-4b54-aedb-9deaf9d727c7",
+      "branch_id": "branch-1",
+      "ingredient_id": "d799945d-b723-4d28-9a91-02f92663daee",
+      "qty": 12,
+      "unit": "initial",
+      "updated_at": "2026-07-06T20:28:23.438Z"
+    },
+    {
+      "id": "11aa2aaa-0989-41e3-b237-cc7b098d0193",
+      "branch_id": "branch-1",
+      "ingredient_id": "d799945d-b723-4d28-9a91-02f92663daee",
+      "qty": 10,
+      "unit": "purchase",
+      "updated_at": "2026-07-06T20:28:23.505Z"
     }
   ],
   "inventory_movements": [],
@@ -91,6 +121,22 @@
   "users": [],
   "roles": [],
   "user_roles": [],
-  "purchases": [],
-  "purchase_items": []
+  "purchases": [
+    {
+      "id": "06813f5a-cef0-4e5c-905f-01a1b63da767",
+      "branch_id": "branch-1",
+      "user_id": "admin",
+      "total": 120,
+      "created_at": "2026-07-06T20:28:23.505Z"
+    }
+  ],
+  "purchase_items": [
+    {
+      "id": "8d9aea5b-3981-4ef3-aba7-6f53f69db6b6",
+      "purchase_id": "06813f5a-cef0-4e5c-905f-01a1b63da767",
+      "ingredient_id": "d799945d-b723-4d28-9a91-02f92663daee",
+      "quantity": 10,
+      "unit_price": 12
+    }
+  ]
 }
