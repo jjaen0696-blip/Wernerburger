@@ -8,14 +8,14 @@ export default function HeroPremium({ value, onChange }: { value?: string; onCha
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: 'easeOut' }}
-      className="relative overflow-hidden py-20 sm:py-24 lg:py-28 min-h-[34rem] hero-premium"
+      className="relative overflow-hidden py-20 sm:py-24 lg:py-28 min-h-[34rem] sm:min-h-[40rem] lg:min-h-[46rem] hero-premium"
     >
       <div className="absolute inset-0">
         <img
           src="/WhatsApp%20Image%202026-07-05%20at%205.19.24%20PM.jpeg"
           alt="Fondo"
-          className="w-full h-full object-cover object-center scale-110"
-          style={{ objectPosition: '82% 45%' }}
+          className="h-full w-full object-cover object-center scale-100 sm:scale-105"
+          style={{ objectPosition: 'center 35%' }}
         />
         <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/45 to-transparent" />
         <div className="hero-ambient" />
