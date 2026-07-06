@@ -30,7 +30,8 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
-          args=(--token="$VERCEL_TOKEN" --yes --prod --prebuilt)
+          # Use normal Vercel deploy (no --prebuilt). Build already ran above.
+          args=(--token="$VERCEL_TOKEN" --yes --prod)
           if [ -n "$VERCEL_ORG_ID" ]; then
             args+=(--scope="$VERCEL_ORG_ID")
           fi
