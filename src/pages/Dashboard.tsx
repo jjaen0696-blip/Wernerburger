@@ -72,7 +72,11 @@ function StatCard({ label, value, hint, icon: Icon, accent }: { label: string; v
   );
 }
 
-export default function Dashboard() {
+interface DashboardProps {
+  currentUser?: { username?: string; branch_id?: string | null } | null;
+}
+
+export default function Dashboard({ currentUser }: DashboardProps) {
   const [section, setSection] = useState<Section>('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { orders } = useCart();
@@ -164,8 +168,8 @@ export default function Dashboard() {
                 <div className="flex items-center gap-3 rounded-[14px] border border-white/10 bg-white/5 px-2 py-2">
                   <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 font-black text-black">A</div>
                   <div>
-                    <p className="text-sm font-semibold text-white">Admin</p>
-                    <p className="text-xs text-gray-400">Operador premium</p>
+                    <p className="text-sm font-semibold text-white">{currentUser?.username || 'Admin'}</p>
+                    <p className="text-xs text-gray-400">{currentUser?.branch_id ? 'Sucursal asignada' : 'Operador premium'}</p>
                   </div>
                 </div>
               </div>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CartProvider } from './context/CartContext';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -10,32 +10,75 @@ import POS from './pages/POS';
 import Dashboard from './pages/Dashboard';
 
 type Page = 'home' | 'menu' | 'kitchen' | 'delivery' | 'admin' | 'pos' | 'dashboard';
+type UserRole = 'admin' | 'manager' | 'kitchen' | 'delivery';
+type UserSession = { id?: string; username: string; branch_id?: string | null; role?: UserRole };
+
+const API_BASE = import.meta.env.VITE_API_BASE || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://127.0.0.1:5174' : 'https://wernerburger.onrender.com');
+const api = (path: string) => `${API_BASE}${path}`;
 
 function App() {
   const [page, setPage] = useState<Page>('home');
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginName, setLoginName] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-  const [user, setUser] = useState<{ username: string } | null>(null);
+  const [user, setUser] = useState<UserSession | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      return JSON.parse(localStorage.getItem('werner-user') || 'null');
+    } catch {
+      return null;
+    }
+  });
+
+  const getPageForRole = (role?: UserRole) => {
+    switch (role) {
+      case 'manager':
+        return 'pos' as Page;
+      case 'kitchen':
+        return 'kitchen' as Page;
+      case 'delivery':
+        return 'delivery' as Page;
+      case 'admin':
+      default:
+        return 'dashboard' as Page;
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem('werner-user', JSON.stringify(user));
+      if (user.branch_id) localStorage.setItem('werner-branch', user.branch_id);
+      setPage(getPageForRole(user.role));
+    } else {
+      localStorage.removeItem('werner-user');
+      localStorage.removeItem('werner-branch');
+    }
+  }, [user]);
 
   const navigate = (p: Page) => {
     setPage(p);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleLoginSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleLoginSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const validUser = loginName.trim() === 'Fisura' && loginPassword === 'Josecod10';
-    if (!validUser) {
-      alert('Usuario o contraseña incorrectos. Usa Fisura / Josecod10');
-      return;
-    }
+    try {
+      const response = await fetch(api('/login'), {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ username: loginName.trim(), password: loginPassword }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Usuario o contraseña incorrectos');
 
-    setUser({ username: 'Fisura' });
-    setLoginOpen(false);
-    setLoginName('');
-    setLoginPassword('');
-    setPage('dashboard');
+      setUser({ id: data.id, username: data.username, branch_id: data.branch_id || null, role: data.role || 'admin' });
+      setLoginOpen(false);
+      setLoginName('');
+      setLoginPassword('');
+      setPage(getPageForRole(data.role || 'admin'));
+    } catch (error: any) {
+      alert(error.message || 'No se pudo iniciar sesión');
+    }
   };
 
   return (
@@ -54,7 +97,7 @@ function App() {
         {loginOpen && (
           <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 p-4">
             <div className="w-full max-w-md rounded-[2rem] border border-amber-400/20 bg-[#080706]/95 p-6 shadow-[0_30px_80px_rgba(0,0,0,0.65)] backdrop-blur-xl">
-              <div className="flex items-center justify-between mb-6">
+              <div className="mb-6 flex items-center justify-between">
                 <div>
                   <p className="text-sm uppercase tracking-[0.35em] text-amber-300/80">Bienvenido</p>
                   <h2 className="text-2xl font-black text-white">Inicia sesión</h2>
@@ -106,9 +149,9 @@ function App() {
             : page === 'menu' ? <Menu />
             : page === 'kitchen' ? <Kitchen onNavigate={navigate} />
             : page === 'delivery' ? <Delivery />
-            : page === 'admin' ? <Admin />
-            : page === 'dashboard' ? <Dashboard />
-            : <POS />}
+            : page === 'admin' ? <Admin currentUser={user} />
+            : page === 'dashboard' ? <Dashboard currentUser={user} />
+            : <POS currentUser={user} />}
         </main>
         {(page === 'home' || page === 'menu') && <Footer />}
       </div>

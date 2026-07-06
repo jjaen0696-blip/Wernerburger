@@ -5,6 +5,12 @@ import { createClient } from '@supabase/supabase-js';
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (err instanceof SyntaxError && 'body' in err) {
+    return res.status(400).json({ error: 'JSON inválido' });
+  }
+  next(err);
+});
 
 const USE_LOCAL_SQLITE = process.env.USE_LOCAL_SQLITE === '1' || (!process.env.SUPABASE_URL && !process.env.SUPABASE_SERVICE_ROLE_KEY && !process.env.SUPABASE_KEY);
 
@@ -27,16 +33,34 @@ if (USE_LOCAL_SQLITE) {
   }
 }
 
+function normalizeRole(value?: string | null) {
+  const role = String(value || '').toLowerCase();
+  if (role === 'admin' || role === 'manager' || role === 'kitchen' || role === 'delivery') return role;
+  return 'manager';
+}
+
 function ensureDefaultBranch() {
   if (!USE_LOCAL_SQLITE || !localDb) return;
   const rows = localDb.prepare('SELECT * FROM branches ORDER BY name').all();
   if (rows.length === 0) {
     const branchId = require('crypto').randomUUID();
-    localDb.prepare('INSERT INTO branches(id, name) VALUES(?, ?)').run(branchId, 'Sucursal Principal');
+    localDb.prepare('INSERT INTO branches(id, name, address, is_closed) VALUES(?,?,?,?)').run(branchId, 'Sucursal Principal', 'Centro', false);
+  }
+}
+
+function ensureDefaultUser() {
+  if (!USE_LOCAL_SQLITE || !localDb) return;
+  const users = localDb.prepare('SELECT * FROM users ORDER BY created_at').all();
+  if (users.length === 0) {
+    const branch = localDb.prepare('SELECT * FROM branches ORDER BY name').all()[0];
+    const userId = require('crypto').randomUUID();
+    const now = new Date().toISOString();
+    localDb.prepare('INSERT INTO users(id, email, username, password_hash, branch_id, role, created_at) VALUES(?,?,?,?,?,?,?)').run(userId, 'admin@werner.com', 'admin', 'admin123', branch?.id || null, 'admin', now);
   }
 }
 
 ensureDefaultBranch();
+ensureDefaultUser();
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
@@ -108,6 +132,67 @@ app.get('/branches', async (_req, res) => {
   }
 });
 
+app.post('/branches', async (req, res) => {
+  try {
+    const payload = req.body || {};
+    const name = String(payload.name || '').trim();
+    if (!name) return res.status(400).json({ error: 'Nombre requerido' });
+    if (USE_LOCAL_SQLITE) {
+      const id = require('crypto').randomUUID();
+      localDb.prepare('INSERT INTO branches(id, name, address, is_closed) VALUES(?,?,?,?)').run(id, name, payload.address || '', Boolean(payload.is_closed));
+      const row = localDb.prepare('SELECT * FROM branches WHERE id = ?').get(id);
+      return res.json(row);
+    }
+    const { data, error } = await supabase.from('branches').insert([{ name, address: payload.address || '', is_closed: Boolean(payload.is_closed) }]).select().single();
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.patch('/branches/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const payload = req.body || {};
+    if (USE_LOCAL_SQLITE) {
+      const existing = localDb.prepare('SELECT * FROM branches WHERE id = ?').get(id);
+      if (!existing) return res.status(404).json({ error: 'Sucursal no encontrada' });
+      const name = String(payload.name || existing.name || '').trim();
+      const address = String(payload.address ?? existing.address ?? '');
+      const isClosed = Boolean(payload.is_closed ?? existing.is_closed);
+      localDb.prepare('UPDATE branches SET name = ?, address = ?, is_closed = ? WHERE id = ?').run(name, address, isClosed, id);
+      const row = localDb.prepare('SELECT * FROM branches WHERE id = ?').get(id);
+      return res.json(row);
+    }
+    const { data, error } = await supabase.from('branches').update({ name: payload.name, address: payload.address, is_closed: payload.is_closed }).eq('id', id).select().single();
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/login', async (req, res) => {
+  try {
+    const payload = req.body || {};
+    const username = String(payload.username || '').trim();
+    const password = String(payload.password || '');
+    if (!username || !password) return res.status(400).json({ error: 'Usuario y contraseña requeridos' });
+    if (USE_LOCAL_SQLITE) {
+      const user = localDb.prepare('SELECT * FROM users WHERE username = ?').get(username);
+      if (!user || user.password_hash !== password) return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
+      return res.json({ id: user.id, username: user.username, branch_id: user.branch_id || null, role: normalizeRole(user.role) });
+    }
+    const { data, error } = await supabase.from('users').select('*').eq('username', username).single();
+    if (error) return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
+    if (data.password_hash !== password) return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
+    res.json({ id: data.id, username: data.username, branch_id: data.branch_id || null, role: normalizeRole(data.role) });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Users and roles endpoints (admin)
 app.get('/roles', async (_req, res) => {
   try {
@@ -156,15 +241,17 @@ app.get('/users', async (_req, res) => {
 
 app.post('/users', async (req, res) => {
   try {
-    const payload = req.body; // { email, username, password_hash }
+    const payload = req.body || {};
     if (USE_LOCAL_SQLITE) {
       const id = require('crypto').randomUUID();
       const now = new Date().toISOString();
-      localDb.prepare('INSERT INTO users(id, email, username, password_hash, created_at) VALUES(?,?,?,?,?)').run(id, payload.email, payload.username, payload.password_hash || null, now);
+      const password = payload.password || payload.password_hash || null;
+      const role = normalizeRole(payload.role);
+      localDb.prepare('INSERT INTO users(id, email, username, password_hash, branch_id, role, created_at) VALUES(?,?,?,?,?,?,?)').run(id, payload.email || null, payload.username, password, payload.branch_id || null, role, now);
       const row = localDb.prepare('SELECT * FROM users WHERE id = ?').get(id);
       return res.json(row);
     }
-    const { data, error } = await supabase.from('users').insert([payload]).select().single();
+    const { data, error } = await supabase.from('users').insert([{ ...payload, role: normalizeRole(payload.role), password_hash: payload.password || payload.password_hash || null }]).select().single();
     if (error) return res.status(500).json({ error: error.message });
     res.json(data);
   } catch (err: any) {

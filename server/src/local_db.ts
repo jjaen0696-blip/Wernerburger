@@ -41,6 +41,8 @@ function matchQuery(sql: string) {
   if (s.includes('from orders')) return 'orders';
   if (s.includes('from inventory i')) return 'inventory_with_ingredient';
   if (s.includes('from purchases where id')) return 'purchases_by_id';
+  if (s.includes('from users where username = ?')) return 'user_by_username';
+  if (s.includes('from branches where id = ?')) return 'branch_by_id';
   if (s.includes('from order_items where order_id')) return 'order_items_by_order';
   if (s.includes('from recipe_items where product_id')) return 'recipe_items_by_product';
   if (s.includes('from inventory where id =')) return 'inventory_by_id';
@@ -72,13 +74,15 @@ const api = {
         if (s.includes('from inventory where id = ?')) return state.inventory.find((i: any) => i.id === params[0]);
         if (s.includes('from roles where id = ?')) return state.roles.find((r: any) => r.id === params[0]);
         if (s.includes('from ingredients where id = ?')) return state.ingredients.find((item: any) => item.id === params[0]);
+        if (s.includes('from users where username = ?')) return state.users.find((user: any) => user.username === params[0]);
+        if (s.includes('from branches where id = ?')) return state.branches.find((branch: any) => branch.id === params[0]);
         return undefined;
       },
       run: (...params: any[]) => {
         const s = sql.toLowerCase();
         if (s.startsWith('insert into branches')) {
-          const [id, name] = params;
-          state.branches.push({ id, name });
+          const [id, name, address, is_closed] = params;
+          state.branches.push({ id, name, address: address || '', is_closed: Boolean(is_closed) });
           persist();
           return { changes: 1 };
         }
@@ -95,8 +99,8 @@ const api = {
           return { changes: 1 };
         }
         if (s.startsWith('insert into users')) {
-          const [id, email, username, password_hash, created_at] = params;
-          state.users.push({ id, email, username, password_hash, created_at });
+          const [id, email, username, password_hash, branch_id, role, created_at] = params;
+          state.users.push({ id, email, username, password_hash, branch_id: branch_id || null, role: role || 'manager', created_at });
           persist();
           return { changes: 1 };
         }
@@ -165,6 +169,18 @@ const api = {
           if (inv) {
             inv.qty = inv.qty + increment;
             inv.updated_at = updated_at;
+            persist();
+            return { changes: 1 };
+          }
+          return { changes: 0 };
+        }
+        if (s.startsWith('update branches set')) {
+          const [name, address, is_closed, id] = params;
+          const branch = state.branches.find((item: any) => item.id === id);
+          if (branch) {
+            branch.name = name;
+            branch.address = address;
+            branch.is_closed = Boolean(is_closed);
             persist();
             return { changes: 1 };
           }

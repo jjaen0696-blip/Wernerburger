@@ -118,7 +118,15 @@
       "qty": 2
     }
   ],
-  "users": [],
+  "users": [
+    {
+      "id": "17d2e0b3-4019-49aa-9d6c-b529785d5747",
+      "email": "op@test.com",
+      "username": "operador1",
+      "password_hash": null,
+      "created_at": "2026-07-06T21:08:05.600Z"
+    }
+  ],
   "roles": [],
   "user_roles": [],
   "purchases": [

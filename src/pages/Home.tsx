@@ -1,21 +1,21 @@
 import { useEffect, useState } from 'react';
-import { MapPin, ChevronDown, Check, Truck, Award, Heart, Flame } from 'lucide-react';
+import { MapPin, ChevronDown, Check, Truck, Award, Heart, Flame, Lock } from 'lucide-react';
 
 interface HomeProps {
   onNavigate: (page: 'home' | 'menu') => void;
 }
 
 const BRANCHES = [
-  { id: 'wb1', name: 'WernerBurger 1', address: 'Sucursal 1' },
-  { id: 'wb2', name: 'WernerBurger 2', address: 'Sucursal 2' },
-  { id: 'wb3', name: 'WernerBurger 3', address: 'Sucursal 3' },
-  { id: 'wb4', name: 'WernerBurger 4', address: 'Sucursal 4' },
-  { id: 'wb5', name: 'WernerBurger 5', address: 'Sucursal 5' },
-  { id: 'wb6', name: 'WernerBurger 6', address: 'Sucursal 6' },
-  { id: 'wb7', name: 'WernerBurger 7', address: 'Sucursal 7' },
+  { id: 'wb1', name: 'WernerBurger 1', address: 'Sucursal 1', is_closed: false },
+  { id: 'wb2', name: 'WernerBurger 2', address: 'Sucursal 2', is_closed: false },
+  { id: 'wb3', name: 'WernerBurger 3', address: 'Sucursal 3', is_closed: true },
+  { id: 'wb4', name: 'WernerBurger 4', address: 'Sucursal 4', is_closed: false },
+  { id: 'wb5', name: 'WernerBurger 5', address: 'Sucursal 5', is_closed: false },
+  { id: 'wb6', name: 'WernerBurger 6', address: 'Sucursal 6', is_closed: false },
+  { id: 'wb7', name: 'WernerBurger 7', address: 'Sucursal 7', is_closed: true },
 ];
 
-type Branch = { id: string; name: string; address: string };
+type Branch = { id: string; name: string; address: string; is_closed?: boolean };
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'https://wernerburger.onrender.com';
 const api = (path: string) => `${API_BASE}${path}`;
@@ -26,6 +26,7 @@ export default function Home({ onNavigate }: HomeProps) {
   const [selected, setSelected] = useState<Branch | null>(BRANCHES[0] || null);
 
   useEffect(() => {
+    const storedBranchId = typeof window !== 'undefined' ? localStorage.getItem('werner-branch') : null;
     fetch(api('/branches'))
       .then((response) => {
         if (!response.ok) throw new Error('Unable to load branches');
@@ -34,22 +35,26 @@ export default function Home({ onNavigate }: HomeProps) {
       .then((data: Branch[]) => {
         if (Array.isArray(data) && data.length > 0) {
           setBranches(data);
-          setSelected(data[0]);
+          const assigned = data.find((branch) => branch.id === storedBranchId);
+          const firstOpen = data.find((branch) => !branch.is_closed);
+          setSelected(assigned && !assigned.is_closed ? assigned : firstOpen || data[0] || null);
         }
       })
       .catch(() => {
         setBranches(BRANCHES);
-        setSelected(BRANCHES[0] || null);
+        const assigned = BRANCHES.find((branch) => branch.id === storedBranchId);
+        setSelected(assigned && !assigned.is_closed ? assigned : BRANCHES.find((branch) => !branch.is_closed) || BRANCHES[0] || null);
       });
   }, []);
 
   const handleSelect = (branch: Branch) => {
+    if (branch.is_closed) return;
     setSelected(branch);
     setOpen(false);
   };
 
   const handleContinue = () => {
-    if (selected) onNavigate('menu');
+    if (selected && !selected.is_closed) onNavigate('menu');
   };
 
   return (
@@ -143,23 +148,27 @@ export default function Home({ onNavigate }: HomeProps) {
                           {branches.map(branch => (
                             <button
                               key={branch.id}
+                              disabled={branch.is_closed}
                               onClick={() => handleSelect(branch)}
                               className={`w-full flex items-center gap-3 rounded-[1.75rem] border px-4 py-4 text-left transition-all duration-300 ${
-                                selected?.id === branch.id
-                                  ? 'bg-amber-500/15 border-amber-400/30 text-white shadow-[0_12px_35px_rgba(245,158,11,0.18)]'
-                                  : 'border-white/10 bg-white/5 text-gray-200 hover:border-amber-400/40 hover:bg-white/10'
+                                branch.is_closed
+                                  ? 'border-rose-500/25 bg-rose-500/10 text-gray-300 opacity-80'
+                                  : selected?.id === branch.id
+                                    ? 'bg-amber-500/15 border-amber-400/30 text-white shadow-[0_12px_35px_rgba(245,158,11,0.18)]'
+                                    : 'border-white/10 bg-white/5 text-gray-200 hover:border-amber-400/40 hover:bg-white/10'
                               }`}
                             >
-                              <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${selected?.id === branch.id ? 'bg-amber-400/20' : 'bg-white/10'}`}>
-                                <MapPin className={`w-5 h-5 ${selected?.id === branch.id ? 'text-amber-300' : 'text-gray-300'}`} />
+                              <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${branch.is_closed ? 'bg-rose-500/20' : selected?.id === branch.id ? 'bg-amber-400/20' : 'bg-white/10'}`}>
+                                {branch.is_closed ? <Lock className="w-5 h-5 text-rose-300" /> : <MapPin className={`w-5 h-5 ${selected?.id === branch.id ? 'text-amber-300' : 'text-gray-300'}`} />}
                               </div>
                               <div className="min-w-0 flex-1">
                                 <div className="text-sm font-black uppercase tracking-[0.18em] text-white">
                                   {branch.name}
                                 </div>
                                 <div className={`text-[11px] ${selected?.id === branch.id ? 'text-amber-100/90' : 'text-gray-400'} truncate`}>{branch.address}</div>
+                                {branch.is_closed && <div className="mt-1 inline-flex items-center rounded-full bg-rose-500/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-rose-200">Cerrado por hoy</div>}
                               </div>
-                              {selected?.id === branch.id && <Check className="w-4 h-4 text-amber-300 shrink-0" />}
+                              {!branch.is_closed && selected?.id === branch.id && <Check className="w-4 h-4 text-amber-300 shrink-0" />}
                             </button>
                           ))}
                         </div>
@@ -171,7 +180,7 @@ export default function Home({ onNavigate }: HomeProps) {
 
               <button
                 onClick={handleContinue}
-                disabled={!selected}
+                disabled={!selected || selected.is_closed}
                 className="mt-4 w-full inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-amber-500 text-stone-950 font-black hover:bg-amber-400 transition-all hover:scale-[1.02] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-[0_0_24px_rgba(245,158,11,0.25)]"
               >
                 PEDIR AHORA
