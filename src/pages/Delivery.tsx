@@ -25,14 +25,13 @@ export default function Delivery() {
             </div>
           </div>
           <p className="mt-3 max-w-2xl text-gray-300">Solo los repartidores ven esta pantalla. Acepta pedidos asignados y marca el estado de entrega.</p>
-          </div>
+        </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-6">
-              <p className="text-sm uppercase tracking-[0.3em] text-fuchsia-200">Pendientes</p>
-              <p className="mt-3 text-3xl font-black text-white">{deliveryOrders.length}</p>
-              <p className="mt-2 text-sm text-gray-400">Pedidos asignados a delivery esperando que aceptes.</p>
-            </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-6">
+            <p className="text-sm uppercase tracking-[0.3em] text-fuchsia-200">Pendientes</p>
+            <p className="mt-3 text-3xl font-black text-white">{deliveryOrders.length}</p>
+            <p className="mt-2 text-sm text-gray-400">Pedidos asignados a delivery esperando que aceptes.</p>
           </div>
         </div>
 
