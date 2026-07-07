@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
-import { AlertTriangle, ArrowDownLeft, ArrowUpRight, PackageCheck, PlusCircle, Store, TrendingUp, Users, Warehouse } from 'lucide-react';
+import { AlertTriangle, ArrowDownLeft, ArrowUpRight, PackageCheck, PlusCircle, Store, TrendingUp, Users } from 'lucide-react';
 
 const API_BASE = import.meta.env.VITE_API_BASE || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://127.0.0.1:5174' : 'https://wernerburger.onrender.com');
 const api = (path: string) => `${API_BASE}${path}`;
@@ -18,7 +18,7 @@ export default function Admin() {
   const [branches, setBranches] = useState<Branch[]>([]);
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
-  const [users, setUsers] = useState<UserRecord[]>([]);
+  const [, setUsers] = useState<UserRecord[]>([]);
   const [branchId, setBranchId] = useState('');
   const [ingredientName, setIngredientName] = useState('');
   const [ingredientUnit, setIngredientUnit] = useState('unidad');
@@ -57,14 +57,14 @@ export default function Admin() {
   const loadData = async (selectedBranchId?: string) => {
     try {
       const token = getAccessToken();
-      const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
+      const authHeaders = token ? { Authorization: `Bearer ${token}` } : undefined;
 
       const [branchesRes, ingredientsRes, alertsRes, summaryRes, usersRes] = await Promise.all([
         fetch(api('/branches')),
         fetch(api('/ingredients')),
-        fetch(api('/alerts'), { headers: { ...authHeaders } }),
-        fetch(api('/reports/sales-summary'), { headers: { ...authHeaders } }),
-        fetch(api('/users'), { headers: { ...authHeaders } }),
+        fetch(api('/alerts'), { headers: authHeaders }),
+        fetch(api('/reports/sales-summary'), { headers: authHeaders }),
+        fetch(api('/users'), { headers: authHeaders }),
       ]);
       const branchesData = await branchesRes.json();
       const ingredientsData = await ingredientsRes.json();

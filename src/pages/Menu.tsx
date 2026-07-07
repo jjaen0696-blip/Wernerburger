@@ -1,29 +1,20 @@
-import React, { useMemo, useState, useEffect, type FormEvent } from 'react';
+import { useMemo, useState, useEffect, type FormEvent } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Plus,
   Trash2,
-  ShoppingBag,
   X,
   CreditCard,
-  Wallet,
-  MapPin,
-  Phone,
   Check,
-  Navigation,
-  Clock,
-  UtensilsCrossed,
   Truck,
+  Wallet,
   Star,
   Sparkles,
   Gift,
   Coffee,
   Package,
-  Activity,
-  Clock3,
 } from 'lucide-react';
 
-import { MENU_ITEMS, CATEGORIES, type MenuItem, type Category } from '../data/menuData';
+import { MENU_ITEMS, CATEGORIES, type Category } from '../data/menuData';
 import { useCart } from '../context/CartContext';
 import HeroPremium from '../components/HeroPremium';
 import ProductCardPremium from '../components/ProductCardPremium';
@@ -93,19 +84,19 @@ function DrinkIcon({ className = 'w-4 h-4' }: { className?: string }) {
 function CategoryScroller({ setActiveCategory, activeCategory }: { setActiveCategory: (c: FilterCategory) => void; activeCategory: FilterCategory }) {
   return (
     <div className="relative">
-      <div className="overflow-hidden rounded-full border border-white/10 bg-white/5">
-        <div className="flex min-w-full gap-2 overflow-x-auto whitespace-nowrap px-3 py-3 scroll-smooth ios-scrollbar">
+      <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-[rgba(255,255,255,0.05)] p-2 shadow-[0_12px_40px_rgba(0,0,0,0.22)]">
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
           {CATEGORIES.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id as FilterCategory)}
-              className={`shrink-0 inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold transition-all duration-300 ${
+              className={`shrink-0 flex items-center gap-2 rounded-full px-3.5 py-2 text-[11px] font-semibold transition-all duration-300 ${
                 activeCategory === cat.id
-                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 font-black shadow-[0_6px_20px_rgba(245,158,11,0.28)]'
+                  ? 'bg-gradient-to-r from-amber-500/20 via-amber-400/15 to-orange-300/15 text-amber-100 shadow-[0_12px_32px_rgba(245,158,11,0.14)] border border-amber-400/20'
                   : 'bg-white/6 text-gray-300 border border-white/10 hover:border-amber-400/30 hover:bg-white/10'
               }`}
             >
-              <span className={`${activeCategory === cat.id ? 'text-amber-300' : 'text-gray-400'}`}>
+              <span className={`${activeCategory === cat.id ? 'text-amber-200' : 'text-gray-400'}`}>
                 {cat.id === 'todas' && <AllStarsIcon className="w-4 h-4" />}
                 {cat.id === 'hotdogs' && <HotdogIcon className="w-4 h-4" />}
                 {cat.id === 'hamburguesas' && <BurgerIcon className="w-4 h-4" />}
@@ -114,7 +105,7 @@ function CategoryScroller({ setActiveCategory, activeCategory }: { setActiveCate
                 {cat.id === 'arepas' && <FriesIcon className="w-4 h-4" />}
                 {cat.id === 'extras' && <DrinkIcon className="w-4 h-4" />}
               </span>
-              <span className="truncate max-w-[8rem]">{cat.id === 'todas' ? 'TODOS' : cat.label}</span>
+              <span className="truncate max-w-[7rem]">{cat.id === 'todas' ? 'TODOS' : cat.label}</span>
             </button>
           ))}
         </div>
@@ -131,17 +122,18 @@ export default function Menu() {
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [deliveryType, setDeliveryType] = useState<DeliveryType>(null);
   const [ubicacion, setUbicacion] = useState<{ lat: number; lng: number } | null>(null);
-  const [trackingStep, setTrackingStep] = useState(0);
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
 
-  const { cart, addToCart, removeFromCart, total, itemCount, clearCart, placeOrder } = useCart();
+  const { cart, addToCart, removeFromCart, total, itemCount, placeOrder } = useCart();
 
   useEffect(() => {
     if (!orderPlaced) return;
-    const timers = [3000, 6000, 9000].map((ms, i) =>
-      setTimeout(() => setTrackingStep(i + 1), ms)
+    const timers = [3000, 6000, 9000].map((ms) =>
+      setTimeout(() => {
+        // placeholder for future progress state if needed
+      }, ms)
     );
     return () => timers.forEach((t) => clearTimeout(t));
   }, [orderPlaced]);
@@ -260,31 +252,31 @@ export default function Menu() {
   };
 
   return (
-    <div className="bg-black min-h-screen pb-32">
+    <div className="bg-black min-h-screen pb-28">
       <HeroPremium value={search} onChange={(e) => setSearch(e.target.value)} />
 
       <div className="relative mt-10 overflow-hidden py-10">
-        <div className="absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-black/30 to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-black/40 to-transparent" />
         <div className="absolute right-0 top-0 h-64 w-64 rounded-full bg-amber-500/10 blur-3xl" />
         <div className="absolute left-0 bottom-0 h-72 w-72 rounded-full bg-white/5 blur-3xl" />
 
-        <div className="max-w-7xl mx-auto grid gap-8 lg:grid-cols-[minmax(18rem,32%)_minmax(0,1fr)] px-4 sm:px-6 lg:px-8">
-          <aside className="relative rounded-[2rem] border border-white/10 bg-black/40 p-6 shadow-[0_32px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl lg:sticky lg:top-24">
+        <div className="max-w-7xl mx-auto grid gap-10 lg:grid-cols-[minmax(20rem,28%)_minmax(0,1fr)] px-4 sm:px-6 lg:px-8">
+          <aside className="relative overflow-hidden rounded-[2.25rem] border border-white/10 bg-[rgba(12,12,12,0.82)] p-6 shadow-[0_32px_90px_rgba(0,0,0,0.45)] backdrop-blur-xl lg:sticky lg:top-24">
             <div className="mb-6 space-y-3">
-              <p className="text-xs uppercase tracking-[0.35em] text-amber-200/70">Explora</p>
-              <h2 className="text-2xl font-black text-white">Descubre categorías</h2>
-              <p className="text-sm leading-6 text-gray-300">Navega por las selecciones premium, sabores populares y ofertas especiales de la casa.</p>
+              <p className="text-xs uppercase tracking-[0.35em] text-amber-200/70">Panel premium</p>
+              <h2 className="text-3xl font-black text-white tracking-[0.04em]">Control de menú</h2>
+              <p className="text-sm leading-6 text-gray-300">Monitorea tendencias, oferta y tiempo de entrega con una experiencia de pedidos ultra premium.</p>
             </div>
 
-            <div className="grid gap-3">
-              {badgeWidgets.map((widget) => (
-                <div key={widget.label} className="rounded-[1.75rem] border border-white/10 bg-white/5 p-4 shadow-[0_12px_40px_rgba(0,0,0,0.25)] transition hover:-translate-y-1 hover:border-amber-400/30">
+            <div className="mt-8 grid gap-3">
+              {badgeWidgets.map((widget, index) => (
+                <div key={widget.label} className={`rounded-[1.8rem] border ${index === 0 ? 'border-amber-400/20 bg-gradient-to-r from-amber-500/10 via-black/40 to-transparent' : 'border-white/10 bg-white/5'} p-4 shadow-[0_16px_42px_rgba(0,0,0,0.24)] transition hover:-translate-y-0.5 hover:shadow-[0_20px_60px_rgba(0,0,0,0.28)]`}>
                   <div className="flex items-center gap-3">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-300/15 text-amber-200 shadow-[0_10px_30px_rgba(245,158,11,0.12)]">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-3xl bg-amber-300/10 text-amber-200 shadow-[0_10px_30px_rgba(245,158,11,0.12)]">
                       <widget.icon className="h-5 w-5" />
                     </span>
                     <div>
-                      <p className="text-sm uppercase tracking-[0.28em] text-amber-200/80">{widget.label}</p>
+                      <p className="text-[11px] uppercase tracking-[0.28em] text-amber-200/70">{widget.label}</p>
                       <p className="mt-1 text-base font-semibold text-white">{widget.value}</p>
                     </div>
                   </div>
@@ -292,14 +284,14 @@ export default function Menu() {
               ))}
             </div>
 
-            <div className="mt-8 rounded-[2rem] border border-amber-300/15 bg-gradient-to-br from-black/80 via-black/70 to-amber-900/10 p-6 shadow-[0_24px_60px_rgba(245,158,11,0.18)]">
+            <div className="mt-8 rounded-[2rem] border border-white/10 bg-gradient-to-br from-black/80 via-black/70 to-amber-900/10 p-6 shadow-[0_28px_80px_rgba(245,158,11,0.18)]">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.35em] text-amber-200/70">Entrega rápida</p>
-                  <h3 className="mt-3 text-2xl font-black text-white">20-35 minutos</h3>
-                  <p className="mt-2 text-sm leading-6 text-gray-300">Tu pedido llega caliente, directo a tu puerta o listo para recoger.</p>
+                  <p className="text-[11px] uppercase tracking-[0.35em] text-amber-200/70">Entrega estimada</p>
+                  <h3 className="mt-3 text-3xl font-black text-white">20‑35 min</h3>
+                  <p className="mt-2 text-sm leading-6 text-gray-300">Servicio rápido, elegante y con entrega puntual.</p>
                 </div>
-                <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-amber-300/10 text-amber-200 shadow-[0_18px_48px_rgba(245,158,11,0.2)]">
+                <div className="flex h-20 w-20 items-center justify-center rounded-[2rem] bg-amber-300/10 text-amber-200 shadow-[0_20px_60px_rgba(245,158,11,0.18)]">
                   <Truck className="h-8 w-8" />
                 </div>
               </div>
@@ -307,18 +299,21 @@ export default function Menu() {
           </aside>
 
           <main className="space-y-8">
-            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="rounded-[2rem] border border-white/10 bg-black/40 p-3 sm:p-4 shadow-[0_18px_50px_rgba(0,0,0,0.3)] backdrop-blur-xl">
-                <p className="text-[10px] uppercase tracking-[0.35em] text-amber-200/75">Platillos</p>
-                <p className="mt-2 text-2xl font-black text-white">{filtered.length}</p>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }} className="rounded-[2rem] border border-white/10 bg-[rgba(255,255,255,0.04)] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.3)] backdrop-blur-xl">
+                <p className="text-[10px] uppercase tracking-[0.35em] text-amber-200/75">Catálogo</p>
+                <p className="mt-3 text-3xl font-black text-white">{filtered.length}</p>
+                <p className="mt-2 text-sm text-gray-400">Items disponibles dentro de tu selección.</p>
               </motion.div>
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.05 }} className="rounded-[2rem] border border-white/10 bg-gradient-to-br from-black/40 via-black/30 to-amber-900/10 p-3 sm:p-4 shadow-[0_18px_50px_rgba(0,0,0,0.3)] backdrop-blur-xl">
-                <p className="text-[10px] uppercase tracking-[0.35em] text-amber-200/75">Orden mínima</p>
-                <p className="mt-2 text-2xl font-black text-amber-300">$2.50</p>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.05 }} className="rounded-[2rem] border border-white/10 bg-[rgba(255,255,255,0.04)] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.3)] backdrop-blur-xl">
+                <p className="text-[10px] uppercase tracking-[0.35em] text-amber-200/75">Total pedido</p>
+                <p className="mt-3 text-3xl font-black text-amber-300">${grandTotal.toFixed(2)}</p>
+                <p className="mt-2 text-sm text-gray-400">Incluye tarifas y envío cuando aplique.</p>
               </motion.div>
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.1 }} className="rounded-[2rem] border border-white/10 bg-black/40 p-3 sm:p-4 shadow-[0_18px_50px_rgba(0,0,0,0.3)] backdrop-blur-xl">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.1 }} className="rounded-[2rem] border border-white/10 bg-[rgba(255,255,255,0.04)] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.3)] backdrop-blur-xl">
                 <p className="text-[10px] uppercase tracking-[0.35em] text-amber-200/75">Categoría</p>
-                <p className="mt-2 text-2xl font-black text-white truncate">{activeCategory === 'todas' ? 'Todos' : activeCategory}</p>
+                <p className="mt-3 text-3xl font-black text-white truncate">{activeCategory === 'todas' ? 'Todos' : activeCategory}</p>
+                <p className="mt-2 text-sm text-gray-400">Cambio instantáneo con un solo toque.</p>
               </motion.div>
             </div>
 
@@ -348,11 +343,12 @@ export default function Menu() {
         <div className="fixed bottom-5 left-1/2 z-40 -translate-x-1/2">
           <button
             onClick={handleCheckout}
-            className="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-3 text-sm font-black text-stone-950 shadow-lg"
+            className="inline-flex items-center justify-center gap-4 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-3 text-sm font-black text-stone-950 shadow-[0_24px_80px_rgba(245,158,11,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_28px_90px_rgba(245,158,11,0.3)]"
           >
-            <ShoppingBag className="h-5 w-5" />
+            <span className="inline-flex h-3.5 w-3.5 rounded-full bg-emerald-300 shadow-[0_0_12px_rgba(86,199,103,0.45)]" />
+            <span className="text-xs uppercase tracking-[0.4em] text-white/90">Ver carrito</span>
+            <span className="text-base font-black">{itemCount} items</span>
             <span className="text-base font-black">${grandTotal.toFixed(2)}</span>
-            <span className="text-xs uppercase tracking-[0.4em] font-black">Hacer pedido</span>
           </button>
         </div>
       )}

@@ -1,11 +1,11 @@
-import { CheckCircle2, Clock3, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
 interface KitchenProps {
-  onNavigate: (page: 'home' | 'menu' | 'kitchen' | 'delivery') => void;
+  onNavigate?: (page: 'home' | 'menu' | 'kitchen' | 'delivery') => void;
 }
 
-export default function Kitchen({ onNavigate }: KitchenProps) {
+export default function Kitchen({}: KitchenProps) {
   const { orders, updateOrderStatus } = useCart();
 
   // Mostrar solo pedidos de local en la interfaz de cocina
@@ -22,11 +22,6 @@ export default function Kitchen({ onNavigate }: KitchenProps) {
       case 'completed': return 'Terminado';
       default: return status;
     }
-  };
-
-  const handleAssignDelivery = (orderId: string) => {
-    updateOrderStatus(orderId, 'assigned');
-    onNavigate('delivery');
   };
 
   return (

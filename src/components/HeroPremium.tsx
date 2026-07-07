@@ -1,8 +1,8 @@
-import React from 'react';
+import type { ChangeEvent } from 'react';
 import { motion } from 'framer-motion';
 import { Flame, Clock, Sparkles, Star } from 'lucide-react';
 
-export default function HeroPremium({ value, onChange }: { value?: string; onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void }) {
+export default function HeroPremium({ value, onChange }: { value?: string; onChange?: (e: ChangeEvent<HTMLInputElement>) => void }) {
   return (
     <motion.header
       initial={{ opacity: 0, y: 30 }}

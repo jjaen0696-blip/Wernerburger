@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { AlertTriangle, Bell, Boxes, CalendarDays, ChevronLeft, ChevronRight, CircleDollarSign, Clock3, LayoutDashboard, Package, PackagePlus, Search, Settings, ShoppingCart, Sparkles, Store, TrendingUp, Truck, Users, UtensilsCrossed, Warehouse } from 'lucide-react';
+import { AlertTriangle, Bell, Boxes, CalendarDays, ChevronLeft, ChevronRight, CircleDollarSign, Clock3, LayoutDashboard, PackagePlus, Search, ShoppingCart, Sparkles, Store, TrendingUp, Truck, Users, UtensilsCrossed, Warehouse } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { useCart } from '../context/CartContext';
 import Admin from './Admin';
@@ -125,24 +125,28 @@ export default function Dashboard({ currentUser }: DashboardProps) {
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-400/20 text-sm font-black text-amber-200">W</div>
               {!sidebarCollapsed && (
                 <div>
-                          <p className="text-sm font-semibold text-white">WERNER BURGER</p>
+                  <p className="text-sm font-semibold text-white">WERNER BURGER</p>
+                </div>
+              )}
+            </div>
 
-          <nav className="space-y-2">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              const active = section === item.key;
-              return (
-                <button key={item.key} onClick={() => setSection(item.key)} className={`flex w-full items-center gap-3 rounded-[14px] px-3 py-3 text-left text-sm transition ${active ? 'bg-gradient-to-r from-amber-500/20 to-transparent text-amber-100 shadow-[0_10px_30px_rgba(212,175,55,0.15)]' : 'text-gray-300 hover:bg-white/8 hover:text-white'}`}>
-                  <Icon className="h-4 w-4" />
-                  {!sidebarCollapsed && <span className="font-medium">{item.label}</span>}
-                </button>
-              );
-            })}
-          </nav>
+            <nav className="mt-6 space-y-2">
+              {menuItems.map((item) => {
+                const Icon = item.icon;
+                const active = section === item.key;
+                return (
+                  <button key={item.key} onClick={() => setSection(item.key)} className={`flex w-full items-center gap-3 rounded-[14px] px-3 py-3 text-left text-sm transition ${active ? 'bg-gradient-to-r from-amber-500/20 to-transparent text-amber-100 shadow-[0_10px_30px_rgba(212,175,55,0.15)]' : 'text-gray-300 hover:bg-white/8 hover:text-white'}`}>
+                    <Icon className="h-4 w-4" />
+                    {!sidebarCollapsed && <span className="font-medium">{item.label}</span>}
+                  </button>
+                );
+              })}
+            </nav>
 
-          <div className="mt-auto rounded-[18px] border border-white/10 bg-white/5 p-3 text-sm text-gray-400">
-            <p className="font-semibold text-white">Operación</p>
-            <p className="mt-1">Sistema premium listo para restaurante</p>
+            <div className="mt-auto rounded-[18px] border border-white/10 bg-white/5 p-3 text-sm text-gray-400">
+              <p className="font-semibold text-white">Operación</p>
+              <p className="mt-1">Sistema premium listo para restaurante</p>
+            </div>
           </div>
         </aside>
 
