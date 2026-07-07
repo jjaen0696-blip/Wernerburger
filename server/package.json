@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "start": "node dist/index.js",
+    "postinstall": "npm run build",
     "build": "tsc",
     "import:supabase": "node scripts/import_local_db_to_supabase.js"
   },

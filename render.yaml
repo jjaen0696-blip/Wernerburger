@@ -9,3 +9,5 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: CORS_ALLOW_ALL
+        value: '0'

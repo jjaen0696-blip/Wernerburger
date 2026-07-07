@@ -16,7 +16,15 @@ app.use((req, res, next) => {
 });
 
 const corsOptions = {
-  origin: allowedOrigins,
+  origin: (origin: any, callback: any) => {
+    // allow non-browser requests (e.g. server-to-server) when origin is undefined
+    if (!origin) return callback(null, true);
+    // allow all origins when CORS_ALLOW_ALL=1 (useful for quick debugging on deploy)
+    if (process.env.CORS_ALLOW_ALL === '1') return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) return callback(null, true);
+    console.warn('Blocked CORS origin:', origin);
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -70,6 +78,15 @@ if (USE_LOCAL_SQLITE) {
 
 if (!USE_LOCAL_SQLITE && !supabase) {
   console.error('Supabase client unavailable: backend requests requiring database access will fail.');
+}
+
+// If Supabase isn't configured, return a clear 500 for DB routes to avoid uncaught exceptions
+if (!USE_LOCAL_SQLITE && !supabase) {
+  app.use((req, res, next) => {
+    // allow basic health and cors-test endpoints through
+    if (req.path === '/health' || req.path === '/cors-test') return next();
+    return res.status(500).json({ error: 'Server misconfiguration: Supabase client unavailable' });
+  });
 }
 
 function normalizeRole(value?: string | null) {
