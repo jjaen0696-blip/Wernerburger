@@ -85,6 +85,10 @@ function App() {
   return (
     <CartProvider>
       <div className="min-h-screen bg-transparent font-sans antialiased text-white">
+        {/* Fixed logo top-left */}
+        <a href="#home" onClick={() => { setPage('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="fixed left-4 top-4 z-[90] flex items-center gap-2 rounded-full bg-black/60 p-1.5 shadow-lg">
+          <img src="/WhatsApp%20Image%202026-06-28%20at%205.35.37%20PM.jpeg" alt="Werner Burger" className="h-12 w-12 rounded-full object-cover" />
+        </a>
         {/* Botón Login fijo en esquina superior derecha que abre el modal */}
         {!user && (
           <button
