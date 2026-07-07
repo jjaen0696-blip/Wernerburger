@@ -9,6 +9,12 @@ const allowedOrigins = [
   'http://localhost:5173'
 ];
 
+// Temporary middleware to log incoming request origins (for CORS debugging)
+app.use((req, res, next) => {
+  try { console.log('Request origin:', req.headers.origin); } catch(e) {}
+  next();
+});
+
 const corsOptions = {
   origin: allowedOrigins,
   credentials: true,
@@ -22,6 +28,11 @@ console.log('CORS allowed origins:', allowedOrigins);
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 app.use(express.json());
+
+// Test endpoint for CORS verification
+app.get('/cors-test', (_req, res) => {
+  res.json({ cors: 'ok' });
+});
 app.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
   if (err instanceof SyntaxError && 'body' in err) {
     return res.status(400).json({ error: 'JSON inválido' });
