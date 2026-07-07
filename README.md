@@ -42,6 +42,11 @@ Este proyecto debe desplegarse como dos aplicaciones separadas:
 - Frontend React/Vite en Vercel o Render Static Site.
 - Backend Node/Express en Render Web Service separado.
 
+### Estructura del repositorio
+
+- `/` : frontend React/Vite.
+- `/server` : backend Express + TypeScript.
+
 ### Frontend
 
 El frontend vive en la raíz del repositorio y usa Vite. Para deploy en Vercel o Render Static Site, configura el build con el root del proyecto y el comando estándar de Vite.
@@ -53,7 +58,7 @@ El frontend vive en la raíz del repositorio y usa Vite. Para deploy en Vercel o
 
 ### Backend
 
-El backend reside en `server/` y se despliega como un servicio web de Render.
+El backend reside en `server/` y debe desplegarse como un servicio web de Render.
 
 - Root Directory: `server`
 - Build Command: `npm install && npm run build`
@@ -65,7 +70,11 @@ Variables de entorno requeridas para backend:
 - `SUPABASE_SERVICE_ROLE_KEY` o `SUPABASE_KEY`
 - `PORT` (opcional, por defecto 5174)
 
-No uses proxies temporales en Vercel. El frontend debe llamar directamente al backend en Render.
+Este backend debe ejecutarse como Render Web Service, no como Render Static Site.
+
+- No uses proxies temporales en Vercel.
+- No desplegues el backend como Static Site.
+- El frontend debe llamar directamente al backend en Render.
 
 ## Qué se agregó
 
