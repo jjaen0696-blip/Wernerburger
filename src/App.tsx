@@ -94,7 +94,7 @@ function App() {
             type="button"
             onClick={() => setLoginOpen(true)}
             aria-label="Abrir login"
-            className="absolute top-6 right-6 z-[9999] flex items-center gap-2 rounded-full bg-amber-500/95 px-3 py-2 text-sm font-black text-stone-950 shadow-lg"
+            className="absolute top-6 right-6 z-40 flex items-center gap-2 rounded-full bg-amber-500/95 px-3 py-2 text-sm font-black text-stone-950 shadow-lg"
           >
             Login
           </button>,
@@ -114,8 +114,8 @@ function App() {
           </div>
         )}
 
-        {loginOpen && (
-          <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 p-4">
+        {typeof document !== 'undefined' && loginOpen && createPortal(
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80 p-4">
             <div className="w-full max-w-md rounded-[2rem] border border-amber-400/20 bg-[#080706]/95 p-6 shadow-[0_30px_80px_rgba(0,0,0,0.65)] backdrop-blur-xl">
               <div className="mb-6 flex items-center justify-between">
                 <div>
@@ -161,7 +161,8 @@ function App() {
                 </button>
               </form>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
 
         <main className="relative overflow-x-hidden">
