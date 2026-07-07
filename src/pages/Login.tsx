@@ -31,6 +31,16 @@ export default function Login({ onSuccess, onBack }: LoginProps) {
       <div className="relative min-h-screen flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800" />
         <div className="relative w-full max-w-md overflow-hidden rounded-[2rem] border border-white/10 bg-slate-900/95 p-8 shadow-[0_40px_120px_-40px_rgba(15,23,42,0.9)] backdrop-blur-xl">
+          <button
+            type="button"
+            onClick={onBack}
+            className="absolute right-5 top-5 inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-700 bg-slate-950/90 text-slate-200 transition hover:bg-slate-800"
+            aria-label="Volver al inicio"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+              <path d="M3.75 11.25 12 3.75l8.25 7.5v8.25a.75.75 0 0 1-.75.75h-4.5v-5.25a.75.75 0 0 0-.75-.75h-3a.75.75 0 0 0-.75.75V21H4.5a.75.75 0 0 1-.75-.75V11.25Zm4.5 8.25h3V13.5h3.75v6h3V11.25L12 5.25 8.25 11.25v8.25Z" />
+            </svg>
+          </button>
           <div className="mb-8">
             <span className="inline-flex rounded-full bg-amber-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-amber-200">
               Acceso seguro
@@ -42,13 +52,6 @@ export default function Login({ onSuccess, onBack }: LoginProps) {
               Ingresa con tu cuenta administrativa para gestionar pedidos, inventario y notificaciones desde un espacio seguro y con estilo profesional.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={onBack}
-            className="mb-6 inline-flex rounded-full border border-slate-700 bg-slate-950/90 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-800"
-          >
-            Volver al inicio
-          </button>
           <form onSubmit={handleSubmit} className="space-y-5">
             <label className="block text-sm font-medium text-slate-300">
               Correo electrónico
