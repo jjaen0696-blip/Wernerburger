@@ -73,11 +73,11 @@ function StatCard({ label, value, hint, icon: Icon, accent }: { label: string; v
 }
 
 interface DashboardProps {
-  currentUser?: { username?: string; branch_id?: string | null } | null;
+  currentUser?: { username?: string; branch_id?: string | null; role?: string } | null;
 }
 
 export default function Dashboard({ currentUser }: DashboardProps) {
-  const [section, setSection] = useState<Section>('dashboard');
+  const [section, setSection] = useState<Section>(() => (currentUser?.role === 'admin' ? 'inventory' : 'dashboard'));
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { orders } = useCart();
 

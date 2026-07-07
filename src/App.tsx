@@ -40,6 +40,7 @@ function App() {
         return 'delivery' as Page;
       case 'admin':
       default:
+        // show inventory panel first for admins to prioritize stock control
         return 'dashboard' as Page;
     }
   };
