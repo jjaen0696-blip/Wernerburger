@@ -1,4 +1,4 @@
-# Wernerburger
+# Werner Burger
 
 Proyecto de plataforma de gestión de pedidos y administración de restaurante.
 

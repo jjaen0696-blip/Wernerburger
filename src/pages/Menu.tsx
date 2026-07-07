@@ -32,6 +32,9 @@ type FilterCategory = 'todas' | Category;
 type PaymentMethod = 'efectivo' | 'yappy';
 type DeliveryType = 'local' | 'delivery' | null;
 
+const API_BASE = import.meta.env.VITE_API_BASE || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://127.0.0.1:5174' : 'https://wernerburger.onrender.com');
+const api = (path: string) => `${API_BASE}${path}`;
+
 const badgeWidgets = [
   { icon: Star, label: 'Más populares', value: `${MENU_ITEMS.filter((item) => item.isPopular).length} ítems` },
   { icon: Sparkles, label: 'Nuevos', value: 'Tendencias frescas' },
@@ -188,7 +191,7 @@ export default function Menu() {
     }
   };
 
-  const handlePlaceOrder = (e: FormEvent) => {
+  const handlePlaceOrder = async (e: FormEvent) => {
     e.preventDefault();
     if (!customerName.trim() || !customerPhone.trim()) {
       alert('Ingresa tu nombre y teléfono para completar el pedido.');
@@ -200,25 +203,60 @@ export default function Menu() {
       return;
     }
 
-    placeOrder({
-      items: cart,
-      total: grandTotal,
-      customerName: customerName.trim(),
+    const body = {
+      branch_id: 'default',
+      customer_name: customerName.trim(),
       phone: customerPhone.trim(),
+      delivery_type: deliveryType,
+      payment_method: paymentMethod,
+      total: grandTotal,
+      items: cart.map((entry) => ({
+        product_id: entry.item.id,
+        quantity: entry.quantity,
+        unit_price: entry.item.price,
+      })),
       address: deliveryType === 'delivery'
         ? ubicacion
           ? `Lat ${ubicacion.lat.toFixed(4)}, Lng ${ubicacion.lng.toFixed(4)}`
           : customerAddress.trim()
         : undefined,
-      deliveryType: deliveryType!,
-      paymentMethod,
-    });
+    };
 
-    setOrderPlaced(true);
-    setCustomerName('');
-    setCustomerPhone('');
-    setCustomerAddress('');
-    setUbicacion(null);
+    try {
+      const response = await fetch(api('/orders'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        alert(errorData?.error || 'Error al procesar el pedido.');
+        return;
+      }
+
+      placeOrder({
+        items: cart,
+        total: grandTotal,
+        customerName: customerName.trim(),
+        phone: customerPhone.trim(),
+        address: deliveryType === 'delivery'
+          ? ubicacion
+            ? `Lat ${ubicacion.lat.toFixed(4)}, Lng ${ubicacion.lng.toFixed(4)}`
+            : customerAddress.trim()
+          : undefined,
+        deliveryType: deliveryType!,
+        paymentMethod,
+      });
+
+      setOrderPlaced(true);
+      setCustomerName('');
+      setCustomerPhone('');
+      setCustomerAddress('');
+      setUbicacion(null);
+    } catch (err) {
+      alert('No se pudo conectar con el servidor.');
+    }
   };
 
   return (

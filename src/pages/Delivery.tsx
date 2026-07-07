@@ -9,16 +9,22 @@ export default function Delivery() {
     <div className="bg-black min-h-screen pb-16 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8 rounded-[2rem] border border-fuchsia-400/15 bg-[#11070f]/95 p-6 md:p-8 shadow-[0_30px_80px_rgba(0,0,0,0.5)] backdrop-blur-xl">
-          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.35em] text-fuchsia-300/70">Interfaz de delivery</p>
-              <h1 className="mt-3 text-4xl font-black uppercase tracking-[0.2em] text-white">Pedidos para repartir</h1>
-              <p className="mt-3 max-w-2xl text-gray-300">Solo los repartidores ven esta pantalla. Acepta pedidos asignados y marca el estado de entrega.</p>
+          <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full border border-fuchsia-400/20 bg-black/20 overflow-hidden">
+                <img src="/werner-favicon.png" alt="Werner Burger logo" className="h-full w-full object-cover" />
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.35em] text-fuchsia-300/70">WERNER BURGER</p>
+                <h1 className="mt-1 text-4xl font-black uppercase tracking-[0.2em] text-white">Delivery</h1>
+              </div>
             </div>
             <div className="inline-flex items-center gap-3 rounded-full border border-fuchsia-400/20 bg-white/5 px-4 py-3 text-sm text-fuchsia-100 shadow-[0_12px_30px_rgba(192,83,255,0.12)] backdrop-blur-sm">
               <Sparkles className="h-5 w-5 text-fuchsia-300" />
               <span>Pedidos listos para delivery</span>
             </div>
+          </div>
+          <p className="mt-3 max-w-2xl text-gray-300">Solo los repartidores ven esta pantalla. Acepta pedidos asignados y marca el estado de entrega.</p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">

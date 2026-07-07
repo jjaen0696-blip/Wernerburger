@@ -12,8 +12,8 @@ export default function HeroPremium({ value, onChange }: { value?: string; onCha
     >
       <div className="absolute inset-0">
         <img
-          src="/WhatsApp%20Image%202026-07-05%20at%205.19.24%20PM.jpeg"
-          alt="Fondo"
+          src="/werner-favicon.png"
+          alt="Werner Burger logo"
           className="h-full w-full object-cover object-center scale-100 sm:scale-105"
           style={{ objectPosition: 'center 35%' }}
         />

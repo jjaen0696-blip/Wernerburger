@@ -8,12 +8,12 @@ const rootEnv = path.resolve(process.cwd(), '.env');
 const parentEnv = path.resolve(process.cwd(), '..', '.env');
 const serverEnv = path.resolve(process.cwd(), 'server', '.env');
 
-const loadedRoot = dotenv.config({ path: rootEnv, override: false });
 const loadedParent = dotenv.config({ path: parentEnv, override: false });
-const loadedServer = dotenv.config({ path: serverEnv, override: false });
+const loadedRoot = dotenv.config({ path: rootEnv, override: true });
+const loadedServer = dotenv.config({ path: serverEnv, override: true });
 
-console.log('Loaded env root:', rootEnv, loadedRoot.error ? loadedRoot.error.message : 'ok');
 console.log('Loaded env parent:', parentEnv, loadedParent.error ? loadedParent.error.message : 'ok');
+console.log('Loaded env root:', rootEnv, loadedRoot.error ? loadedRoot.error.message : 'ok');
 console.log('Loaded env server:', serverEnv, loadedServer.error ? loadedServer.error.message : 'ok');
 
 const app = express();

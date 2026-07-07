@@ -103,11 +103,16 @@ export default function Dashboard({ currentUser }: DashboardProps) {
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(212,175,55,0.16),_transparent_30%),linear-gradient(135deg,_#060606_0%,_#101010_55%,_#050505_100%)] px-2 py-3 text-white sm:px-3 lg:px-4">
       <div className="mx-auto flex max-w-7xl flex-col gap-3 lg:flex-row">
         <aside className={`hidden rounded-[24px] border border-white/10 bg-[#0b0b0b]/85 p-4 shadow-[0_24px_80px_rgba(0,0,0,0.38)] backdrop-blur-xl lg:flex lg:flex-col ${sidebarCollapsed ? 'lg:w-[clamp(5.5rem,14vw,18rem)]' : 'lg:w-[clamp(17rem,22vw,22rem)]'}`}>
-          <div className="mb-6 flex items-center justify-between">
+          <div className="mb-6 flex items-center justify-between gap-3">
             {!sidebarCollapsed && (
-              <div>
-                <p className="text-[11px] uppercase tracking-[0.35em] text-amber-300/70">Werner</p>
-                <h2 className="text-lg font-black text-white">Admin Studio</h2>
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full border border-amber-400/30 bg-amber-400/10 overflow-hidden">
+                  <img src="/werner-favicon.png" alt="Werner Burger logo" className="h-full w-full object-cover" />
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.35em] text-amber-300/70">WERNER BURGER</p>
+                  <h2 className="text-lg font-black text-white">Admin Studio</h2>
+                </div>
               </div>
             )}
             <button onClick={() => setSidebarCollapsed((value) => !value)} className="rounded-full border border-white/10 bg-white/5 p-2 text-gray-300 transition hover:bg-white/10">
@@ -120,12 +125,7 @@ export default function Dashboard({ currentUser }: DashboardProps) {
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-400/20 text-sm font-black text-amber-200">W</div>
               {!sidebarCollapsed && (
                 <div>
-                  <p className="text-sm font-semibold text-white">Werner Burger</p>
-                  <p className="text-xs text-gray-400">Sucursal Central</p>
-                </div>
-              )}
-            </div>
-          </div>
+                          <p className="text-sm font-semibold text-white">WERNER BURGER</p>
 
           <nav className="space-y-2">
             {menuItems.map((item) => {

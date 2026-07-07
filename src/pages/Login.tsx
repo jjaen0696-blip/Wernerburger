@@ -42,13 +42,16 @@ export default function Login({ onSuccess, onBack }: LoginProps) {
             </svg>
           </button>
           <div className="mb-8">
-            <span className="inline-flex rounded-full bg-[#9c7218]/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-[#e3b961]">
-              Acceso seguro
-            </span>
-            <h2 className="mt-6 text-3xl font-semibold tracking-tight text-[#f8e6c1] sm:text-4xl">
-              Panel administrativo
-            </h2>
-            <p className="mt-3 text-sm leading-7 text-[#d3b88a]">
+            <div className="mb-5 flex items-center gap-3">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#c09225]/30 bg-[#9c7218]/10 overflow-hidden">
+                <img src="/werner-favicon.png" alt="Werner Burger logo" className="h-full w-full object-cover" />
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.35em] text-amber-200/80">WERNER BURGER</p>
+                <h2 className="text-2xl font-black uppercase tracking-[0.25em] text-[#f8e6c1]">Panel Administrativo</h2>
+              </div>
+            </div>
+            <p className="text-sm leading-7 text-[#d3b88a]">
               Ingresa con tu cuenta administrativa para gestionar pedidos, inventario y notificaciones desde un espacio seguro y con estilo profesional.
             </p>
           </div>

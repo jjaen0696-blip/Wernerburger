@@ -272,6 +272,20 @@ export default function Admin() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+      <div className="rounded-[24px] border border-white/10 bg-[#0b0b0b]/90 p-5 shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur-xl">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full border border-amber-400/20 bg-amber-400/10 overflow-hidden">
+              <img src="/werner-favicon.png" alt="Werner Burger logo" className="h-full w-full object-cover" />
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.35em] text-amber-300/70">WERNER BURGER</p>
+              <h1 className="text-3xl font-black text-white">Panel Administrativo</h1>
+            </div>
+          </div>
+          <p className="max-w-xl text-sm text-gray-400">Gestiona usuarios, sucursales, stock y ventas desde el panel administrativo central.</p>
+        </div>
+      </div>
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="rounded-[18px] border border-amber-400/15 bg-white/8 p-4 shadow-[0_20px_70px_rgba(0,0,0,0.3)] backdrop-blur-xl">
           <div className="flex items-center justify-between">

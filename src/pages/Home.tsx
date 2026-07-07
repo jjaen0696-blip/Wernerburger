@@ -7,13 +7,13 @@ interface HomeProps {
 }
 
 const BRANCHES = [
-  { id: 'wb1', name: 'WernerBurger 1', address: 'Sucursal 1', is_closed: false },
-  { id: 'wb2', name: 'WernerBurger 2', address: 'Sucursal 2', is_closed: false },
-  { id: 'wb3', name: 'WernerBurger 3', address: 'Sucursal 3', is_closed: true },
-  { id: 'wb4', name: 'WernerBurger 4', address: 'Sucursal 4', is_closed: false },
-  { id: 'wb5', name: 'WernerBurger 5', address: 'Sucursal 5', is_closed: false },
-  { id: 'wb6', name: 'WernerBurger 6', address: 'Sucursal 6', is_closed: false },
-  { id: 'wb7', name: 'WernerBurger 7', address: 'Sucursal 7', is_closed: true },
+  { id: 'wb1', name: 'Werner Burger 1', address: 'Sucursal 1', is_closed: false },
+  { id: 'wb2', name: 'Werner Burger 2', address: 'Sucursal 2', is_closed: false },
+  { id: 'wb3', name: 'Werner Burger 3', address: 'Sucursal 3', is_closed: true },
+  { id: 'wb4', name: 'Werner Burger 4', address: 'Sucursal 4', is_closed: false },
+  { id: 'wb5', name: 'Werner Burger 5', address: 'Sucursal 5', is_closed: false },
+  { id: 'wb6', name: 'Werner Burger 6', address: 'Sucursal 6', is_closed: false },
+  { id: 'wb7', name: 'Werner Burger 7', address: 'Sucursal 7', is_closed: true },
 ];
 
 type Branch = { id: string; name: string; address: string; is_closed?: boolean };
@@ -65,8 +65,8 @@ export default function Home({ onNavigate, onLogin }: HomeProps) {
         {/* Background image */}
         <div className="absolute inset-0">
           <img
-            src="/WhatsApp%20Image%202026-07-05%20at%205.19.24%20PM.jpeg"
-            alt="Hamburguesa"
+            src="/werner-favicon.png"
+            alt="Werner Burger logo"
             className="w-full h-full object-cover object-center scale-110"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/55 to-black/20" />
@@ -77,11 +77,11 @@ export default function Home({ onNavigate, onLogin }: HomeProps) {
         <div className="relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-16 w-full">
           <div className="max-w-2xl">
             <div className="flex flex-col items-start gap-3 mb-6">
-              <div className="rounded-full border-4 border-amber-400/80 bg-black/70 p-1.5 shadow-[0_0_24px_rgba(245,158,11,0.35)]">
+              <div className="rounded-full border-4 border-amber-400/80 bg-black/70 p-1.5 shadow-[0_0_24px_rgba(245,158,11,0.35)] overflow-hidden">
                 <img
-                  src="/WhatsApp%20Image%202026-06-28%20at%205.35.37%20PM.jpeg"
+                  src="/werner-favicon.png"
                   alt="Werner Burger logo"
-                  className="h-24 w-24 sm:h-28 sm:w-28 rounded-full object-cover object-center"
+                  className="h-24 w-24 sm:h-28 sm:w-28 object-cover"
                 />
               </div>
               <span className="text-[1.6rem] sm:text-[2rem] font-black tracking-[0.25em] uppercase italic leading-none [text-shadow:0_0_22px_rgba(245,158,11,0.55)] drop-shadow-[0_2px_0_rgba(255,255,255,0.2)]">
