@@ -60,7 +60,7 @@ export default function Home({ onNavigate }: HomeProps) {
   return (
     <div className="bg-black">
       {/* HERO */}
-      <section className="relative min-h-screen flex items-center pt-16 overflow-hidden">
+      <section className="relative min-h-screen flex items-center overflow-hidden">
         {/* Background image */}
         <div className="absolute inset-0">
           <img
@@ -73,7 +73,7 @@ export default function Home({ onNavigate }: HomeProps) {
         </div>
 
         {/* Content */}
-        <div className="relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full">
+        <div className="relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
           <div className="max-w-2xl">
             <div className="flex flex-col items-start gap-3 mb-6">
               <div className="rounded-full border-4 border-amber-400/80 bg-black/70 p-1.5 shadow-[0_0_24px_rgba(245,158,11,0.35)]">

@@ -216,7 +216,7 @@ export default function Menu() {
   };
 
   return (
-    <div className="bg-black min-h-screen pt-16 pb-32">
+    <div className="bg-black min-h-screen pb-32">
       <HeroPremium value={search} onChange={(e) => setSearch(e.target.value)} />
 
       <div className="relative mt-10 overflow-hidden py-10">

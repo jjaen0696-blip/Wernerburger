@@ -97,7 +97,7 @@ export default function POS({ currentUser }: POSProps) {
   }
 
   return (
-    <div className="min-h-screen pt-24 pb-16 bg-black">
+    <div className="min-h-screen pb-16 bg-black">
       <div className="max-w-6xl mx-auto px-4">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-3xl font-black text-amber-200">{isManager ? 'Registro de ventas local' : 'POS — Registrar Venta Local'}</h1>
