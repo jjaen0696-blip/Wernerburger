@@ -3,6 +3,7 @@ import { MapPin, ChevronDown, Check, Truck, Award, Heart, Flame, Lock } from 'lu
 
 interface HomeProps {
   onNavigate: (page: 'home' | 'menu') => void;
+  onLogin?: () => void;
 }
 
 const BRANCHES = [
@@ -178,13 +179,24 @@ export default function Home({ onNavigate }: HomeProps) {
                 )}
               </div>
 
-              <button
-                onClick={handleContinue}
-                disabled={!selected || selected.is_closed}
-                className="mt-4 w-full inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-amber-500 text-stone-950 font-black hover:bg-amber-400 transition-all hover:scale-[1.02] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-[0_0_24px_rgba(245,158,11,0.25)]"
-              >
-                PEDIR AHORA
-              </button>
+              <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]">
+                {onLogin && (
+                  <button
+                    type="button"
+                    onClick={onLogin}
+                    className="w-full rounded-full border border-amber-300/40 bg-black/70 px-6 py-3 text-sm font-black uppercase tracking-[0.18em] text-amber-200 transition hover:border-amber-400/60 hover:bg-amber-500/10"
+                  >
+                    Iniciar sesión
+                  </button>
+                )}
+                <button
+                  onClick={handleContinue}
+                  disabled={!selected || selected.is_closed}
+                  className="w-full rounded-full bg-amber-500 px-7 py-3.5 text-sm font-black uppercase tracking-[0.18em] text-stone-950 transition hover:bg-amber-400 disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_0_24px_rgba(245,158,11,0.25)]"
+                >
+                  PEDIR AHORA
+                </button>
+              </div>
             </div>
 
             <div className="mt-4 inline-flex items-center gap-3 rounded-full border border-amber-400/25 bg-gradient-to-r from-[#3f2306]/80 via-[#533112]/60 to-[#b68e34]/20 px-3 py-2 text-[10px] text-gray-100 shadow-[0_10px_30px_rgba(183,143,47,0.18)] backdrop-blur-sm">

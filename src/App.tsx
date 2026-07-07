@@ -33,14 +33,8 @@ function AppContent() {
           </div>
         )}
 
-        {page === 'home' && !user && (
-          <div className="fixed top-6 right-6 z-40">
-            <button onClick={() => setPage('login')} className="rounded-full bg-amber-500 px-3 py-2 font-black text-stone-900">Iniciar sesión</button>
-          </div>
-        )}
-
         <main className="relative overflow-x-hidden">
-          {page === 'home' ? <Home onNavigate={navigate} />
+          {page === 'home' ? <Home onNavigate={navigate} onLogin={() => setPage('login')} />
             : page === 'menu' ? <Menu />
             : page === 'kitchen' ? <Kitchen onNavigate={navigate} />
             : page === 'delivery' ? <Delivery />

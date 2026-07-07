@@ -1,6 +1,20 @@
 import express from 'express';
 import cors from 'cors';
 import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+import path from 'path';
+
+const rootEnv = path.resolve(process.cwd(), '.env');
+const parentEnv = path.resolve(process.cwd(), '..', '.env');
+const serverEnv = path.resolve(process.cwd(), 'server', '.env');
+
+const loadedRoot = dotenv.config({ path: rootEnv, override: false });
+const loadedParent = dotenv.config({ path: parentEnv, override: false });
+const loadedServer = dotenv.config({ path: serverEnv, override: false });
+
+console.log('Loaded env root:', rootEnv, loadedRoot.error ? loadedRoot.error.message : 'ok');
+console.log('Loaded env parent:', parentEnv, loadedParent.error ? loadedParent.error.message : 'ok');
+console.log('Loaded env server:', serverEnv, loadedServer.error ? loadedServer.error.message : 'ok');
 
 const app = express();
 // CORS: orígenes permitidos (frontend + local dev)
@@ -137,8 +151,37 @@ function ensureDefaultUser() {
   }
 }
 
+async function ensureRemoteAdminUser() {
+  if (USE_LOCAL_SQLITE || !supabase) return;
+  const username = 'Fisura';
+  const email = 'fisura@wernerburger.com';
+  const password = 'Josecod10';
+
+  const existing = await supabase.from('app_users').select('id').eq('username', username).maybeSingle();
+  if (existing?.data?.id) return;
+
+  const { error: authError } = await supabase.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: { username, role: 'admin' },
+  });
+  if (authError && !String(authError.message).includes('already exists')) {
+    console.warn('Could not create remote auth user:', authError.message);
+  }
+
+  const { error: insertError } = await supabase.from('app_users').insert([
+    { username, email, role: 'admin', password_hash: password },
+  ]).select().single();
+
+  if (insertError && !String(insertError.message).includes('duplicate')) {
+    console.warn('Could not insert app_users admin row:', insertError.message);
+  }
+}
+
 ensureDefaultBranch();
 ensureDefaultUser();
+void ensureRemoteAdminUser();
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
