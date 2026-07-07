@@ -40,10 +40,20 @@ app.use((err: any, _req: express.Request, res: express.Response, next: express.N
   next(err);
 });
 
-const USE_LOCAL_SQLITE = process.env.USE_LOCAL_SQLITE === '1' || (!process.env.SUPABASE_URL && !process.env.SUPABASE_SERVICE_ROLE_KEY && !process.env.SUPABASE_KEY);
+const USE_LOCAL_SQLITE = process.env.USE_LOCAL_SQLITE === '1';
 
 let supabase: any = null;
 let localDb: any = null;
+
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || process.env.VITE_SUPABASE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || '';
+
+console.log('USE_LOCAL_SQLITE:', USE_LOCAL_SQLITE);
+console.log('Supabase URL configured:', Boolean(SUPABASE_URL));
+console.log('Supabase key configured:', Boolean(SUPABASE_KEY));
+if (process.env.VITE_SUPABASE_URL) console.log('Using VITE_SUPABASE_URL from environment');
+if (process.env.VITE_SUPABASE_KEY) console.log('Using VITE_SUPABASE_KEY from environment');
+if (process.env.VITE_SUPABASE_SERVICE_ROLE_KEY) console.log('Using VITE_SUPABASE_SERVICE_ROLE_KEY from environment');
 
 if (USE_LOCAL_SQLITE) {
   // Lazy require so server still works when not installed
@@ -51,14 +61,15 @@ if (USE_LOCAL_SQLITE) {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   localDb = require('./local_db').default;
   console.log('Using local JSON DB');
+} else if (SUPABASE_URL && SUPABASE_KEY) {
+  supabase = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } });
+  console.log('Supabase client initialized');
 } else {
-  const SUPABASE_URL = process.env.SUPABASE_URL || '';
-  const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || '';
-  if (!SUPABASE_URL || !SUPABASE_KEY) {
-    console.warn('Supabase env missing, falling back to local JSON DB');
-  } else {
-    supabase = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } });
-  }
+  console.error('Supabase env missing or incomplete. Render must provide SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_KEY).');
+}
+
+if (!USE_LOCAL_SQLITE && !supabase) {
+  console.error('Supabase client unavailable: backend requests requiring database access will fail.');
 }
 
 function normalizeRole(value?: string | null) {
@@ -212,9 +223,9 @@ app.post('/login', async (req, res) => {
       if (!user || user.password_hash !== password) return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
       return res.json({ id: user.id, username: user.username, branch_id: user.branch_id || null, role: normalizeRole(user.role) });
     }
-    const { data, error } = await supabase.from('users').select('*').eq('username', username).single();
+    const { data, error } = await supabase.from('app_users').select('*').eq('username', username).single();
     if (error) return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
-    if (data.password_hash !== password) return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
+    if (!data || data.password_hash !== password) return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
     res.json({ id: data.id, username: data.username, branch_id: data.branch_id || null, role: normalizeRole(data.role) });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -259,7 +270,7 @@ app.get('/users', async (_req, res) => {
       const rows = localDb.prepare('SELECT * FROM users ORDER BY created_at').all();
       return res.json(rows);
     }
-    const { data, error } = await supabase.from('users').select('*').order('created_at');
+    const { data, error } = await supabase.from('app_users').select('*').order('created_at');
     if (error) return res.status(500).json({ error: error.message });
     res.json(data);
   } catch (err: any) {
@@ -279,7 +290,7 @@ app.post('/users', async (req, res) => {
       const row = localDb.prepare('SELECT * FROM users WHERE id = ?').get(id);
       return res.json(row);
     }
-    const { data, error } = await supabase.from('users').insert([{ ...payload, role: normalizeRole(payload.role), password_hash: payload.password || payload.password_hash || null }]).select().single();
+    const { data, error } = await supabase.from('app_users').insert([{ ...payload, role: normalizeRole(payload.role), password_hash: payload.password || payload.password_hash || null }]).select().single();
     if (error) return res.status(500).json({ error: error.message });
     res.json(data);
   } catch (err: any) {
