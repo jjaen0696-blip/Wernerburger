@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase, supabaseConfigured } from '../lib/supabase';
 
 type User = any;
 
@@ -57,6 +57,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signIn = async (username: string, password: string) => {
+    if (!supabaseConfigured) {
+      return { error: { message: 'Supabase client is not configured' } };
+    }
     setLoading(true);
     const email = await findEmailForUsername(username);
     if (!email) {
