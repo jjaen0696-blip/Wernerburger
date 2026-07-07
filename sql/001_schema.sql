@@ -152,6 +152,7 @@ create table orders (
   payment_method payment_method not null default 'efectivo',
   status order_status not null default 'pending',
   total numeric not null default 0,
+  items jsonb not null default '[]'::jsonb,
   user_id uuid references users(id) on delete set null,
   created_at timestamptz default now()
 );

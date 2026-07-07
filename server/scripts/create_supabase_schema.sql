@@ -69,6 +69,7 @@ CREATE TABLE IF NOT EXISTS orders (
   delivery_type text,
   payment_method text,
   total numeric DEFAULT 0,
+  items jsonb DEFAULT '[]'::jsonb,
   created_at timestamptz DEFAULT now()
 );
 

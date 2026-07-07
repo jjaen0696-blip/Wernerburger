@@ -40,8 +40,10 @@ ON CONFLICT (branch_id, ingredient_id) DO UPDATE SET qty = EXCLUDED.qty, unit = 
 
 -- Inventory movements (none in JSON except those implied)
 -- Orders
-INSERT INTO orders(id, branch_id, status, total, created_at) VALUES
-('b6fa2cde-2f0d-441a-8617-8bd42101626e', 'branch-1', 'accepted', 11, '2026-07-06T06:54:41.337Z')
+INSERT INTO orders(id, branch_id, status, total, items, created_at) VALUES
+('b6fa2cde-2f0d-441a-8617-8bd42101626e', 'branch-1', 'accepted', 11,
+  '[{"product_id":"prod-burger","quantity":2,"unit_price":5.5}]'::jsonb,
+  '2026-07-06T06:54:41.337Z')
 ON CONFLICT (id) DO NOTHING;
 
 -- Order items
