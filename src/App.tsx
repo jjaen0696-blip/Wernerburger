@@ -84,7 +84,7 @@ function App() {
   return (
     <CartProvider>
       <div className="min-h-screen bg-transparent font-sans antialiased text-white">
-        {page === 'home' && (
+        {page === 'home' && !user && (
           <button
             type="button"
             onClick={() => setLoginOpen(true)}
@@ -92,6 +92,19 @@ function App() {
           >
             Login
           </button>
+        )}
+
+        {user && (
+          <div className="fixed top-5 right-5 z-[70] flex items-center gap-3">
+            <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-sm text-amber-100">{user.username}</span>
+            <button
+              type="button"
+              onClick={() => { setUser(null); setPage('home'); setLoginOpen(false); }}
+              className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-white transition hover:bg-white/10"
+            >
+              Logout
+            </button>
+          </div>
         )}
 
         {loginOpen && (
