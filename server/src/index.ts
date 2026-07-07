@@ -229,25 +229,7 @@ app.patch('/branches/:id', async (req, res) => {
   }
 });
 
-app.post('/login', async (req, res) => {
-  try {
-    const payload = req.body || {};
-    const username = String(payload.username || '').trim();
-    const password = String(payload.password || '');
-    if (!username || !password) return res.status(400).json({ error: 'Usuario y contraseña requeridos' });
-    if (USE_LOCAL_SQLITE) {
-      const user = localDb.prepare('SELECT * FROM users WHERE username = ?').get(username);
-      if (!user || user.password_hash !== password) return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
-      return res.json({ id: user.id, username: user.username, branch_id: user.branch_id || null, role: normalizeRole(user.role) });
-    }
-    const { data, error } = await supabase.from('app_users').select('*').eq('username', username).single();
-    if (error) return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
-    if (!data || data.password_hash !== password) return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
-    res.json({ id: data.id, username: data.username, branch_id: data.branch_id || null, role: normalizeRole(data.role) });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
+// Login endpoint removed — authentication not handled by this app build
 
 // Users and roles endpoints (admin)
 app.get('/roles', async (_req, res) => {
