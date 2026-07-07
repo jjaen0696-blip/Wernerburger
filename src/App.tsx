@@ -85,15 +85,7 @@ function App() {
   return (
     <CartProvider>
       <div className="min-h-screen bg-transparent font-sans antialiased text-white">
-        {page === 'home' && !user && (
-          <button
-            type="button"
-            onClick={() => setLoginOpen(true)}
-            className="fire-action-button fixed top-5 right-5 z-[90] rounded-full px-5 py-3 text-[12px] font-black uppercase tracking-[0.3em] text-stone-950 transition duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.35)]"
-          >
-            Login
-          </button>
-        )}
+        {/* Botón Login eliminado según solicitud */}
 
         {user && (
           <div className="fixed top-5 right-5 z-[70] flex items-center gap-3">
