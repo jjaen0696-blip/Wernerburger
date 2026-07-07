@@ -154,6 +154,9 @@ export default function Menu() {
 
   const deliveryFee = deliveryType === 'delivery' ? 2.0 : 0;
   const grandTotal = total + (total > 0 ? deliveryFee : 0);
+  const nameValid = customerName.trim().length > 0;
+  const phoneValid = customerPhone.trim().length > 0;
+  const addressReady = deliveryType !== 'delivery' || ubicacion || customerAddress.trim().length > 0;
 
   const handleCheckout = () => {
     if (itemCount === 0) return;
@@ -174,7 +177,10 @@ export default function Menu() {
   const handleGetLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => setUbicacion({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        (pos) => {
+          setUbicacion({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+          setCustomerAddress('');
+        },
         () => alert('No pudimos obtener tu ubicación.')
       );
     } else {
@@ -263,18 +269,18 @@ export default function Menu() {
           </aside>
 
           <main className="space-y-8">
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="rounded-[2rem] border border-white/10 bg-black/40 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur-xl">
-                <p className="text-xs uppercase tracking-[0.35em] text-amber-200/75">Platillos disponibles</p>
-                <p className="mt-4 text-3xl font-black text-white">{filtered.length}</p>
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="rounded-[2rem] border border-white/10 bg-black/40 p-3 sm:p-4 shadow-[0_18px_50px_rgba(0,0,0,0.3)] backdrop-blur-xl">
+                <p className="text-[10px] uppercase tracking-[0.35em] text-amber-200/75">Platillos</p>
+                <p className="mt-2 text-2xl font-black text-white">{filtered.length}</p>
               </motion.div>
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.05 }} className="rounded-[2rem] border border-white/10 bg-gradient-to-br from-black/40 via-black/30 to-amber-900/10 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur-xl">
-                <p className="text-xs uppercase tracking-[0.35em] text-amber-200/75">Orden mínima</p>
-                <p className="mt-4 text-3xl font-black text-amber-300">$2.50</p>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.05 }} className="rounded-[2rem] border border-white/10 bg-gradient-to-br from-black/40 via-black/30 to-amber-900/10 p-3 sm:p-4 shadow-[0_18px_50px_rgba(0,0,0,0.3)] backdrop-blur-xl">
+                <p className="text-[10px] uppercase tracking-[0.35em] text-amber-200/75">Orden mínima</p>
+                <p className="mt-2 text-2xl font-black text-amber-300">$2.50</p>
               </motion.div>
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.1 }} className="rounded-[2rem] border border-white/10 bg-black/40 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur-xl">
-                <p className="text-xs uppercase tracking-[0.35em] text-amber-200/75">Mayor categoría</p>
-                <p className="mt-4 text-3xl font-black text-white">{activeCategory === 'todas' ? 'Todos' : activeCategory}</p>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.1 }} className="rounded-[2rem] border border-white/10 bg-black/40 p-3 sm:p-4 shadow-[0_18px_50px_rgba(0,0,0,0.3)] backdrop-blur-xl">
+                <p className="text-[10px] uppercase tracking-[0.35em] text-amber-200/75">Categoría</p>
+                <p className="mt-2 text-2xl font-black text-white truncate">{activeCategory === 'todas' ? 'Todos' : activeCategory}</p>
               </motion.div>
             </div>
 
@@ -314,8 +320,8 @@ export default function Menu() {
       )}
 
       {checkoutOpen && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/75 backdrop-blur-sm px-4 py-6 overflow-y-auto sm:items-center sm:py-12">
-          <div className="relative w-full max-w-5xl overflow-hidden rounded-[2rem] border border-amber-400/20 bg-[#0c0b0f]/95 shadow-[0_32px_96px_rgba(0,0,0,0.65)] max-h-[90vh]">
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/75 backdrop-blur-sm px-3 py-4 overflow-y-auto sm:items-center sm:px-6 sm:py-8">
+          <div className="relative w-full max-w-[min(100%,40rem)] overflow-hidden rounded-[2rem] border border-amber-400/20 bg-[#0c0b0f]/95 shadow-[0_32px_96px_rgba(0,0,0,0.65)] max-h-[90vh] ios-scrollbar">
             <button
               onClick={handleCloseCheckout}
               className="absolute right-5 top-5 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-gray-300 transition hover:bg-white/15"
@@ -324,59 +330,57 @@ export default function Menu() {
               <X className="h-5 w-5" />
             </button>
 
-            <div className="grid gap-6 p-6 lg:grid-cols-[1.05fr_0.95fr]">
-              <div className="space-y-6">
-                <div className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-[0_8px_28px_rgba(0,0,0,0.25)]">
-                  <div className="mb-4 flex items-center gap-3 text-sm uppercase tracking-[0.35em] text-amber-200 font-bold">
-                    <CreditCard className="h-4 w-4" />
-                    Tu pedido
-                  </div>
-                  <div className="space-y-4 max-h-[44vh] overflow-auto pr-1">
-                    {cart.length === 0 ? (
-                      <div className="rounded-2xl bg-white/5 p-4 text-center text-sm text-gray-300">No hay artículos en el carrito.</div>
-                    ) : (
-                      cart.map(({ item, quantity }) => (
-                        <div key={item.id} className="flex items-center justify-between gap-3 border-b border-white/10 py-3 last:border-0">
-                          <div>
-                            <p className="text-sm font-semibold text-white">{item.name}</p>
-                            <p className="text-xs text-gray-400">x{quantity}</p>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <p className="text-sm font-bold text-amber-300">${(item.price * quantity).toFixed(2)}</p>
-                            <button
-                              type="button"
-                              onClick={() => removeFromCart(item.id)}
-                              className="rounded-full bg-red-500/20 p-1.5 text-red-400 transition hover:bg-red-500/30"
-                              aria-label={`Quitar ${item.name}`}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
+            <div className="space-y-4 p-4 sm:p-5">
+              <div className="rounded-3xl border border-white/10 bg-white/5 p-4 shadow-[0_8px_28px_rgba(0,0,0,0.25)]">
+                <div className="mb-3 flex items-center gap-2 text-[12px] uppercase tracking-[0.35em] text-amber-200 font-bold">
+                  <CreditCard className="h-4 w-4" />
+                  Tu pedido
                 </div>
-
-                <div className="grid gap-4 rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-gray-200">
-                  <div className="flex justify-between">
-                    <span className="font-medium">Comida</span>
-                    <span className="font-semibold">${total.toFixed(2)}</span>
-                  </div>
-                  {deliveryType === 'delivery' && (
-                    <div className="flex justify-between text-amber-200">
-                      <span className="font-medium">Envío</span>
-                      <span className="font-semibold">+$2.00</span>
-                    </div>
+                <div className="space-y-3 max-h-[38vh] overflow-auto pr-1 ios-scrollbar">
+                  {cart.length === 0 ? (
+                    <div className="rounded-2xl bg-white/5 p-4 text-center text-sm text-gray-300">No hay artículos en el carrito.</div>
+                  ) : (
+                    cart.map(({ item, quantity }) => (
+                      <div key={item.id} className="flex items-center justify-between gap-3 border-b border-white/10 py-3 last:border-0">
+                        <div>
+                          <p className="text-sm font-semibold text-white">{item.name}</p>
+                          <p className="text-xs text-gray-400">x{quantity}</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <p className="text-sm font-bold text-amber-300">${(item.price * quantity).toFixed(2)}</p>
+                          <button
+                            type="button"
+                            onClick={() => removeFromCart(item.id)}
+                            className="rounded-full bg-red-500/20 p-1.5 text-red-400 transition hover:bg-red-500/30"
+                            aria-label={`Quitar ${item.name}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))
                   )}
-                  <div className="flex justify-between border-t border-white/10 pt-3 text-base font-black text-white">
-                    <span>Total</span>
-                    <span className="text-amber-300">${grandTotal.toFixed(2)}</span>
-                  </div>
                 </div>
               </div>
 
-              <div className="space-y-6">
+              <div className="grid gap-3 rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-gray-200">
+                <div className="flex justify-between">
+                  <span className="font-medium">Comida</span>
+                  <span className="font-semibold">${total.toFixed(2)}</span>
+                </div>
+                {deliveryType === 'delivery' && (
+                  <div className="flex justify-between text-amber-200">
+                    <span className="font-medium">Envío</span>
+                    <span className="font-semibold">+$2.00</span>
+                  </div>
+                )}
+                <div className="flex justify-between border-t border-white/10 pt-3 text-base font-black text-white">
+                  <span>Total</span>
+                  <span className="text-amber-300">${grandTotal.toFixed(2)}</span>
+                </div>
+              </div>
+
+              <div className="space-y-4">
                 {orderPlaced ? (
                   <div className="space-y-5 rounded-3xl border border-emerald-400/20 bg-emerald-900/5 p-5 text-center">
                     <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-300">
@@ -412,9 +416,9 @@ export default function Menu() {
                   </div>
                 ) : (
                   <form onSubmit={handlePlaceOrder} className="space-y-4">
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <label className="rounded-3xl border border-white/10 bg-white/5 p-4">
-                        <span className="text-xs uppercase tracking-[0.3em] text-amber-200 font-semibold">A nombre de</span>
+                    <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
+                      <label className={`rounded-3xl border p-3 ${nameValid ? 'border-emerald-400/60 bg-emerald-500/10' : 'border-white/10 bg-white/5'}`}>
+                        <span className="text-[11px] uppercase tracking-[0.3em] text-amber-200 font-semibold">A nombre</span>
                         <input
                           required
                           value={customerName}
@@ -422,72 +426,95 @@ export default function Menu() {
                           placeholder="Ej. Juan Pérez"
                           className="mt-3 w-full bg-transparent text-white outline-none"
                         />
-                      </label>
-                      <label className="rounded-3xl border border-white/10 bg-white/5 p-4">
-                        <span className="text-xs uppercase tracking-[0.3em] text-amber-200 font-semibold">Teléfono</span>
-                        <input
-                          required
-                          value={customerPhone}
-                          onChange={(e) => setCustomerPhone(e.target.value)}
-                          placeholder="Ej. 6789-1234"
-                          className="mt-3 w-full bg-transparent text-white outline-none"
-                        />
-                      </label>
-                    </div>
-
-                    {deliveryType === 'delivery' && (
-                      <label className="rounded-3xl border border-white/10 bg-white/5 p-4">
-                        <span className="text-xs uppercase tracking-[0.3em] text-amber-200 font-semibold">Dirección</span>
-                        {ubicacion ? (
-                          <div className="mt-3 text-sm font-semibold text-white">✓ Ubicación confirmada</div>
-                        ) : (
-                          <input
-                            value={customerAddress}
-                            onChange={(e) => setCustomerAddress(e.target.value)}
-                            placeholder="Calle, número, apto"
-                            className="mt-3 w-full bg-transparent text-white outline-none"
-                          />
+                        {nameValid && (
+                          <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-2 text-[11px] font-semibold text-emerald-200">
+                            {customerName.trim()}
+                          </div>
                         )}
                       </label>
-                    )}
 
-                    {deliveryType === 'delivery' && (
-                      <button
-                        type="button"
-                        onClick={handleGetLocation}
-                        className="w-full rounded-3xl border border-amber-400/40 bg-amber-500/10 px-4 py-3 text-sm font-bold text-amber-200"
-                      >
-                        Compartir mi ubicación
-                      </button>
-                    )}
-
-                    <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
-                      <p className="text-xs uppercase tracking-[0.3em] text-amber-200 font-semibold">¿Cómo deseas pagar?</p>
-                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                        <button
-                          type="button"
-                          onClick={() => setPaymentMethod('efectivo')}
-                          className={`rounded-3xl border px-4 py-3 text-left transition ${paymentMethod === 'efectivo' ? 'border-amber-400/60 bg-amber-500/10 text-amber-100' : 'border-white/10 bg-white/6 text-gray-200 hover:border-amber-400/30'}`}
-                        >
-                          <div className="flex items-center gap-2 font-semibold">
-                            <Wallet className="h-4 w-4" /> Efectivo
-                          </div>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setPaymentMethod('yappy')}
-                          className={`rounded-3xl border px-4 py-3 text-left transition ${paymentMethod === 'yappy' ? 'border-amber-400/60 bg-amber-500/10 text-amber-100' : 'border-white/10 bg-white/6 text-gray-200 hover:border-amber-400/30'}`}
-                        >
-                          <div className="flex items-center gap-2 font-semibold">
-                            <CreditCard className="h-4 w-4" /> Yappy
-                          </div>
-                        </button>
-                      </div>
+                      {nameValid && (
+                        <label className={`rounded-3xl border p-3 ${phoneValid ? 'border-emerald-400/60 bg-emerald-500/10' : 'border-white/10 bg-white/5'}`}>
+                          <span className="text-[11px] uppercase tracking-[0.3em] text-amber-200 font-semibold">Teléfono</span>
+                          <input
+                            required
+                            type="tel"
+                            inputMode="tel"
+                            value={customerPhone}
+                            onChange={(e) => setCustomerPhone(e.target.value)}
+                            placeholder="Ej. 6789-1234"
+                            className="mt-3 w-full bg-transparent text-white outline-none"
+                          />
+                          {phoneValid && (
+                            <div className="mt-3 text-[11px] font-semibold text-emerald-200">Número listo</div>
+                          )}
+                        </label>
+                      )}
                     </div>
 
-                    <button type="submit" className="w-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-3 font-black text-stone-950">
-                      Confirmar y pagar
-                    </button>
+                    {deliveryType === 'delivery' && phoneValid && (
+                      <div className="space-y-3 rounded-3xl border border-white/10 bg-white/5 p-4">
+                        <p className="text-[11px] uppercase tracking-[0.3em] text-amber-200 font-semibold">Enviar ubicación</p>
+                        {ubicacion ? (
+                          <div className="rounded-3xl border border-emerald-400/30 bg-emerald-900/10 p-3 text-sm text-emerald-100">
+                            Ubicación actual enviada
+                            <div className="mt-2 text-xs text-emerald-200">Lat {ubicacion.lat.toFixed(4)}, Lng {ubicacion.lng.toFixed(4)}</div>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={handleGetLocation}
+                            className="w-full rounded-3xl border border-amber-400/40 bg-amber-500/10 px-4 py-3 text-sm font-bold text-amber-200"
+                          >
+                            Enviar ubicación actual
+                          </button>
+                        )}
+                        <p className="text-xs text-gray-400">Asegúrate de permitir compartir tu ubicación para no escribir la dirección.</p>
+                        {!ubicacion && (
+                          <label className="rounded-3xl border border-white/10 bg-white/5 p-3">
+                            <span className="text-[11px] uppercase tracking-[0.3em] text-amber-200 font-semibold">Dirección (opcional)</span>
+                            <input
+                              value={customerAddress}
+                              onChange={(e) => setCustomerAddress(e.target.value)}
+                              placeholder="Calle, número, apto"
+                              className="mt-3 w-full bg-transparent text-white outline-none"
+                            />
+                          </label>
+                        )}
+                      </div>
+                    )}
+
+                    {(deliveryType !== 'delivery' || (phoneValid && addressReady)) && (
+                      <>
+                        <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
+                          <p className="text-[11px] uppercase tracking-[0.3em] text-amber-200 font-semibold">¿Cómo deseas pagar?</p>
+                          <div className="mt-3 grid gap-2 grid-cols-2">
+                            <button
+                              type="button"
+                              onClick={() => setPaymentMethod('efectivo')}
+                              className={`rounded-3xl border px-3 py-3 text-left transition ${paymentMethod === 'efectivo' ? 'border-amber-400/60 bg-amber-500/10 text-amber-100' : 'border-white/10 bg-white/6 text-gray-200 hover:border-amber-400/30'}`}
+                            >
+                              <div className="flex items-center gap-2 font-semibold">
+                                <Wallet className="h-4 w-4" /> Efectivo
+                              </div>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setPaymentMethod('yappy')}
+                              className={`rounded-3xl border px-3 py-3 text-left transition ${paymentMethod === 'yappy' ? 'border-amber-400/60 bg-amber-500/10 text-amber-100' : 'border-white/10 bg-white/6 text-gray-200 hover:border-amber-400/30'}`}
+                            >
+                              <div className="flex items-center gap-2 font-semibold">
+                                <CreditCard className="h-4 w-4" /> Yappy
+                              </div>
+                            </button>
+                          </div>
+                        </div>
+
+                        <button type="submit" className="w-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-3 font-black text-stone-950">
+                          Confirmar y pagar
+                        </button>
+                      </>
+                    )}
                   </form>
                 )}
               </div>
