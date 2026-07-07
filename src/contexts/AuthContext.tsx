@@ -7,7 +7,7 @@ interface AuthContextValue {
   user: User | null;
   session: any | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error?: any }>;
+  signIn: (username: string, password: string) => Promise<{ error?: any }>;
   signOut: () => Promise<void>;
   getAccessToken: () => string | null;
 }
@@ -48,8 +48,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const findEmailForUsername = async (username: string) => {
+    if (!username) return null;
+    if (username.includes('@')) return username;
+    const { data, error } = await supabase.from('app_users').select('email').eq('username', username).single();
+    if (error || !data?.email) return null;
+    return data.email as string;
+  };
+
+  const signIn = async (username: string, password: string) => {
     setLoading(true);
+    const email = await findEmailForUsername(username);
+    if (!email) {
+      setLoading(false);
+      return { error: { message: 'Usuario no encontrado' } };
+    }
     const res = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (res.error) return { error: res.error };

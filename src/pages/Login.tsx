@@ -8,7 +8,7 @@ interface LoginProps {
 
 export default function Login({ onSuccess, onBack }: LoginProps) {
   const { signIn } = useAuth();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -17,7 +17,7 @@ export default function Login({ onSuccess, onBack }: LoginProps) {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    const res = await signIn(email.trim(), password);
+    const res = await signIn(username.trim(), password);
     setLoading(false);
     if (res.error) {
       setError(res.error.message || 'Credenciales inválidas');
@@ -54,11 +54,11 @@ export default function Login({ onSuccess, onBack }: LoginProps) {
           </div>
           <form onSubmit={handleSubmit} className="space-y-5">
             <label className="block text-sm font-medium text-[#d8c49a]">
-              Correo electrónico
+              Usuario
               <input
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                type="email"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                type="text"
                 required
                 className="mt-3 w-full rounded-[1.25rem] border border-[#5f120f]/20 bg-[#180909]/90 px-4 py-3 text-[#f4e7cd] outline-none transition focus:border-[#c09225]/80 focus:ring-2 focus:ring-[#c09225]/20"
               />
