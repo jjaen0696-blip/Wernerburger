@@ -89,6 +89,28 @@ if (!USE_LOCAL_SQLITE && !supabase) {
   });
 }
 
+// Middleware to verify Supabase JWT on protected routes
+async function verifyAuth(req: any, res: any, next: any) {
+  try {
+    const header = req.headers.authorization || '';
+    const token = header.startsWith('Bearer ') ? header.split(' ')[1] : null;
+    if (!token) return res.status(401).json({ error: 'Authorization required' });
+    // supabase v2: getUser
+    const { data, error } = await supabase.auth.getUser(token);
+    if (error || !data?.user) return res.status(401).json({ error: 'Invalid token' });
+    req.user = data.user;
+    return next();
+  } catch (err: any) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+}
+
+// Protect admin-like routes
+// Apply middleware only when supabase client is available
+if (supabase) {
+  app.use(['/users', '/roles', '/purchases', '/inventory', '/alerts', '/reports'], verifyAuth);
+}
+
 function normalizeRole(value?: string | null) {
   const role = String(value || '').toLowerCase();
   if (role === 'admin' || role === 'manager' || role === 'kitchen' || role === 'delivery') return role;

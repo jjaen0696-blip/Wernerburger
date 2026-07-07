@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './context/CartContext';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -8,38 +9,52 @@ import Delivery from './pages/Delivery';
 import Admin from './pages/Admin';
 import POS from './pages/POS';
 import Dashboard from './pages/Dashboard';
+import Login from './pages/Login';
+import PrivateRoute from './components/PrivateRoute';
 
-type Page = 'home' | 'menu' | 'kitchen' | 'delivery' | 'admin' | 'pos' | 'dashboard';
+type Page = 'home' | 'menu' | 'kitchen' | 'delivery' | 'login' | 'admin' | 'pos' | 'dashboard';
 
-const API_BASE = import.meta.env.VITE_API_BASE || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://127.0.0.1:5174' : 'https://wernerburger.onrender.com');
-const api = (path: string) => `${API_BASE}${path}`;
-
-function App() {
+function AppContent() {
   const [page, setPage] = useState<Page>('home');
-  const [user, setUser] = useState(null);
+  const { user, signOut } = useAuth();
 
   const navigate = (p: Page) => {
     setPage(p);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // login removed: no client-side auth in this build
-
-  const heroMount = typeof document !== 'undefined' ? document.getElementById('hero') : null;
-
   return (
     <CartProvider>
       <div className="min-h-screen bg-transparent font-sans antialiased text-white">
-        {/* Login removed: no client-side auth UI */}
+        {user && (
+          <div className="fixed top-6 right-6 z-50 flex items-center gap-3 rounded-full bg-black/70 p-2 shadow-lg backdrop-blur-md">
+            <span className="text-sm text-white">{user.email ?? 'Admin'}</span>
+            <button onClick={async () => { await signOut(); setPage('home'); }} className="rounded-full bg-amber-500 px-3 py-1 text-sm font-black text-stone-900">Cerrar</button>
+          </div>
+        )}
+
+        {page === 'home' && !user && (
+          <div className="fixed top-6 right-6 z-40">
+            <button onClick={() => setPage('login')} className="rounded-full bg-amber-500 px-3 py-2 font-black text-stone-900">Iniciar sesión</button>
+          </div>
+        )}
 
         <main className="relative overflow-x-hidden">
           {page === 'home' ? <Home onNavigate={navigate} />
             : page === 'menu' ? <Menu />
             : page === 'kitchen' ? <Kitchen onNavigate={navigate} />
             : page === 'delivery' ? <Delivery />
-            : page === 'admin' ? <Admin />
-            : page === 'dashboard' ? <Dashboard />
-            : <POS />}
+            : page === 'login' ? <Login onSuccess={() => setPage('dashboard')} />
+            : page === 'admin' ? (
+              <PrivateRoute onUnauthorized={() => setPage('login')} allowedRoles={['admin', 'manager', 'kitchen', 'delivery']}>
+                <Admin />
+              </PrivateRoute>
+            ) : page === 'dashboard' ? (
+              <PrivateRoute onUnauthorized={() => setPage('login')} allowedRoles={['admin', 'manager']}>
+                <Dashboard />
+              </PrivateRoute>
+            ) : page === 'pos' ? <POS />
+            : null}
         </main>
         {(page === 'home' || page === 'menu') && <Footer />}
       </div>
@@ -47,4 +62,10 @@ function App() {
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}

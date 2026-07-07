@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
 import { AlertTriangle, ArrowDownLeft, ArrowUpRight, PackageCheck, PlusCircle, Store, TrendingUp, Users, Warehouse } from 'lucide-react';
 
@@ -11,6 +12,7 @@ interface InventoryItem { id: string; branch_id: string; ingredient_id: string; 
 interface UserRecord { id: string; username: string; email?: string; branch_id?: string | null; role?: 'admin' | 'manager' | 'kitchen' | 'delivery'; }
 
 export default function Admin() {
+  const { getAccessToken } = useAuth();
   const [alerts, setAlerts] = useState<any[]>([]);
   const [summary, setSummary] = useState<any[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -54,12 +56,15 @@ export default function Admin() {
 
   const loadData = async (selectedBranchId?: string) => {
     try {
+      const token = getAccessToken();
+      const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
+
       const [branchesRes, ingredientsRes, alertsRes, summaryRes, usersRes] = await Promise.all([
         fetch(api('/branches')),
         fetch(api('/ingredients')),
-        fetch(api('/alerts')),
-        fetch(api('/reports/sales-summary')),
-        fetch(api('/users')),
+        fetch(api('/alerts'), { headers: { ...authHeaders } }),
+        fetch(api('/reports/sales-summary'), { headers: { ...authHeaders } }),
+        fetch(api('/users'), { headers: { ...authHeaders } }),
       ]);
       const branchesData = await branchesRes.json();
       const ingredientsData = await ingredientsRes.json();
