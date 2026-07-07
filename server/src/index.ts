@@ -362,6 +362,21 @@ app.post('/users', async (req, res) => {
   }
 });
 
+app.delete('/users/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (USE_LOCAL_SQLITE) {
+      localDb.prepare('DELETE FROM users WHERE id = ?').run(id);
+      return res.json({ success: true });
+    }
+    const { error } = await supabase.from('app_users').delete().eq('id', id);
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/users/:id/roles', async (req, res) => {
   try {
     const { id } = req.params;
@@ -456,6 +471,20 @@ app.post('/purchases', async (req, res) => {
       }
     }
     res.json(purchase);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/purchases', async (_req, res) => {
+  try {
+    if (USE_LOCAL_SQLITE) {
+      const rows = localDb.prepare('SELECT * FROM purchases ORDER BY created_at DESC').all();
+      return res.json(rows);
+    }
+    const { data, error } = await supabase.from('purchases').select('*').order('created_at', { ascending: false });
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

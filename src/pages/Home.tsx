@@ -18,7 +18,7 @@ const BRANCHES = [
 
 type Branch = { id: string; name: string; address: string; is_closed?: boolean };
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://wernerburger.onrender.com';
+const API_BASE = import.meta.env.VITE_API_BASE || (import.meta.env.DEV ? 'http://127.0.0.1:5174' : 'https://wernerburger.onrender.com');
 const api = (path: string) => `${API_BASE}${path}`;
 
 export default function Home({ onNavigate, onLogin }: HomeProps) {
@@ -65,8 +65,8 @@ export default function Home({ onNavigate, onLogin }: HomeProps) {
         {/* Background image */}
         <div className="absolute inset-0">
           <img
-            src="/werner-favicon.png"
-            alt="Werner Burger logo"
+            src="/hero-bg.jpg"
+            alt="Fondo premium Werner Burger"
             className="w-full h-full object-cover object-center scale-110"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/55 to-black/20" />
@@ -157,7 +157,7 @@ export default function Home({ onNavigate, onLogin }: HomeProps) {
                       className="absolute z-50 mt-3 w-full rounded-[2rem] border border-amber-400/20 shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-2xl overflow-hidden"
                       style={{ backgroundImage: 'linear-gradient(135deg, rgba(15,15,15,0.96), rgba(35,18,4,0.92))' }}
                     >
-                      <div className="max-h-[24rem] overflow-y-auto pr-1 [scrollbar-width:thin] [scrollbar-color:#f59e0b_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-white/5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-amber-500/70 [&::-webkit-scrollbar-thumb:hover]:bg-amber-400 overflow-touch">
+                      <div className="max-h-[12rem] overflow-y-auto pr-1 ios-scrollbar [scrollbar-width:thin] [scrollbar-color:#f59e0b_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-white/5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-amber-500/70 [&::-webkit-scrollbar-thumb:hover]:bg-amber-400 overscroll-y-contain">
                         <div className="space-y-3 p-3">
                           {branches.map(branch => (
                             <button

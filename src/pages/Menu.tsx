@@ -23,7 +23,7 @@ type FilterCategory = 'todas' | Category;
 type PaymentMethod = 'efectivo' | 'yappy';
 type DeliveryType = 'local' | 'delivery' | null;
 
-const API_BASE = import.meta.env.VITE_API_BASE || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://127.0.0.1:5174' : 'https://wernerburger.onrender.com');
+const API_BASE = import.meta.env.VITE_API_BASE || (import.meta.env.DEV ? 'http://127.0.0.1:5174' : 'https://wernerburger.onrender.com');
 const api = (path: string) => `${API_BASE}${path}`;
 
 const badgeWidgets = [

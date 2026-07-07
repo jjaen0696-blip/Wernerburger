@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://wernerburger.onrender.com';
+const API_BASE = import.meta.env.VITE_API_BASE || (import.meta.env.DEV ? 'http://127.0.0.1:5174' : 'https://wernerburger.onrender.com');
 const api = (path: string) => `${API_BASE}${path}`;
 
 interface POSProps {

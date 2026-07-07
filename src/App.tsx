@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { CartProvider } from './context/CartContext';
 import Footer from './components/Footer';
@@ -16,17 +16,43 @@ type Page = 'home' | 'menu' | 'kitchen' | 'delivery' | 'login' | 'admin' | 'pos'
 
 function AppContent() {
   const [page, setPage] = useState<Page>('home');
-  const { user, signOut } = useAuth();
+  const { user, session, loading, signOut } = useAuth();
 
   const navigate = (p: Page) => {
     setPage(p);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('werner-app-page', p);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const savedPage = window.localStorage.getItem('werner-app-page') as Page | null;
+    const publicPages: Page[] = ['home', 'menu', 'kitchen', 'delivery', 'login', 'pos'];
+
+    if (!loading) {
+      if (user && session) {
+        if (savedPage && savedPage !== 'login' && savedPage !== 'home') {
+          setPage(savedPage);
+        } else {
+          setPage('dashboard');
+        }
+      } else {
+        setPage(savedPage && publicPages.includes(savedPage) ? savedPage : 'home');
+      }
+    }
+  }, [loading, user, session]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem('werner-app-page', page);
+  }, [page]);
 
   return (
     <CartProvider>
       <div className="min-h-screen bg-transparent font-sans antialiased text-white">
-        {user && (
+        {!loading && user && session && (
           <div style={{ top: 'calc(env(safe-area-inset-top, 1.5rem))', right: 'calc(env(safe-area-inset-right, 1.5rem))' }} className="fixed z-50 flex items-center gap-3 rounded-full bg-black/70 p-2 shadow-lg backdrop-blur-md">
             <span className="text-sm text-white">{user.user_metadata?.username ?? user.email ?? 'Admin'}</span>
             <button onClick={async () => { await signOut(); setPage('home'); }} className="rounded-full bg-amber-500 px-3 py-1 text-sm font-black text-stone-900">Cerrar</button>

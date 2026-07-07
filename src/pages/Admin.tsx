@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
 import { AlertTriangle, ArrowDownLeft, ArrowUpRight, PackageCheck, PlusCircle, Store, TrendingUp, Users } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://127.0.0.1:5174' : 'https://wernerburger.onrender.com');
+const API_BASE = import.meta.env.VITE_API_BASE || (import.meta.env.DEV ? 'http://127.0.0.1:5174' : 'https://wernerburger.onrender.com');
 const api = (path: string) => `${API_BASE}${path}`;
 
 interface Branch { id: string; name: string; address?: string; is_closed?: boolean; }

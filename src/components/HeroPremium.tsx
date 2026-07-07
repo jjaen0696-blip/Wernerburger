@@ -11,7 +11,12 @@ export default function HeroPremium({ value, onChange }: { value?: string; onCha
       className="relative overflow-hidden py-16 sm:py-20 lg:py-24 min-h-[55vh] sm:min-h-[60vh] lg:min-h-[65vh] hero-premium"
     >
       <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(245,158,11,0.14),_transparent_32%),radial-gradient(circle_at_20%_20%,_rgba(255,255,255,0.08),_transparent_22%),linear-gradient(180deg,_rgba(12,12,12,0.95),_rgba(4,4,4,0.8))]" />
+        <img
+          src="/hero-bg.jpg"
+          alt="Fondo premium Werner Burger"
+          className="absolute inset-0 h-full w-full object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-black/70" />
         <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/45 to-transparent" />
         <div className="hero-ambient" />
         <div className="hero-smoke" />
