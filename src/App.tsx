@@ -85,7 +85,17 @@ function App() {
   return (
     <CartProvider>
       <div className="min-h-screen bg-transparent font-sans antialiased text-white">
-        {/* Botón Login eliminado según solicitud */}
+        {/* Botón Login fijo en esquina superior derecha que abre el modal */}
+        {!user && (
+          <button
+            type="button"
+            onClick={() => setLoginOpen(true)}
+            aria-label="Abrir login"
+            className="fixed top-4 right-4 z-[90] flex items-center gap-2 rounded-full bg-amber-500/95 px-3 py-2 text-sm font-black text-stone-950 shadow-lg hover:brightness-110"
+          >
+            Login
+          </button>
+        )}
 
         {user && (
           <div className="fixed top-5 right-5 z-[70] flex items-center gap-3">
