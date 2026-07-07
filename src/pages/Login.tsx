@@ -1,9 +1,12 @@
 import { useState, type FormEvent } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
-interface LoginProps { onSuccess?: () => void; }
+interface LoginProps {
+  onSuccess?: () => void;
+  onBack?: () => void;
+}
 
-export default function Login({ onSuccess }: LoginProps) {
+export default function Login({ onSuccess, onBack }: LoginProps) {
   const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -56,10 +59,19 @@ export default function Login({ onSuccess }: LoginProps) {
             </div>
             <div className="relative flex items-center px-8 py-12 sm:px-12 sm:py-16 lg:px-14 lg:py-20">
               <div className="w-full rounded-[1.75rem] border border-white/10 bg-slate-900/95 p-8 shadow-2xl shadow-slate-950/40">
-                <div className="mb-8">
-                  <p className="text-xs uppercase tracking-[0.28em] text-amber-300/90">Inicio de sesión</p>
-                  <h3 className="mt-3 text-3xl font-semibold text-white">Accede a tu cuenta</h3>
-                  <p className="mt-3 text-sm text-slate-400">Utiliza el e-mail y la contraseña de tu usuario administrativo.</p>
+                <div className="mb-8 flex items-center justify-between gap-4">
+                  <button
+                    type="button"
+                    onClick={onBack}
+                    className="rounded-full border border-slate-700 bg-slate-900/95 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-800"
+                  >
+                    Volver al inicio
+                  </button>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.28em] text-amber-300/90">Inicio de sesión</p>
+                    <h3 className="mt-3 text-3xl font-semibold text-white">Accede a tu cuenta</h3>
+                    <p className="mt-3 text-sm text-slate-400">Utiliza el e-mail y la contraseña de tu usuario administrativo.</p>
+                  </div>
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <label className="block text-sm font-medium text-slate-300">

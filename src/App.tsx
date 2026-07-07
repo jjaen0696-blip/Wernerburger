@@ -44,7 +44,7 @@ function AppContent() {
             : page === 'menu' ? <Menu />
             : page === 'kitchen' ? <Kitchen onNavigate={navigate} />
             : page === 'delivery' ? <Delivery />
-            : page === 'login' ? <Login onSuccess={() => setPage('dashboard')} />
+            : page === 'login' ? <Login onSuccess={() => setPage('dashboard')} onBack={() => setPage('home')} />
             : page === 'admin' ? (
               <PrivateRoute onUnauthorized={() => setPage('login')} allowedRoles={['admin', 'manager', 'kitchen', 'delivery']}>
                 <Admin />
