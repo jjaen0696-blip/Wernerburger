@@ -157,7 +157,7 @@ export default function Home({ onNavigate, onLogin }: HomeProps) {
                       className="absolute z-50 mt-3 w-full rounded-[2rem] border border-amber-400/20 shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-2xl overflow-hidden"
                       style={{ backgroundImage: 'linear-gradient(135deg, rgba(15,15,15,0.96), rgba(35,18,4,0.92))' }}
                     >
-                      <div className="max-h-72 overflow-y-auto pr-1 [scrollbar-width:thin] [scrollbar-color:#f59e0b_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-white/5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-amber-500/70 [&::-webkit-scrollbar-thumb:hover]:bg-amber-400">
+                      <div className="max-h-[24rem] overflow-y-auto pr-1 [scrollbar-width:thin] [scrollbar-color:#f59e0b_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-white/5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-amber-500/70 [&::-webkit-scrollbar-thumb:hover]:bg-amber-400 overflow-touch">
                         <div className="space-y-3 p-3">
                           {branches.map(branch => (
                             <button

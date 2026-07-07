@@ -255,13 +255,13 @@ export default function Menu() {
     <div className="bg-black min-h-screen pb-28">
       <HeroPremium value={search} onChange={(e) => setSearch(e.target.value)} />
 
-      <div className="relative mt-10 overflow-hidden py-10">
+      <div className="relative overflow-hidden py-10">
         <div className="absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-black/40 to-transparent" />
         <div className="absolute right-0 top-0 h-64 w-64 rounded-full bg-amber-500/10 blur-3xl" />
         <div className="absolute left-0 bottom-0 h-72 w-72 rounded-full bg-white/5 blur-3xl" />
 
         <div className="max-w-7xl mx-auto grid gap-10 lg:grid-cols-[minmax(20rem,28%)_minmax(0,1fr)] px-4 sm:px-6 lg:px-8">
-          <aside className="relative overflow-hidden rounded-[2.25rem] border border-white/10 bg-[rgba(12,12,12,0.82)] p-6 shadow-[0_32px_90px_rgba(0,0,0,0.45)] backdrop-blur-xl lg:sticky lg:top-24">
+          <aside className="relative self-start overflow-hidden rounded-[2.25rem] border border-white/10 bg-[rgba(12,12,12,0.82)] p-6 shadow-[0_32px_90px_rgba(0,0,0,0.45)] backdrop-blur-xl lg:sticky lg:top-24">
             <div className="mb-6 space-y-3">
               <p className="text-xs uppercase tracking-[0.35em] text-amber-200/70">Panel premium</p>
               <h2 className="text-3xl font-black text-white tracking-[0.04em]">Control de menú</h2>
@@ -354,23 +354,23 @@ export default function Menu() {
       )}
 
       {checkoutOpen && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/75 backdrop-blur-sm px-3 py-4 overflow-y-auto sm:items-center sm:px-6 sm:py-8">
-          <div className="relative w-full max-w-[min(100%,40rem)] overflow-hidden rounded-[2rem] border border-amber-400/20 bg-[#0c0b0f]/95 shadow-[0_32px_96px_rgba(0,0,0,0.65)] max-h-[90vh] ios-scrollbar">
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/75 backdrop-blur-sm px-3 py-4 overflow-y-auto overscroll-contain sm:items-center sm:px-6 sm:py-8">
+          <div className="relative w-full max-w-[min(100%,34rem)] overflow-hidden rounded-[2rem] border border-amber-400/20 bg-[#0c0b0f]/95 shadow-[0_32px_96px_rgba(0,0,0,0.65)] max-h-[90vh] ios-scrollbar">
             <button
               onClick={handleCloseCheckout}
-              className="absolute right-5 top-5 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-gray-300 transition hover:bg-white/15"
+              className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-gray-300 transition hover:bg-white/15"
               aria-label="Cerrar"
             >
               <X className="h-5 w-5" />
             </button>
 
-            <div className="space-y-4 p-4 sm:p-5">
+            <div className="space-y-4 p-3 sm:p-4">
               <div className="rounded-3xl border border-white/10 bg-white/5 p-4 shadow-[0_8px_28px_rgba(0,0,0,0.25)]">
                 <div className="mb-3 flex items-center gap-2 text-[12px] uppercase tracking-[0.35em] text-amber-200 font-bold">
                   <CreditCard className="h-4 w-4" />
                   Tu pedido
                 </div>
-                <div className="space-y-3 max-h-[38vh] overflow-auto pr-1 ios-scrollbar">
+                <div className="space-y-3 max-h-[38vh] overflow-y-auto pr-1 ios-scrollbar">
                   {cart.length === 0 ? (
                     <div className="rounded-2xl bg-white/5 p-4 text-center text-sm text-gray-300">No hay artículos en el carrito.</div>
                   ) : (
