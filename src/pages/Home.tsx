@@ -60,7 +60,7 @@ export default function Home({ onNavigate }: HomeProps) {
   return (
     <div className="bg-black">
       {/* HERO */}
-      <section className="relative min-h-screen flex items-start overflow-hidden">
+      <section id="hero" className="relative min-h-screen flex items-start overflow-hidden">
         {/* Background image */}
         <div className="absolute inset-0">
           <img

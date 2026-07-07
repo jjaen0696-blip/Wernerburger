@@ -83,20 +83,22 @@ function App() {
     }
   };
 
+  const heroMount = typeof document !== 'undefined' ? document.getElementById('hero') : null;
+
   return (
     <CartProvider>
       <div className="min-h-screen bg-transparent font-sans antialiased text-white">
-        {/* Botón Login fijo renderizado como portal en document.body para garantizar position:fixed estable */}
-        {typeof document !== 'undefined' && !user && createPortal(
+        {/* Botón Login montado dentro del hero (si existe) para que quede sobre la imagen y desaparezca al scrollear fuera */}
+        {typeof document !== 'undefined' && !user && page === 'home' && heroMount && createPortal(
           <button
             type="button"
             onClick={() => setLoginOpen(true)}
             aria-label="Abrir login"
-            className="fixed top-4 right-4 z-[9999] flex items-center gap-2 rounded-full bg-amber-500/95 px-3 py-2 text-sm font-black text-stone-950 shadow-lg"
+            className="absolute top-6 right-6 z-[9999] flex items-center gap-2 rounded-full bg-amber-500/95 px-3 py-2 text-sm font-black text-stone-950 shadow-lg"
           >
             Login
           </button>,
-          document.body
+          heroMount
         )}
 
         {user && (
