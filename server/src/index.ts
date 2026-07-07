@@ -488,4 +488,5 @@ app.get('/reports/sales-summary', async (req, res) => {
 });
 
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5174;
+console.log("SERVER STARTED WITH CORS CONFIG");
 app.listen(port, () => console.log(`Server listening on ${port}`));
