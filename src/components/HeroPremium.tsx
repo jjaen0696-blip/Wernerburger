@@ -8,7 +8,7 @@ export default function HeroPremium({ value, onChange }: { value?: string; onCha
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: 'easeOut' }}
-      className="relative overflow-hidden py-20 sm:py-24 lg:py-28 min-h-[34rem] sm:min-h-[40rem] lg:min-h-[46rem] hero-premium"
+      className="relative overflow-hidden py-16 sm:py-20 lg:py-24 min-h-[55vh] sm:min-h-[60vh] lg:min-h-[65vh] hero-premium"
     >
       <div className="absolute inset-0">
         <img

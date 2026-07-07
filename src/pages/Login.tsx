@@ -30,7 +30,7 @@ export default function Login({ onSuccess, onBack }: LoginProps) {
     <div className="min-h-screen bg-[#130202]">
       <div className="relative min-h-screen flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
         <div className="absolute inset-0 bg-gradient-to-br from-[#130202] via-[#330a0a] to-[#170606]" />
-        <div className="relative w-full max-w-md overflow-hidden rounded-[2rem] border border-[#5b110d]/20 bg-[#1b0b0b]/95 p-8 shadow-[0_40px_120px_-40px_rgba(15,10,10,0.95)] backdrop-blur-xl">
+        <div className="relative w-full max-w-[min(100%,36rem)] overflow-hidden rounded-[2rem] border border-[#5b110d]/20 bg-[#1b0b0b]/95 p-8 shadow-[0_40px_120px_-40px_rgba(15,10,10,0.95)] backdrop-blur-xl">
           <button
             type="button"
             onClick={onBack}

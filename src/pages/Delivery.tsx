@@ -8,7 +8,7 @@ export default function Delivery() {
   return (
     <div className="bg-black min-h-screen pb-16 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8 rounded-[2rem] border border-fuchsia-400/15 bg-[#11070f]/95 p-8 shadow-[0_30px_80px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+        <div className="mb-8 rounded-[2rem] border border-fuchsia-400/15 bg-[#11070f]/95 p-6 md:p-8 shadow-[0_30px_80px_rgba(0,0,0,0.5)] backdrop-blur-xl">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.35em] text-fuchsia-300/70">Interfaz de delivery</p>
@@ -47,9 +47,9 @@ export default function Delivery() {
                       <span className="rounded-full border border-fuchsia-400/30 bg-black/40 px-3 py-1 text-fuchsia-100">Asignado</span>
                     </div>
                     <div className="flex flex-wrap items-center gap-2 text-sm text-gray-300">
-                      <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
+                      <span className="inline-flex max-w-full items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 break-words">
                         <MapPin className="h-4 w-4 text-fuchsia-300" />
-                        {order.address ?? 'Ubicación no disponible'}
+                        <span className="break-words">{order.address ?? 'Ubicación no disponible'}</span>
                       </span>
                       <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
                         <Truck className="h-4 w-4 text-fuchsia-300" />

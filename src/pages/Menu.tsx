@@ -224,7 +224,7 @@ export default function Menu() {
         <div className="absolute right-0 top-0 h-64 w-64 rounded-full bg-amber-500/10 blur-3xl" />
         <div className="absolute left-0 bottom-0 h-72 w-72 rounded-full bg-white/5 blur-3xl" />
 
-        <div className="max-w-7xl mx-auto grid gap-8 lg:grid-cols-[320px_minmax(0,1fr)] px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto grid gap-8 lg:grid-cols-[minmax(18rem,32%)_minmax(0,1fr)] px-4 sm:px-6 lg:px-8">
           <aside className="relative rounded-[2rem] border border-white/10 bg-black/40 p-6 shadow-[0_32px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl lg:sticky lg:top-24">
             <div className="mb-6 space-y-3">
               <p className="text-xs uppercase tracking-[0.35em] text-amber-200/70">Explora</p>

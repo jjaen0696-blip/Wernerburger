@@ -102,7 +102,7 @@ export default function Dashboard({ currentUser }: DashboardProps) {
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(212,175,55,0.16),_transparent_30%),linear-gradient(135deg,_#060606_0%,_#101010_55%,_#050505_100%)] px-2 py-3 text-white sm:px-3 lg:px-4">
       <div className="mx-auto flex max-w-7xl flex-col gap-3 lg:flex-row">
-        <aside className={`hidden rounded-[24px] border border-white/10 bg-[#0b0b0b]/85 p-4 shadow-[0_24px_80px_rgba(0,0,0,0.38)] backdrop-blur-xl lg:flex lg:flex-col ${sidebarCollapsed ? 'w-24' : 'w-72'}`}>
+        <aside className={`hidden rounded-[24px] border border-white/10 bg-[#0b0b0b]/85 p-4 shadow-[0_24px_80px_rgba(0,0,0,0.38)] backdrop-blur-xl lg:flex lg:flex-col ${sidebarCollapsed ? 'lg:w-[clamp(5.5rem,14vw,18rem)]' : 'lg:w-[clamp(17rem,22vw,22rem)]'}`}>
           <div className="mb-6 flex items-center justify-between">
             {!sidebarCollapsed && (
               <div>

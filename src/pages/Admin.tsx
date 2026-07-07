@@ -302,7 +302,7 @@ export default function Admin() {
         </div>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
         <section className="rounded-[22px] border border-white/10 bg-[#0f0c09]/85 p-5 shadow-[0_25px_80px_rgba(0,0,0,0.4)] backdrop-blur-xl">
           <div className="mb-4 flex items-center justify-between">
             <div>
@@ -327,21 +327,21 @@ export default function Admin() {
             </label>
           </div>
 
-          <div className="overflow-hidden rounded-[16px] border border-white/10">
-            <table className="min-w-full text-sm">
+          <div className="overflow-x-auto rounded-[16px] border border-white/10">
+            <table className="w-full min-w-full text-sm">
               <thead className="bg-white/5 text-left text-gray-300">
                 <tr>
-                  <th className="px-3 py-3">Ingrediente</th>
-                  <th className="px-3 py-3">Stock</th>
-                  <th className="px-3 py-3">Unidad</th>
+                  <th className="px-3 py-3 text-left">Ingrediente</th>
+                  <th className="px-3 py-3 text-left">Stock</th>
+                  <th className="px-3 py-3 text-left">Unidad</th>
                 </tr>
               </thead>
               <tbody>
                 {inventory.map((item) => (
                   <tr key={item.id} className="border-t border-white/10 bg-white/5">
-                    <td className="px-3 py-3 font-semibold text-white">{item.ingredient_name || item.ingredient_id}</td>
+                    <td className="px-3 py-3 font-semibold text-white break-words">{item.ingredient_name || item.ingredient_id}</td>
                     <td className="px-3 py-3 text-amber-200">{item.qty}</td>
-                    <td className="px-3 py-3 text-gray-400">{item.unit || 'unidad'}</td>
+                    <td className="px-3 py-3 text-gray-400 break-words">{item.unit || 'unidad'}</td>
                   </tr>
                 ))}
                 {inventory.length === 0 && (

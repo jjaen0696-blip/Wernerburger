@@ -27,7 +27,7 @@ function AppContent() {
     <CartProvider>
       <div className="min-h-screen bg-transparent font-sans antialiased text-white">
         {user && (
-          <div className="fixed top-6 right-6 z-50 flex items-center gap-3 rounded-full bg-black/70 p-2 shadow-lg backdrop-blur-md">
+          <div style={{ top: 'calc(env(safe-area-inset-top, 1.5rem))', right: 'calc(env(safe-area-inset-right, 1.5rem))' }} className="fixed z-50 flex items-center gap-3 rounded-full bg-black/70 p-2 shadow-lg backdrop-blur-md">
             <span className="text-sm text-white">{user.user_metadata?.username ?? user.email ?? 'Admin'}</span>
             <button onClick={async () => { await signOut(); setPage('home'); }} className="rounded-full bg-amber-500 px-3 py-1 text-sm font-black text-stone-900">Cerrar</button>
           </div>

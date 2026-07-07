@@ -61,7 +61,7 @@ export default function Home({ onNavigate, onLogin }: HomeProps) {
   return (
     <div className="bg-black">
       {/* HERO */}
-      <section id="hero" className="relative min-h-screen flex items-start overflow-hidden">
+      <section id="hero" className="relative min-h-[calc(100vh-1.5rem)] flex items-start overflow-hidden pb-8" style={{ paddingTop: 'env(safe-area-inset-top, 1.25rem)' }}>
         {/* Background image */}
         <div className="absolute inset-0">
           <img
@@ -74,7 +74,7 @@ export default function Home({ onNavigate, onLogin }: HomeProps) {
         </div>
 
         {/* Content */}
-        <div className="relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-12 w-full">
+        <div className="relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-16 w-full">
           <div className="max-w-2xl">
             <div className="flex flex-col items-start gap-3 mb-6">
               <div className="rounded-full border-4 border-amber-400/80 bg-black/70 p-1.5 shadow-[0_0_24px_rgba(245,158,11,0.35)]">
@@ -112,10 +112,23 @@ export default function Home({ onNavigate, onLogin }: HomeProps) {
 
             {/* Branch selector */}
             <div className="max-w-md">
-              <label className="mb-2 block text-sm font-semibold tracking-[0.3em] text-amber-400 uppercase">
-                ELIGE TU SUCURSAL
-              </label>
-              <p className="mb-3 text-sm text-gray-300">Selecciona una sucursal</p>
+              <div className="mb-4 flex items-start justify-between gap-4">
+                <div>
+                  <label className="mb-2 block text-sm font-semibold tracking-[0.3em] text-amber-400 uppercase">
+                    ELIGE TU SUCURSAL
+                  </label>
+                  <p className="text-sm text-gray-300">Selecciona una sucursal</p>
+                </div>
+                {onLogin && (
+                  <button
+                    type="button"
+                    onClick={onLogin}
+                    className="rounded-full border border-amber-300/40 bg-black/70 px-5 py-3 text-sm font-black uppercase tracking-[0.16em] text-amber-200 transition hover:border-amber-400/60 hover:bg-amber-500/10"
+                  >
+                    Iniciar sesión
+                  </button>
+                )}
+              </div>
               <div className="relative">
                 <button
                   onClick={() => setOpen(o => !o)}
@@ -179,16 +192,7 @@ export default function Home({ onNavigate, onLogin }: HomeProps) {
                 )}
               </div>
 
-              <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]">
-                {onLogin && (
-                  <button
-                    type="button"
-                    onClick={onLogin}
-                    className="w-full rounded-full border border-amber-300/40 bg-black/70 px-6 py-3 text-sm font-black uppercase tracking-[0.18em] text-amber-200 transition hover:border-amber-400/60 hover:bg-amber-500/10"
-                  >
-                    Iniciar sesión
-                  </button>
-                )}
+              <div className="mt-4">
                 <button
                   onClick={handleContinue}
                   disabled={!selected || selected.is_closed}
