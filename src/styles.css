@@ -13,6 +13,7 @@
     background-image: linear-gradient(135deg, #050303 0%, #0b0606 45%, #030202 100%);
     color: #f8f5f2;
     min-height: 100vh;
+    margin: 0;
   }
 
   /* Tipografía global más moderna y equilibrada */
