@@ -32,6 +32,17 @@ Otros endpoints:
 - `GET /reports/sales-summary` (query params: from, to)
 
 Despliegue recomendado:
- - Desplegar la carpeta `server/` en Vercel como un proyecto separado o en Render.
- - Configurar `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` como secrets/variables de entorno.
- - Si el frontend está en Vercel, usar el dominio del backend en un archivo de configuración o proxy.
+ - Desplegar la carpeta `server/` como un servicio web separado en Render.
+ - Configurar `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` (o `SUPABASE_KEY`) como variables de entorno.
+ - No desplegar el backend como un Static Site en Render.
+ - No usar proxies temporales en Vercel; el frontend debe llamar directamente al backend en Render.
+
+Render Web Service recomendado:
+ - Root Directory: `server`
+ - Build Command: `npm install && npm run build`
+ - Start Command: `npm start`
+ - Variables de entorno:
+   - `SUPABASE_URL`
+   - `SUPABASE_SERVICE_ROLE_KEY` o `SUPABASE_KEY`
+   - `NODE_ENV=production`
+   - `PORT=5174` (opcional)
