@@ -21,7 +21,7 @@ type Branch = { id: string; name: string; address: string; is_closed?: boolean }
 const API_BASE = import.meta.env.VITE_API_BASE || 'https://wernerburger.onrender.com';
 const api = (path: string) => `${API_BASE}${path}`;
 
-export default function Home({ onNavigate }: HomeProps) {
+export default function Home({ onNavigate, onLogin }: HomeProps) {
   const [open, setOpen] = useState(false);
   const [branches, setBranches] = useState<Branch[]>(BRANCHES);
   const [selected, setSelected] = useState<Branch | null>(BRANCHES[0] || null);
