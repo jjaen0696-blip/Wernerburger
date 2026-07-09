@@ -96,15 +96,19 @@ if (!USE_LOCAL_SQLITE && !supabase) {
 
 async function verifyAppUsersTableAccess() {
   if (!supabase) return;
-  try {
-    const { data, error } = await supabase.from('app_users').select('id').limit(1).maybeSingle();
-    if (error) {
-      console.error('Supabase app_users access check failed:', error.message || error);
-    } else {
-      console.log('Supabase app_users table is accessible.', data ? 'Rows found or table exists.' : 'Table exists but no rows yet.');
+  const tables = ['app_users', 'users'];
+
+  for (const table of tables) {
+    try {
+      const { data, error } = await supabase.from(table).select('id').limit(1).maybeSingle();
+      if (error) {
+        console.error(`Supabase ${table} access check failed:`, error.message || error);
+      } else {
+        console.log(`Supabase ${table} table is accessible.`, data ? 'Rows found or table exists.' : 'Table exists but no rows yet.');
+      }
+    } catch (err: any) {
+      console.error(`Unexpected error verifying ${table} table:`, err?.message || err);
     }
-  } catch (err: any) {
-    console.error('Unexpected error verifying app_users table:', err?.message || err);
   }
 }
 

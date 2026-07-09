@@ -68,13 +68,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         continue;
       }
       if (data?.email) {
+        console.log(`Supabase login found user in ${table}:`, username);
         return { email: data.email as string, error: null };
       }
     }
 
+    if (lastError) {
+      return {
+        email: null,
+        error: lastError,
+      };
+    }
+
     return {
       email: null,
-      error: lastError ?? { message: 'Usuario no encontrado en app_users o users.' },
+      error: null,
     };
   };
 
@@ -96,7 +104,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
       return {
         error: {
-          message: 'Usuario no encontrado. Asegura que la tabla app_users exista y que el usuario esté creado en Supabase.',
+          message: 'Usuario no encontrado. Asegura que la tabla app_users exista, que el usuario esté creado y que el username sea correcto.',
         },
       };
     }
