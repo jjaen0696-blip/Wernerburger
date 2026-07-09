@@ -50,13 +50,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const findEmailForUsername = async (username: string) => {
     if (!username) return { email: null, error: null };
-    if (username.includes('@')) return { email: username, error: null };
+    if (username.includes('@')) {
+      return {
+        email: null,
+        error: { message: 'Debes iniciar sesión con tu nombre de usuario, no con tu correo electrónico.' },
+      };
+    }
 
     const tables = ['app_users', 'users'];
     let lastError: any = null;
 
     for (const table of tables) {
-      const { data, error } = await supabase.from(table).select('email').eq('username', username).maybeSingle();
+      const { data, error } = await supabase.from(table).select('email').ilike('username', username).maybeSingle();
       if (error) {
         console.warn(`Supabase ${table} query warning:`, error.message || error);
         lastError = error;
