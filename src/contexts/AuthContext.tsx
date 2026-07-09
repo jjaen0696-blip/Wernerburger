@@ -49,11 +49,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const findEmailForUsername = async (username: string) => {
-    if (!username) return null;
-    if (username.includes('@')) return username;
-    const { data, error } = await supabase.from('app_users').select('email').eq('username', username).single();
-    if (error || !data?.email) return null;
-    return data.email as string;
+    if (!username) return { email: null, error: null };
+    if (username.includes('@')) return { email: username, error: null };
+
+    const tables = ['app_users', 'users'];
+    let lastError: any = null;
+
+    for (const table of tables) {
+      const { data, error } = await supabase.from(table).select('email').eq('username', username).maybeSingle();
+      if (error) {
+        console.warn(`Supabase ${table} query warning:`, error.message || error);
+        lastError = error;
+        continue;
+      }
+      if (data?.email) {
+        return { email: data.email as string, error: null };
+      }
+    }
+
+    return {
+      email: null,
+      error: lastError ?? { message: 'Usuario no encontrado en app_users o users.' },
+    };
   };
 
   const signIn = async (username: string, password: string) => {
@@ -61,11 +78,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { error: { message: 'Supabase client is not configured' } };
     }
     setLoading(true);
-    const email = await findEmailForUsername(username);
-    if (!email) {
+    const lookup = await findEmailForUsername(username);
+    if (lookup.error) {
       setLoading(false);
-      return { error: { message: 'Usuario no encontrado' } };
+      return {
+        error: {
+          message: `Error al consultar usuarios en Supabase: ${lookup.error.message || 'Revisa la tabla app_users y permisos.'}`,
+        },
+      };
     }
+    if (!lookup.email) {
+      setLoading(false);
+      return {
+        error: {
+          message: 'Usuario no encontrado. Asegura que la tabla app_users exista y que el usuario esté creado en Supabase.',
+        },
+      };
+    }
+    const email = lookup.email;
     const res = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (res.error) return { error: res.error };

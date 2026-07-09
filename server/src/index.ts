@@ -94,6 +94,22 @@ if (!USE_LOCAL_SQLITE && !supabase) {
   console.error('Supabase client unavailable: backend requests requiring database access will fail.');
 }
 
+async function verifyAppUsersTableAccess() {
+  if (!supabase) return;
+  try {
+    const { data, error } = await supabase.from('app_users').select('id').limit(1).maybeSingle();
+    if (error) {
+      console.error('Supabase app_users access check failed:', error.message || error);
+    } else {
+      console.log('Supabase app_users table is accessible.', data ? 'Rows found or table exists.' : 'Table exists but no rows yet.');
+    }
+  } catch (err: any) {
+    console.error('Unexpected error verifying app_users table:', err?.message || err);
+  }
+}
+
+void verifyAppUsersTableAccess();
+
 // If Supabase isn't configured, return a clear 500 for DB routes to avoid uncaught exceptions
 if (!USE_LOCAL_SQLITE && !supabase) {
   app.use((req, res, next) => {
