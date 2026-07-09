@@ -534,7 +534,9 @@ app.post('/purchases', async (req, res) => {
       const row = localDb.prepare('SELECT * FROM purchases WHERE id = ?').get(id);
       return res.json(row);
     }
-    const { data: purchase, error } = await supabase.from('purchases').insert([payload]).select().single();
+    const purchasePayload = { ...payload };
+    delete purchasePayload.items;
+    const { data: purchase, error } = await supabase.from('purchases').insert([purchasePayload]).select().single();
     if (error) return res.status(500).json({ error: error.message });
     if (payload.items && Array.isArray(payload.items)) {
       const items = payload.items.map((it: any) => ({ ...it, purchase_id: purchase.id }));
@@ -600,7 +602,9 @@ app.post('/orders', async (req, res) => {
       const orderRow = localDb.prepare('SELECT * FROM orders WHERE id = ?').get(id);
       return res.json(orderRow);
     }
-    const { data: order, error } = await supabase.from('orders').insert([payload]).select().single();
+    const orderPayload = { ...payload };
+    delete orderPayload.items;
+    const { data: order, error } = await supabase.from('orders').insert([orderPayload]).select().single();
     if (error) return res.status(500).json({ error: error.message });
     if (payload.items && Array.isArray(payload.items)) {
       const items = payload.items.map((it: any) => ({ ...it, order_id: order.id }));
