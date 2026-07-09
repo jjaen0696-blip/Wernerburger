@@ -48,7 +48,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  const findEmailForUsername = async (username: string) => {
+  const resolveEmailForUsername = async (username: string) => {
+    const apiBase = import.meta.env.VITE_API_BASE || (import.meta.env.DEV ? 'http://127.0.0.1:5174' : 'https://wernerburger.onrender.com');
     if (!username) return { email: null, error: null };
     if (username.includes('@')) {
       return {
@@ -57,33 +58,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
     }
 
-    const tables = ['app_users', 'users'];
-    let lastError: any = null;
+    try {
+      const resp = await fetch(`${apiBase}/auth/resolve-email?username=${encodeURIComponent(username)}`);
+      const result = await resp.json();
 
-    for (const table of tables) {
-      const { data, error } = await supabase.from(table).select('email').ilike('username', username).maybeSingle();
-      if (error) {
-        console.warn(`Supabase ${table} query warning:`, error.message || error);
-        lastError = error;
-        continue;
+      if (!resp.ok) {
+        return {
+          email: null,
+          error: { message: result.error || 'No se pudo resolver el correo del usuario.' },
+        };
       }
-      if (data?.email) {
-        console.log(`Supabase login found user in ${table}:`, username);
-        return { email: data.email as string, error: null };
-      }
-    }
 
-    if (lastError) {
+      return { email: result.email as string | null, error: null };
+    } catch (err: any) {
+      console.error('Auth server lookup failed:', err);
       return {
         email: null,
-        error: lastError,
+        error: { message: 'Error al consultar el servidor de autenticación. Revisa la configuración de Supabase.' },
       };
     }
-
-    return {
-      email: null,
-      error: null,
-    };
   };
 
   const signIn = async (username: string, password: string) => {
@@ -91,7 +84,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { error: { message: 'Supabase client is not configured' } };
     }
     setLoading(true);
-    const lookup = await findEmailForUsername(username);
+    const lookup = await resolveEmailForUsername(username);
     if (lookup.error) {
       setLoading(false);
       return {

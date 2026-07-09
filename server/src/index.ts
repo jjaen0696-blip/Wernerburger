@@ -55,6 +55,32 @@ app.use(express.json());
 app.get('/cors-test', (_req, res) => {
   res.json({ cors: 'ok' });
 });
+
+app.get('/auth/resolve-email', async (req, res) => {
+  try {
+    const username = String(req.query.username || '').trim();
+    if (!username) {
+      return res.status(400).json({ error: 'username is required' });
+    }
+
+    const tables = ['app_users', 'users'];
+    for (const table of tables) {
+      const { data, error } = await supabase.from(table).select('email').ilike('username', username).maybeSingle();
+      if (error) {
+        console.warn(`Supabase ${table} lookup error:`, error.message || error);
+        continue;
+      }
+      if (data?.email) {
+        return res.json({ email: data.email });
+      }
+    }
+
+    return res.status(404).json({ error: 'Usuario no encontrado' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err?.message || 'Internal server error' });
+  }
+});
+
 app.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
   if (err instanceof SyntaxError && 'body' in err) {
     return res.status(400).json({ error: 'JSON inválido' });
