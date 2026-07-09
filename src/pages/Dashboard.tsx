@@ -189,7 +189,9 @@ export default function Dashboard({ currentUser }: DashboardProps) {
       setBranches(nextBranches);
       setIngredients(nextIngredients);
       setRoles(nextRoles);
-      const branchFromUser = user?.user_metadata?.branch_id || user?.branch_id || nextBranches[0]?.id || '';
+      const storedUserBranchId = user?.user_metadata?.branch_id || user?.branch_id;
+      const validUserBranch = storedUserBranchId ? nextBranches.find((branch) => branch.id === storedUserBranchId) : undefined;
+      const branchFromUser = validUserBranch?.id || nextBranches[0]?.id || '';
       setSelectedBranchId((current) => current || branchFromUser);
       if (branchFromUser) {
         await loadInventory(branchFromUser);

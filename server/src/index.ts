@@ -138,7 +138,34 @@ async function verifyAppUsersTableAccess() {
   }
 }
 
+const DEFAULT_BRANCHES = [
+  { name: 'Werner Burguer - Centro', address: 'Av. Principal 123', is_closed: false },
+  { name: 'Werner Burguer - Norte', address: 'Calle Secundaria 45', is_closed: false },
+];
+
+async function ensureRemoteBranches() {
+  if (USE_LOCAL_SQLITE || !supabase) return;
+  try {
+    const { data: existing, error: selectError } = await supabase.from('branches').select('id').limit(1);
+    if (selectError) {
+      console.warn('Could not verify remote branches table:', selectError.message || selectError);
+      return;
+    }
+    if (Array.isArray(existing) && existing.length === 0) {
+      const { error: insertError } = await supabase.from('branches').insert(DEFAULT_BRANCHES);
+      if (insertError) {
+        console.warn('Could not insert default remote branches:', insertError.message || insertError);
+      } else {
+        console.log('Default remote branches inserted.');
+      }
+    }
+  } catch (err: any) {
+    console.warn('Unexpected error ensuring remote branches:', err?.message || err);
+  }
+}
+
 void verifyAppUsersTableAccess();
+void ensureRemoteBranches();
 
 // If Supabase isn't configured, return a clear 500 for DB routes to avoid uncaught exceptions
 if (!USE_LOCAL_SQLITE && !supabase) {

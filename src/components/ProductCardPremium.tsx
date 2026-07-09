@@ -59,13 +59,8 @@ export default function ProductCardPremium({ item, onAdd, compact }: { item: Men
 
         <p className={`text-sm leading-6 ${compact ? 'text-gray-400 line-clamp-2' : 'text-gray-300'} transition-colors duration-300`}>{item.description}</p>
 
-        <div className="mt-4 flex items-center justify-between gap-3">
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.32em] text-gray-400/90">Incluye ingredientes premium</p>
-          </div>
-          <button onClick={onAdd} className="btn-premium-sm inline-flex items-center justify-center rounded-full px-3.5 py-3 text-black shadow-[0_10px_20px_rgba(245,158,11,0.28)] transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_28px_rgba(245,158,11,0.32)]">
-            <Plus className="h-4 w-4" />
-          </button>
+        <div className="mt-4">
+          <p className="text-[11px] uppercase tracking-[0.32em] text-gray-400/90">Incluye ingredientes premium</p>
         </div>
       </div>
     </motion.article>

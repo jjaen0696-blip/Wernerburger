@@ -27,7 +27,7 @@ export default function Home({ onNavigate, onLogin }: HomeProps) {
   const [selected, setSelected] = useState<Branch | null>(BRANCHES[0] || null);
 
   useEffect(() => {
-    const storedBranchId = typeof window !== 'undefined' ? localStorage.getItem('werner-branch') : null;
+    const storedBranchId = typeof window !== 'undefined' ? window.localStorage.getItem('werner-branch') : null;
     fetch(api('/branches'))
       .then((response) => {
         if (!response.ok) throw new Error('Unable to load branches');
@@ -39,23 +39,35 @@ export default function Home({ onNavigate, onLogin }: HomeProps) {
           const assigned = data.find((branch) => branch.id === storedBranchId);
           const firstOpen = data.find((branch) => !branch.is_closed);
           setSelected(assigned && !assigned.is_closed ? assigned : firstOpen || data[0] || null);
+          return;
         }
+        setBranches([]);
+        setSelected(null);
       })
       .catch(() => {
         setBranches(BRANCHES);
         const assigned = BRANCHES.find((branch) => branch.id === storedBranchId);
-        setSelected(assigned && !assigned.is_closed ? assigned : BRANCHES.find((branch) => !branch.is_closed) || BRANCHES[0] || null);
+        const nextSelected = assigned && !assigned.is_closed ? assigned : BRANCHES.find((branch) => !branch.is_closed) || BRANCHES[0] || null;
+        setSelected(nextSelected);
       });
   }, []);
 
   const handleSelect = (branch: Branch) => {
     if (branch.is_closed) return;
     setSelected(branch);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('werner-branch', branch.id);
+    }
     setOpen(false);
   };
 
   const handleContinue = () => {
-    if (selected && !selected.is_closed) onNavigate('menu');
+    if (selected && !selected.is_closed) {
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('werner-branch', selected.id);
+      }
+      onNavigate('menu');
+    }
   };
 
   return (

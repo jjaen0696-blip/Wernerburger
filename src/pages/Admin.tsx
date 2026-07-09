@@ -75,8 +75,9 @@ export default function Admin() {
       const nextBranches = Array.isArray(branchesData) ? branchesData : [];
       const nextIngredients = Array.isArray(ingredientsData) ? ingredientsData : [];
       const nextUsers = Array.isArray(usersData) ? usersData : [];
-      const storedBranchId = typeof window !== 'undefined' ? localStorage.getItem('werner-branch') : null;
-      const nextBranchId = selectedBranchId || storedBranchId || nextBranches[0]?.id || '';
+      const storedBranchId = typeof window !== 'undefined' ? window.localStorage.getItem('werner-branch') : null;
+      const validStoredBranch = storedBranchId ? nextBranches.find((branch) => branch.id === storedBranchId) : undefined;
+      const nextBranchId = selectedBranchId || validStoredBranch?.id || nextBranches[0]?.id || '';
 
       setBranches(nextBranches);
       setIngredients(nextIngredients);
