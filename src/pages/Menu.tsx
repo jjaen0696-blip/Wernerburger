@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, type FormEvent } from 'react';
+import { useMemo, useState, useEffect, useRef, type FormEvent } from 'react';
 import { motion } from 'framer-motion';
 import {
   Trash2,
@@ -22,6 +22,21 @@ import ProductCardPremium from '../components/ProductCardPremium';
 type FilterCategory = 'todas' | Category;
 type PaymentMethod = 'efectivo' | 'yappy';
 type DeliveryType = 'local' | 'delivery' | null;
+type OrderStatus = 'received' | 'preparing' | 'ready' | 'assigned' | 'delivering' | 'completed';
+
+const TRACKING_STEPS: Record<Exclude<DeliveryType, null>, OrderStatus[]> = {
+  local: ['received', 'preparing', 'ready', 'completed'],
+  delivery: ['received', 'preparing', 'assigned', 'delivering', 'completed'],
+};
+
+const STATUS_LABELS: Record<OrderStatus, string> = {
+  received: 'Recibido',
+  preparing: 'Preparando',
+  ready: 'Listo para retiro',
+  assigned: 'Delivery asignado',
+  delivering: 'En camino',
+  completed: 'Pedido completado',
+};
 
 const API_BASE = import.meta.env.VITE_API_BASE || (import.meta.env.DEV ? 'http://127.0.0.1:5174' : 'https://wernerburger.onrender.com');
 const api = (path: string) => `${API_BASE}${path}`;
@@ -125,18 +140,17 @@ export default function Menu() {
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
+  const [orderStatus, setOrderStatus] = useState<OrderStatus | null>(null);
+  const [orderId, setOrderId] = useState<string | null>(null);
+  const [trackingDeliveryType, setTrackingDeliveryType] = useState<DeliveryType>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
 
   const { cart, addToCart, removeFromCart, total, itemCount, placeOrder } = useCart();
 
   useEffect(() => {
-    if (!orderPlaced) return;
-    const timers = [3000, 6000, 9000].map((ms) =>
-      setTimeout(() => {
-        // placeholder for future progress state if needed
-      }, ms)
-    );
-    return () => timers.forEach((t) => clearTimeout(t));
-  }, [orderPlaced]);
+    if (!checkoutOpen || !scrollRef.current) return;
+    scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [checkoutOpen, orderPlaced]);
 
   const filtered = useMemo(() => {
     return MENU_ITEMS.filter((item) => {
@@ -152,6 +166,8 @@ export default function Menu() {
   const nameValid = customerName.trim().length > 0;
   const phoneValid = customerPhone.trim().length > 0;
   const addressReady = deliveryType !== 'delivery' || ubicacion || customerAddress.trim().length > 0;
+  const statusSteps = trackingDeliveryType ? TRACKING_STEPS[trackingDeliveryType] : [];
+  const currentStepIndex = orderStatus && trackingDeliveryType ? statusSteps.indexOf(orderStatus) : -1;
 
   const handleCheckout = () => {
     if (itemCount === 0) return;
@@ -166,6 +182,9 @@ export default function Menu() {
     setCheckoutOpen(false);
     setDeliveryType(null);
     setUbicacion(null);
+    setOrderStatus(null);
+    setOrderId(null);
+    setTrackingDeliveryType(null);
     document.body.style.overflow = '';
   };
 
@@ -227,7 +246,8 @@ export default function Menu() {
         return;
       }
 
-      placeOrder({
+      const orderResult = await response.json().catch(() => ({} as { id?: string }));
+      const newOrderId = placeOrder({
         items: cart,
         total: grandTotal,
         customerName: customerName.trim(),
@@ -242,10 +262,32 @@ export default function Menu() {
       });
 
       setOrderPlaced(true);
+      setOrderStatus('received');
+      setOrderId(orderResult?.id || newOrderId);
+      setTrackingDeliveryType(deliveryType);
       setCustomerName('');
       setCustomerPhone('');
       setCustomerAddress('');
       setUbicacion(null);
+
+      const progress = deliveryType === 'delivery' ? [
+        { next: 'preparing', delay: 2000 },
+        { next: 'assigned', delay: 1800 },
+        { next: 'delivering', delay: 2000 },
+        { next: 'completed', delay: 2500 },
+      ] : [
+        { next: 'preparing', delay: 2000 },
+        { next: 'ready', delay: 1800 },
+        { next: 'completed', delay: 2500 },
+      ];
+
+      let accumulated = 0;
+      progress.forEach((step) => {
+        accumulated += step.delay;
+        setTimeout(() => {
+          setOrderStatus(step.next as OrderStatus);
+        }, accumulated);
+      });
     } catch (err) {
       alert('No se pudo conectar con el servidor.');
     }
@@ -364,7 +406,7 @@ export default function Menu() {
               <X className="h-5 w-5" />
             </button>
 
-            <div className="space-y-4 p-3 sm:p-4">
+            <div ref={scrollRef} className="h-full overflow-y-auto p-3 sm:p-4">
               <div className="rounded-3xl border border-white/10 bg-white/5 p-4 shadow-[0_8px_28px_rgba(0,0,0,0.25)]">
                 <div className="mb-3 flex items-center gap-2 text-[12px] uppercase tracking-[0.35em] text-amber-200 font-bold">
                   <CreditCard className="h-4 w-4" />
@@ -416,17 +458,45 @@ export default function Menu() {
 
               <div className="space-y-4">
                 {orderPlaced ? (
-                  <div className="space-y-5 rounded-3xl border border-emerald-400/20 bg-emerald-900/5 p-5 text-center">
+                  <div className="space-y-5 rounded-3xl border border-emerald-400/20 bg-emerald-900/5 p-5">
                     <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-300">
                       <Check className="h-6 w-6" />
                     </div>
                     <h4 className="text-xl font-black text-white">¡Pedido confirmado!</h4>
-                    <p className="text-sm text-emerald-100/80">Estamos preparando tu orden con cuidado.</p>
+                    <p className="text-sm text-emerald-100/80">Tu orden se ha enviado correctamente y ahora sigue el proceso.</p>
+                    {orderId && (
+                      <p className="text-xs uppercase tracking-[0.35em] text-amber-200">Orden #{orderId}</p>
+                    )}
+                    <div className="rounded-3xl border border-white/10 bg-black/20 p-4 text-left">
+                      <p className="text-[11px] uppercase tracking-[0.3em] text-amber-200 font-semibold">Seguimiento</p>
+                      <div className="mt-4 space-y-3">
+                        {statusSteps.map((step, index) => {
+                          const active = index <= currentStepIndex;
+                          const current = orderStatus === step;
+                          return (
+                            <div
+                              key={step}
+                              className={`flex items-start gap-3 rounded-3xl border p-3 transition ${active ? 'border-emerald-400/30 bg-emerald-900/20 text-emerald-100' : 'border-white/10 bg-white/5 text-gray-300'}`}
+                            >
+                              <span className={`mt-1 flex h-9 w-9 items-center justify-center rounded-full border text-[11px] font-black ${active ? 'border-emerald-400 bg-emerald-500/10 text-emerald-200' : 'border-white/10 bg-white/5 text-gray-400'}`}>
+                                {active ? <Check className="h-4 w-4" /> : index + 1}
+                              </span>
+                              <div>
+                                <p className="text-sm font-semibold">{STATUS_LABELS[step]}</p>
+                                <p className={`text-xs ${current ? 'text-emerald-200' : 'text-gray-400'}`}>
+                                  {current ? 'Estado actual' : active ? 'Completado' : 'En espera'}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
                     <button
                       onClick={handleCloseCheckout}
                       className="mt-4 w-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-3 font-black text-stone-950"
                     >
-                      Volver al menú
+                      Seguir navegando
                     </button>
                   </div>
                 ) : !deliveryType ? (
