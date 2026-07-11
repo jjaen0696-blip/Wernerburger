@@ -36,6 +36,7 @@ router.post('/', requireServiceClient, async (req, res) => {
     // Insert into application users table
     const userRecord = {
       id: authUser.id,
+      username: req.body.username || null,
       email,
       role,
       branch_id: branch_id || null,

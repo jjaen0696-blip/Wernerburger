@@ -38,6 +38,8 @@ const fetchUserRole = async (userId: string): Promise<{ role: UserRole | null; b
   }
 };
 
+const API_BASE = import.meta.env.VITE_API_BASE || 'https://wernerburger.onrender.com';
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -96,19 +98,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // If username doesn't contain @, search for it in users table
     if (!username.includes('@')) {
       try {
-        // Try to find user by username in the users table
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('email')
-          .eq('username', username)
-          .single();
-        
-        if (userError || !userData?.email) {
+        const response = await fetch(`${API_BASE}/auth/lookup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username }),
+        });
+
+        const payload = await response.json();
+        if (!response.ok || !payload.email) {
           setLoading(false);
-          return { error: { message: 'Usuario no encontrado' } };
+          return { error: { message: payload.error || 'Usuario no encontrado' } };
         }
-        
-        email = userData.email;
+
+        email = payload.email;
       } catch (err) {
         setLoading(false);
         return { error: { message: 'Error al buscar usuario' } };

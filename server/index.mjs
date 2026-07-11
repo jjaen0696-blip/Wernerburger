@@ -2,10 +2,33 @@ import express from 'express';
 import cors from 'cors';
 import usersRouter from './routes/users.mjs';
 import branchesRouter from './routes/branches.mjs';
+import authRouter from './routes/auth.mjs';
 
 const app = express();
-app.use(cors());
+const corsOrigins = [
+  process.env.CORS_ORIGIN,
+  'https://wernerburger.vercel.app',
+  'https://wernerburger.onrender.com',
+  'http://localhost:5174',
+  'http://127.0.0.1:5174',
+].filter(Boolean);
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || corsOrigins.length === 0 || corsOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error(`Origin ${origin} is not allowed by CORS`));
+  },
+  methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-api-key'],
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json());
+
 // Simple health check
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
@@ -22,6 +45,7 @@ function protectMutations(req, res, next) {
 
 app.use(protectMutations);
 
+app.use('/auth', authRouter);
 app.use('/users', usersRouter);
 app.use('/branches', branchesRouter);
 
