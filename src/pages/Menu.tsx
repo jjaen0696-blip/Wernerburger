@@ -297,7 +297,7 @@ export default function Menu() {
 
     try {
       // Determinar sucursal y delegar inserción al CartContext
-      const orderBranchId = branchId || (await supabase.from('branches').select('id').limit(1).then(res => res.data?.[0]?.id));
+      const orderBranchId = branchId || (await supabase.from('branches').select('id').limit(1).then((res: any) => res.data?.[0]?.id));
 
       if (!orderBranchId) {
         alert('Error: no se pudo determinar la sucursal.');
@@ -406,7 +406,7 @@ export default function Menu() {
             </div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.15 }} className="rounded-[2rem] border border-white/10 bg-black/40 p-6 shadow-[0_18px_60px_rgba(0,0,0,0.25)] backdrop-blur-xl">
-              <CategoryScroller setActiveCategory={setActiveCategory} activeCategory={activeCategory} categories={categoriesDisplay} />
+              <CategoryScroller setActiveCategory={setActiveCategory} activeCategory={activeCategory} categories={categoriesDisplay as any} />
             </motion.div>
 
             <div className="space-y-6">

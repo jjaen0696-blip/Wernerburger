@@ -70,6 +70,15 @@ export default function Admin() {
     }
   };
 
+  const selectBranch = (id: string, persist = true) => {
+    setBranchId(id);
+    if (!id) return;
+    if (persist && typeof window !== 'undefined') {
+      window.localStorage.setItem('werner-branch', id);
+    }
+    void loadInventory(id);
+  };
+
   const loadData = async (selectedBranchId?: string) => {
     try {
       const token = getAccessToken();
@@ -100,9 +109,10 @@ export default function Admin() {
       setUsers(nextUsers);
       setAlerts(Array.isArray(alertsData) ? alertsData : []);
       setSummary(Array.isArray(summaryData) ? summaryData : []);
-      setBranchId(nextBranchId);
       if (nextBranchId) {
-        void loadInventory(nextBranchId);
+        selectBranch(nextBranchId, false);
+      } else {
+        setBranchId('');
       }
       if (nextIngredients[0]?.id) {
         setSelectedIngredientId((current) => current || nextIngredients[0].id);
@@ -126,9 +136,11 @@ export default function Admin() {
     setBusy(true);
     setStatus('Guardando ingrediente...');
     try {
+      const token = getAccessToken();
+      const authHeaders: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
       const res = await fetch(api('/ingredients'), {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: { 'content-type': 'application/json', ...authHeaders },
         body: JSON.stringify({
           name: ingredientName.trim(),
           unit: ingredientUnit,
@@ -159,9 +171,11 @@ export default function Admin() {
     setBusy(true);
     setStatus('Registrando entrada de stock...');
     try {
+      const token = getAccessToken();
+      const authHeaders: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
       const res = await fetch(api('/purchases'), {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: { 'content-type': 'application/json', ...authHeaders },
         body: JSON.stringify({
           branch_id: branchId,
           user_id: 'admin',
@@ -195,9 +209,11 @@ export default function Admin() {
     setBusy(true);
     setStatus('Actualizando inventario...');
     try {
+      const token = getAccessToken();
+      const authHeaders: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
       const res = await fetch(api(`/inventory/${branchId}/adjust`), {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: { 'content-type': 'application/json', ...authHeaders },
         body: JSON.stringify({
           ingredient_id: selectedIngredientId,
           change: Number(adjustQty || 0),
@@ -226,9 +242,11 @@ export default function Admin() {
     setBusy(true);
     setStatus('Creando usuario...');
     try {
+      const token = getAccessToken();
+      const authHeaders: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
       const res = await fetch(api('/users'), {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: { 'content-type': 'application/json', ...authHeaders },
         body: JSON.stringify({ username: newUsername.trim(), email: newEmail.trim(), password: newPassword, branch_id: userBranchId || null, role: newRole }),
       });
       const data = await res.json();
@@ -253,10 +271,12 @@ export default function Admin() {
     setBusy(true);
     setStatus(editingBranchId ? 'Actualizando sucursal...' : 'Guardando sucursal...');
     try {
+      const token = getAccessToken();
+      const authHeaders: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
       const url = editingBranchId ? api(`/branches/${editingBranchId}`) : api('/branches');
       const res = await fetch(url, {
         method: editingBranchId ? 'PATCH' : 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: { 'content-type': 'application/json', ...authHeaders },
         body: JSON.stringify({ name: branchName.trim(), address: branchAddress.trim(), is_closed: branchClosed }),
       });
       const data = await res.json();
@@ -350,7 +370,7 @@ export default function Admin() {
         <div className="grid gap-4 md:grid-cols-2">
           <label className="block text-sm text-gray-400">
             Sucursal
-            <select value={branchId} onChange={(e) => { setBranchId(e.target.value); void loadData(e.target.value); }} className="mt-1 w-full rounded-[12px] border border-white/10 bg-black/40 px-3 py-2 text-white">
+            <select value={branchId} onChange={(e) => void selectBranch(e.target.value)} className="mt-1 w-full rounded-[12px] border border-white/10 bg-black/40 px-3 py-2 text-white">
               {branches.map((branch) => <option key={branch.id} value={branch.id}>{branch.name}</option>)}
             </select>
           </label>
@@ -570,7 +590,7 @@ export default function Admin() {
         <div className="grid gap-4 md:grid-cols-2">
           <label className="block text-sm text-gray-400">
             Sucursal
-            <select value={branchId} onChange={(e) => { setBranchId(e.target.value); void loadInventory(e.target.value); }} className="mt-1 w-full rounded-[12px] border border-white/10 bg-black/40 px-3 py-2 text-white">
+            <select value={branchId} onChange={(e) => void selectBranch(e.target.value)} className="mt-1 w-full rounded-[12px] border border-white/10 bg-black/40 px-3 py-2 text-white">
               {branches.map((branch) => <option key={branch.id} value={branch.id}>{branch.name}</option>)}
             </select>
           </label>

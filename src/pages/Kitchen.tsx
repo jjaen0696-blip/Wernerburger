@@ -1,23 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Sparkles, Clock, ChefHat } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { supabase, type OrderWithItems, type OrderStatus } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
-interface Order {
-  id: number;
-  order_number: string;
-  customer_name: string;
-  customer_phone: string;
-  status: string;
-  total_amount: number;
-  items: any[];
-  created_at: string;
-  branch_id: string;
-}
+type Page = 'home' | 'menu' | 'kitchen' | 'delivery' | 'login' | 'admin' | 'pos';
 
-export default function Kitchen() {
+type Props = {
+  onNavigate?: (page: Page) => void;
+};
+
+export default function Kitchen({ onNavigate }: Props) {
   const { user, branchId } = useAuth();
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
 
@@ -35,7 +29,7 @@ export default function Kitchen() {
         .neq('status', 'cancelled')
         .order('created_at', { ascending: false });
 
-      if (!error && data) setOrders(data as Order[]);
+      if (!error && data) setOrders(data as unknown as OrderWithItems[]);
       setLoading(false);
     };
 
@@ -88,14 +82,14 @@ export default function Kitchen() {
     return colors[status] || 'bg-gray-500/20 border-gray-500/30 text-gray-200';
   };
 
-  const updateStatus = async (orderId: number, newStatus: string) => {
+  const updateStatus = async (orderId: string, newStatus: string) => {
     const { error } = await supabase
       .from('orders')
       .update({ status: newStatus })
       .eq('id', orderId);
 
     if (!error) {
-      setOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+      setOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus as OrderStatus } : o));
     }
   };
 
@@ -221,8 +215,8 @@ export default function Kitchen() {
 
 // Componente para tarjeta de orden
 function OrderCard({ order, onStatusChange }: { 
-  order: Order; 
-  onStatusChange: (id: number, status: string) => Promise<void> 
+  order: OrderWithItems; 
+  onStatusChange: (id: string, status: string) => Promise<void> 
 }) {
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -252,16 +246,16 @@ function OrderCard({ order, onStatusChange }: {
     <div className="rounded-lg border border-white/10 bg-white/5 p-3 space-y-2">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-xs font-mono text-amber-300 font-bold">{order.order_number}</p>
+          <p className="text-xs font-mono text-amber-300 font-bold">#{order.number}</p>
           <p className="text-sm font-semibold text-white truncate">{order.customer_name}</p>
           <p className="text-xs text-gray-400">{createdTime}</p>
         </div>
         <p className="text-right font-bold text-amber-200">${order.total_amount}</p>
       </div>
 
-      {order.items && order.items.length > 0 && (
+      {order.order_items && order.order_items.length > 0 && (
         <div className="border-t border-white/10 pt-2 space-y-1">
-          {order.items.map((item: any) => (
+          {order.order_items.map((item: any) => (
             <div key={item.id} className="flex justify-between text-xs text-gray-300">
               <span>{item.quantity}x {item.product_name}</span>
               <span>${item.subtotal}</span>

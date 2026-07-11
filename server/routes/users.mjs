@@ -12,6 +12,20 @@ function requireServiceClient(req, res, next) {
   }
 }
 
+// List users
+router.get('/', requireServiceClient, async (req, res) => {
+  try {
+    const { data, error } = await req.supabase
+      .from('users')
+      .select('id, username, email, role, branch_id');
+    if (error) throw error;
+    res.json(Array.isArray(data) ? data : []);
+  } catch (err) {
+    console.error('Fetch users error', err.message || err);
+    res.status(500).json({ error: err.message || String(err) });
+  }
+});
+
 // Create a new user (Auth + users table)
 router.post('/', requireServiceClient, async (req, res) => {
   const { email, password, role, branch_id, metadata } = req.body;
@@ -46,7 +60,7 @@ router.post('/', requireServiceClient, async (req, res) => {
     const { data, error } = await supabase.from('users').insert(userRecord).select().single();
     if (error) throw error;
 
-    res.json({ user: data });
+    res.status(201).json(data);
   } catch (err) {
     console.error('Create user error', err.message || err);
     res.status(500).json({ error: err.message || String(err) });

@@ -37,7 +37,7 @@ export default function MovementsList({ types, locationId, limit = 15, title, co
   }, [types, locationId, limit]);
 
   useEffect(() => {
-    supabase.from('locations').select('id,name').then(({ data }) => {
+    supabase.from('locations').select('id,name').then(({ data }: any) => {
       const m: Record<string, string> = {};
       (data ?? []).forEach((l: Pick<Location, 'id' | 'name'>) => { m[l.id] = l.name; });
       setLocs(m);

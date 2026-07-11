@@ -25,7 +25,7 @@ export default function Reportes({ profile }: { profile: Profile }) {
   const [rank, setRank] = useState<Rank[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => { if (isAdmin) supabase.from('locations').select('*').eq('is_active', true).order('name').then(({ data }) => setLocations(data ?? [])); }, [isAdmin]);
+  useEffect(() => { if (isAdmin) supabase.from('locations').select('*').eq('is_active', true).order('name').then(({ data }: any) => setLocations(data ?? [])); }, [isAdmin]);
 
   const load = useCallback(async () => {
     setLoading(true);

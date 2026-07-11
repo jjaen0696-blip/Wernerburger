@@ -9,6 +9,7 @@ import {
 type Props = {
   onBack: () => void;
   onGoAdmin: () => void;
+  onNavigate?: (page: string) => void;
 };
 
 // Correo con privilegios para crear nuevos usuarios de cocina desde el panel.

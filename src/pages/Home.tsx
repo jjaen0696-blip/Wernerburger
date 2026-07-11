@@ -6,16 +6,6 @@ interface HomeProps {
   onLogin?: () => void;
 }
 
-const BRANCHES = [
-  { id: 'wb1', name: 'Werner Burger 1', address: 'Sucursal 1', is_closed: false },
-  { id: 'wb2', name: 'Werner Burger 2', address: 'Sucursal 2', is_closed: false },
-  { id: 'wb3', name: 'Werner Burger 3', address: 'Sucursal 3', is_closed: true },
-  { id: 'wb4', name: 'Werner Burger 4', address: 'Sucursal 4', is_closed: false },
-  { id: 'wb5', name: 'Werner Burger 5', address: 'Sucursal 5', is_closed: false },
-  { id: 'wb6', name: 'Werner Burger 6', address: 'Sucursal 6', is_closed: false },
-  { id: 'wb7', name: 'Werner Burger 7', address: 'Sucursal 7', is_closed: true },
-];
-
 type Branch = { id: string; name: string; address: string; is_closed?: boolean };
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'https://wernerburger.onrender.com';
@@ -23,14 +13,26 @@ const api = (path: string) => `${API_BASE}${path}`;
 
 export default function Home({ onNavigate, onLogin }: HomeProps) {
   const [open, setOpen] = useState(false);
-  const [branches, setBranches] = useState<Branch[]>(BRANCHES);
-  const [selected, setSelected] = useState<Branch | null>(BRANCHES[0] || null);
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [selected, setSelected] = useState<Branch | null>(null);
+  const [error, setError] = useState('');
+  const [loadingBranches, setLoadingBranches] = useState(true);
+
+  const persistBranch = (branch: Branch) => {
+    setSelected(branch);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('werner-branch', branch.id);
+    }
+  };
 
   useEffect(() => {
     const storedBranchId = typeof window !== 'undefined' ? localStorage.getItem('werner-branch') : null;
+    setLoadingBranches(true);
+    setError('');
+
     fetch(api('/branches'))
       .then((response) => {
-        if (!response.ok) throw new Error('Unable to load branches');
+        if (!response.ok) throw new Error('No se pudo cargar sucursales');
         return response.json();
       })
       .then((data: Branch[]) => {
@@ -38,19 +40,23 @@ export default function Home({ onNavigate, onLogin }: HomeProps) {
           setBranches(data);
           const assigned = data.find((branch) => branch.id === storedBranchId);
           const firstOpen = data.find((branch) => !branch.is_closed);
-          setSelected(assigned && !assigned.is_closed ? assigned : firstOpen || data[0] || null);
+          const next = assigned && !assigned.is_closed ? assigned : firstOpen || data[0] || null;
+          if (next) persistBranch(next);
+        } else {
+          setError('No hay sucursales disponibles.');
         }
       })
-      .catch(() => {
-        setBranches(BRANCHES);
-        const assigned = BRANCHES.find((branch) => branch.id === storedBranchId);
-        setSelected(assigned && !assigned.is_closed ? assigned : BRANCHES.find((branch) => !branch.is_closed) || BRANCHES[0] || null);
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : 'Error al cargar sucursales');
+      })
+      .finally(() => {
+        setLoadingBranches(false);
       });
   }, []);
 
   const handleSelect = (branch: Branch) => {
     if (branch.is_closed) return;
-    setSelected(branch);
+    persistBranch(branch);
     setOpen(false);
   };
 
@@ -131,10 +137,12 @@ export default function Home({ onNavigate, onLogin }: HomeProps) {
               </div>
               <div className="relative">
                 <button
+                  type="button"
                   onClick={() => setOpen(o => !o)}
+                  disabled={loadingBranches || !!error}
                   className={`w-full flex items-center justify-between gap-3 px-5 py-4 rounded-3xl border bg-white/5 backdrop-blur-xl text-left transition-all duration-300 ${
                     open ? 'border-amber-400/40 bg-white/10 shadow-[0_18px_40px_rgba(245,158,11,0.16)]' : 'border-white/10 hover:border-amber-400/30 hover:bg-white/10'
-                  }`}
+                  } ${loadingBranches || error ? 'cursor-not-allowed opacity-60' : ''}`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <MapPin className="w-5 h-5 text-amber-400 shrink-0" />
@@ -150,7 +158,13 @@ export default function Home({ onNavigate, onLogin }: HomeProps) {
                   <ChevronDown className={`w-5 h-5 text-gray-400 shrink-0 transition-transform duration-300 ${open ? 'rotate-180' : ''}`} />
                 </button>
 
-                {open && (
+                <div className="mt-2 min-h-[1rem] text-sm font-medium">
+                  {loadingBranches && <span className="text-amber-200">Cargando sucursales...</span>}
+                  {!loadingBranches && error && <span className="text-rose-300">{error}</span>}
+                  {!loadingBranches && !error && branches.length === 0 && <span className="text-gray-300">No hay sucursales disponibles.</span>}
+                </div>
+
+                {open && !loadingBranches && !error && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
                     <div
@@ -195,7 +209,7 @@ export default function Home({ onNavigate, onLogin }: HomeProps) {
               <div className="mt-4">
                 <button
                   onClick={handleContinue}
-                  disabled={!selected || selected.is_closed}
+                  disabled={!selected || selected.is_closed || loadingBranches || !!error || branches.length === 0}
                   className="w-full rounded-full bg-amber-500 px-7 py-3.5 text-sm font-black uppercase tracking-[0.18em] text-stone-950 transition hover:bg-amber-400 disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_0_24px_rgba(245,158,11,0.25)]"
                 >
                   PEDIR AHORA

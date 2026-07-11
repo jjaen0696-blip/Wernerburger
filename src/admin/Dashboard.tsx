@@ -48,7 +48,7 @@ export default function Dashboard({ profile }: { profile: Profile }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (isAdmin) supabase.from('locations').select('*').eq('is_active', true).order('name').then(({ data }) => setLocations(data ?? []));
+    if (isAdmin) supabase.from('locations').select('*').eq('is_active', true).order('name').then(({ data }: any) => setLocations(data ?? []));
   }, [isAdmin]);
 
   const load = useCallback(async () => {

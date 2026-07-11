@@ -71,7 +71,7 @@ export default function VentasLocal({ profile }: { profile: Profile }) {
   const [expanded, setExpanded] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.from('locations').select('*').eq('is_active', true).order('name').then(({ data }) => {
+    supabase.from('locations').select('*').eq('is_active', true).order('name').then(({ data }: any) => {
       setLocations(data ?? []);
       if (isAdmin && !locId && data && data.length) setLocId(data[0].id);
     });
@@ -88,10 +88,10 @@ export default function VentasLocal({ profile }: { profile: Profile }) {
       .or(`location_id.eq.${locId},location_id.is.null`)
       .order('category')
       .order('sort_order')
-      .then(({ data }) => {
+      .then(({ data }: any) => {
         // Si un producto existe global y específico, prioriza el específico de la sucursal.
         const byName = new Map<string, MenuItem>();
-        for (const it of (data ?? []) as MenuItem[]) {
+        for (const it of ((data ?? []) as MenuItem[])) {
           const prev = byName.get(it.name);
           if (!prev || (it.location_id && !prev.location_id)) byName.set(it.name, it);
         }

@@ -87,7 +87,7 @@ export default function Sucursales() {
 
     try {
       const isNew = !form.id;
-      let res = form.id
+      let res: any = form.id
         ? await supabase.from('locations').update(payloadWithOpen).eq('id', form.id).select(selectCols).maybeSingle()
         : await supabase.from('locations').insert(payloadWithOpen).select(selectCols).maybeSingle();
 
@@ -128,8 +128,7 @@ export default function Sucursales() {
 
           if (fallbackRow) {
             // asignar manualmente para seguir el flujo normal
-            // @ts-expect-error asignación temporal
-            res.data = fallbackRow;
+            (res as any).data = fallbackRow;
           } else {
             setError('No se recibió respuesta correcta de Supabase. Comprueba la conexión y los permisos.');
             setSaving(false);
@@ -145,7 +144,7 @@ export default function Sucursales() {
       if (isNew) {
         const { data: baseItems, error: baseItemsError } = await supabase.from('menu_items').select('*').is('location_id', null);
         if (!baseItemsError && (baseItems ?? []).length > 0) {
-          const copies = (baseItems ?? []).map(({ id: _id, created_at: _createdAt, ...item }) => ({ ...item, location_id: res.data.id }));
+          const copies = (baseItems ?? []).map(({ id, created_at, ...item }: any) => ({ ...item, location_id: res.data.id }));
           const { error: copyError } = await supabase.from('menu_items').insert(copies);
           if (copyError) {
             setError('La sucursal se creó, pero no se pudieron copiar los menús. Inténtalo de nuevo.');

@@ -17,7 +17,7 @@ router.get('/', requireServiceClient, async (req, res) => {
   try {
     const { data, error } = await req.supabase.from('branches').select('*');
     if (error) throw error;
-    res.json({ branches: data });
+    res.json(Array.isArray(data) ? data : []);
   } catch (err) {
     res.status(500).json({ error: err.message || String(err) });
   }
@@ -29,7 +29,25 @@ router.post('/', requireServiceClient, async (req, res) => {
     const payload = req.body;
     const { data, error } = await req.supabase.from('branches').insert(payload).select().single();
     if (error) throw error;
-    res.json({ branch: data });
+    res.status(201).json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message || String(err) });
+  }
+});
+
+// Update branch
+router.patch('/:id', requireServiceClient, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const payload = req.body;
+    const { data, error } = await req.supabase
+      .from('branches')
+      .update(payload)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message || String(err) });
   }

@@ -65,13 +65,14 @@ export function SelectInput({ children, ...props }: SelectHTMLAttributes<HTMLSel
 }
 
 /* ===== Píldora de estado ===== */
-export type Tone = 'green' | 'yellow' | 'red' | 'gray' | 'gold';
+export type Tone = 'green' | 'yellow' | 'red' | 'gray' | 'gold' | 'cyan';
 const TONES: Record<Tone, string> = {
   green: 'border-emerald-400/40 bg-emerald-500/10 text-emerald-300',
   yellow: 'border-amber-400/40 bg-amber-500/10 text-amber-300',
   red: 'border-red-400/40 bg-red-500/10 text-red-300',
   gray: 'border-white/15 bg-white/[0.05] text-white/60',
   gold: 'border-gold/40 bg-gold/10 text-gold-light',
+  cyan: 'border-cyan-400/40 bg-cyan-500/10 text-cyan-300',
 };
 export function Pill({ tone = 'gray', children, className }: { tone?: Tone; children: ReactNode; className?: string }) {
   return (

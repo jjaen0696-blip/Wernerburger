@@ -18,7 +18,7 @@ export default function Historial({ profile }: { profile: Profile }) {
   const [to, setTo] = useState('');
   const [search, setSearch] = useState('');
 
-  useEffect(() => { supabase.from('locations').select('*').order('name').then(({ data }) => setLocs(data ?? [])); }, []);
+  useEffect(() => { supabase.from('locations').select('*').order('name').then(({ data }: any) => setLocs(data ?? [])); }, []);
   const locName = (id: string | null) => (id ? (locs.find((l) => l.id === id)?.name ?? 'Sucursal') : 'Central');
 
   const load = useCallback(async () => {

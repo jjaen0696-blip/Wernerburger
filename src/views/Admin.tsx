@@ -49,7 +49,7 @@ const SECTIONS: Section[] = [
   { key: 'distribucion', label: 'Distribución', icon: Send, adminOnly: true, render: () => <Distribucion /> },
   { key: 'transferencias', label: 'Transferencias', icon: ArrowLeftRight, adminOnly: false, render: ({ profile }) => <Transferencias profile={profile} /> },
   { key: 'recetas', label: 'Recetas', icon: ChefHat, adminOnly: true, render: () => <Recetas /> },
-  { key: 'menu-manager', label: 'Menú y catálogos', icon: MenuIcon, adminOnly: true, ownerOnly: true, render: ({ profile }) => <MenuManager currentEmail={profile.email} /> },
+  // { key: 'menu-manager', label: 'Menú y catálogos', icon: MenuIcon, adminOnly: true, ownerOnly: true, render: ({ profile }) => <MenuManager currentEmail={profile.email} /> },
   { key: 'ventas', label: 'Ventas', icon: DollarSign, adminOnly: false, render: ({ profile }) => <Ventas profile={profile} /> },
   { key: 'sucursales', label: 'Sucursales', icon: Building2, adminOnly: true, render: () => <Sucursales /> },
   { key: 'usuarios', label: 'Usuarios y roles', icon: Users, adminOnly: true, render: ({ profile }) => <Usuarios currentEmail={profile.email} /> },

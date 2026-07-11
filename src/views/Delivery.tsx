@@ -8,7 +8,7 @@ type Props = {
   onBack: () => void;
 };
 
-export default function Delivery({ onBack }: Props) {
+export default function Delivery({ onBack, onNavigate }: Props & { onNavigate?: (page: string) => void }) {
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -82,7 +82,7 @@ export default function Delivery({ onBack }: Props) {
       }
     };
 
-    supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
+    supabase.auth.getUser().then(({ data }: any) => setEmail(data.user?.email ?? null));
     loadLocations();
     load();
 

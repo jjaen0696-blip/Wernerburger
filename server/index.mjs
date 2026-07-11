@@ -5,6 +5,11 @@ import branchesRouter from './routes/branches.mjs';
 import authRouter from './routes/auth.mjs';
 import productsRouter from './routes/products.mjs';
 import ordersRouter from './routes/orders.mjs';
+import ingredientsRouter from './routes/ingredients.mjs';
+import inventoryRouter from './routes/inventory.mjs';
+import purchasesRouter from './routes/purchases.mjs';
+import reportsRouter from './routes/reports.mjs';
+import alertsRouter from './routes/alerts.mjs';
 
 const app = express();
 const corsOrigins = [
@@ -53,6 +58,11 @@ app.use('/auth', authRouter);
 app.use('/users', usersRouter);
 app.use('/branches', branchesRouter);
 app.use('/products', productsRouter);
+app.use('/ingredients', ingredientsRouter);
+app.use('/inventory', inventoryRouter);
+app.use('/purchases', purchasesRouter);
+app.use('/reports', reportsRouter);
+app.use('/alerts', alertsRouter);
 app.use('/orders', ordersRouter);
 
 app.use((req, res) => {

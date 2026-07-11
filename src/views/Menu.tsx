@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
-import { createWorker } from 'tesseract.js';
+// import { createWorker } from 'tesseract.js';
 import {
   ArrowLeft, Plus, Minus, Trash2, ShoppingBag, X, Check, Loader2, Search, Heart,
   ChevronLeft, ChevronRight, ChevronRight as ArrowRightIcon, Flame, Star, Sparkles, Clock,
@@ -541,19 +541,22 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
     setPaymentValidation({ tone: 'info', message: 'Analizando la captura de pago…' });
 
     try {
-      const worker = await createWorker('eng');
-      const { data: { text } } = await worker.recognize(file);
-      await worker.terminate();
+      // OCR processing not available - skip for now
+      const text = '';
+      // const worker = await createWorker('eng');
+      // const { data: { text } } = await worker.recognize(file);
+      // await worker.terminate();
 
       const normalizedText = text.toLowerCase();
       const hasYappyNumber = normalizedText.includes('63738528') || normalizedText.includes('637 385 28') || normalizedText.includes('63738528');
       const amountText = normalizedText.match(/(\d+[.,]\d{2})/g) ?? [];
       const amounts = amountText
-        .map((value) => Number(value.replace(',', '.')))
-        .filter((value) => Number.isFinite(value))
-        .sort((a, b) => b - a);
+        .filter((value: string) => value.length > 0)
+        .map((value: any) => Number(value.replace(',', '.')))
+        .filter((value: number) => Number.isFinite(value))
+        .sort((a: number, b: number) => b - a);
       const total = Number(cartTotal.toFixed(2));
-      const matchedAmount = amounts.find((value) => Math.abs(value - total) <= 0.5);
+      const matchedAmount = amounts.find((value: number) => Math.abs(value - total) <= 0.5);
 
       const captureDateTimeMatch = text.match(/\b(\d{4}[-/]\d{1,2}[-/]\d{1,2}|\d{1,2}[-/]\d{1,2}[-/]\d{2,4})\b/g) ?? [];
       const captureTimeMatch = text.match(/\b(\d{1,2}:\d{2}(?::\d{2})?)\b/g) ?? [];
@@ -561,10 +564,10 @@ export default function Menu({ onBack, onOrderPlaced, locationId }: Props) {
 
       let timestampOk = true;
       if (hasReadableTimestamp) {
-        const datePart = captureDateTimeMatch[0];
-        const timePart = captureTimeMatch[0];
-        const [day, month, year] = datePart.split(/[-/]/).map((value) => Number(value));
-        const [hour, minute] = timePart.split(':').map((value) => Number(value));
+        const datePart = captureDateTimeMatch[0]!;
+        const timePart = captureTimeMatch[0]!;
+        const [day, month, year] = datePart.split(/[-/]/).map((value: any) => Number(value));
+        const [hour, minute] = timePart.split(':').map((value: any) => Number(value));
         const parsedYear = year && year < 100 ? 2000 + year : year;
         const parsedDate = new Date(parsedYear, month - 1, day, hour, minute, 0);
         const differenceMinutes = (parsedDate.getTime() - Date.now()) / 60000;

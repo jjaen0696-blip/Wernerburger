@@ -58,7 +58,7 @@ export default function OrderTracking({ orderId, orderNumber, orderType, onBackH
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'orders', filter: `id=eq.${orderId}` },
-        (payload) => {
+        (payload: any) => {
           const next = payload.new as Order;
           setOrder(next);
           setStatus(next.status);
