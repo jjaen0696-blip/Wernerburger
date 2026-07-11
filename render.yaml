@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: wernerburger
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: VITE_SUPABASE_URL
+        fromDatabase:
+          name: wernerburger
+          property: connectionString
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false
+    staticSite: false
+    routes:
+      - type: http
+        path: /
+        destination: /dist/index.html
