@@ -1,93 +1,284 @@
-import { Sparkles } from 'lucide-react';
-import { useCart } from '../context/CartContext';
+import { useEffect, useState } from 'react';
+import { Sparkles, Clock, ChefHat } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
 
-interface KitchenProps {
-  onNavigate?: (page: 'home' | 'menu' | 'kitchen' | 'delivery') => void;
+interface Order {
+  id: number;
+  order_number: string;
+  customer_name: string;
+  customer_phone: string;
+  status: string;
+  total_amount: number;
+  items: any[];
+  created_at: string;
+  branch_id: string;
 }
 
-export default function Kitchen({}: KitchenProps) {
-  const { orders, updateOrderStatus } = useCart();
+export default function Kitchen() {
+  const { user, branchId } = useAuth();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<string>('all');
 
-  // Mostrar solo pedidos de local en la interfaz de cocina
-  const localOrders = orders.filter((o) => !o.deliveryType || o.deliveryType === 'local');
+  useEffect(() => {
+    if (!branchId) return;
+
+    setLoading(true);
+
+    // Obtener órdenes iniciales
+    const fetchOrders = async () => {
+      const { data, error } = await supabase
+        .from('orders_with_items')
+        .select('*')
+        .eq('branch_id', branchId)
+        .neq('status', 'cancelled')
+        .order('created_at', { ascending: false });
+
+      if (!error && data) setOrders(data as Order[]);
+      setLoading(false);
+    };
+
+    void fetchOrders();
+
+    // Suscribirse a cambios en tiempo real
+    const channel = supabase
+      .channel(`kitchen-${branchId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'orders',
+          filter: `branch_id=eq.${branchId}`
+        },
+        () => {
+          void fetchOrders();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [branchId]);
 
   const statusLabel = (status: string) => {
-    switch (status) {
-      case 'pending': return 'Pendiente';
-      case 'accepted': return 'Aceptado';
-      case 'preparing': return 'En preparación';
-      case 'ready': return 'Listo';
-      case 'assigned': return 'Asignado';
-      case 'delivering': return 'En ruta';
-      case 'completed': return 'Terminado';
-      default: return status;
+    const labels: Record<string, string> = {
+      'pending': 'Pendiente',
+      'accepted': 'Aceptado',
+      'preparing': 'En preparación',
+      'ready': 'Listo',
+      'assigned': 'Asignado',
+      'delivering': 'En ruta',
+      'completed': 'Terminado',
+      'cancelled': 'Cancelado'
+    };
+    return labels[status] || status;
+  };
+
+  const statusColor = (status: string) => {
+    const colors: Record<string, string> = {
+      'pending': 'bg-red-500/20 border-red-500/30 text-red-200',
+      'accepted': 'bg-yellow-500/20 border-yellow-500/30 text-yellow-200',
+      'preparing': 'bg-blue-500/20 border-blue-500/30 text-blue-200',
+      'ready': 'bg-green-500/20 border-green-500/30 text-green-200',
+      'completed': 'bg-emerald-500/20 border-emerald-500/30 text-emerald-200'
+    };
+    return colors[status] || 'bg-gray-500/20 border-gray-500/30 text-gray-200';
+  };
+
+  const updateStatus = async (orderId: number, newStatus: string) => {
+    const { error } = await supabase
+      .from('orders')
+      .update({ status: newStatus })
+      .eq('id', orderId);
+
+    if (!error) {
+      setOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
     }
   };
+
+  const filteredOrders = filter === 'all' 
+    ? orders 
+    : orders.filter(o => o.status === filter);
+
+  const pendingOrders = orders.filter(o => ['pending', 'accepted'].includes(o.status));
+  const preparingOrders = orders.filter(o => o.status === 'preparing');
+  const readyOrders = orders.filter(o => o.status === 'ready');
 
   return (
     <div className="bg-black min-h-screen pb-16 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
         <div className="mb-8 rounded-[2rem] border border-amber-400/15 bg-[#080805]/95 p-8 shadow-[0_30px_80px_rgba(0,0,0,0.5)] backdrop-blur-xl">
-          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.35em] text-amber-300/70">Interfaz de cocina</p>
-              <h1 className="mt-3 text-4xl font-black uppercase tracking-[0.2em] text-white">Pedidos en preparación</h1>
-              <p className="mt-3 max-w-2xl text-gray-300">Interfaz limpia: solo pedidos locales para preparar. Las órdenes de delivery se gestionan en el módulo de Delivery.</p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="rounded-full bg-gradient-to-br from-amber-500 to-orange-500 p-3">
+                <ChefHat className="h-6 w-6 text-black" />
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.35em] text-amber-300/70">Cocina</p>
+                <h1 className="text-2xl font-black text-white">Preparación de Órdenes</h1>
+              </div>
             </div>
-            <div className="inline-flex items-center gap-3 rounded-full border border-amber-400/20 bg-white/5 px-4 py-3 text-sm text-amber-100 shadow-[0_12px_30px_rgba(245,158,11,0.12)] backdrop-blur-sm">
-              <Sparkles className="h-5 w-5 text-amber-300" />
-              <span>Actualizado en tiempo real</span>
+            <div className="flex items-center gap-3 rounded-full border border-amber-400/20 bg-white/5 px-4 py-2 text-sm text-amber-100">
+              <Sparkles className="h-4 w-4 text-amber-300" />
+              <span>En tiempo real</span>
             </div>
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          <section>
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-amber-200">Pedidos locales</h2>
-              <span className="text-sm text-gray-400">{localOrders.length} activos</span>
-            </div>
-
-            {localOrders.length === 0 ? (
-              <div className="rounded-[1.25rem] border border-white/10 bg-white/5 p-6 text-center text-gray-400">No hay pedidos locales</div>
-            ) : (
-              <div className="space-y-4">
-                {localOrders.map((order) => (
-                  <article key={order.id} className="rounded-xl border border-amber-400/15 bg-[#0d0a07]/90 p-4">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <div className="flex items-center gap-3 text-sm text-amber-200">
-                          <span className="font-bold">{order.id}</span>
-                          <span className="text-xs text-gray-400">{statusLabel(order.status)}</span>
-                        </div>
-                        <p className="mt-2 text-sm text-gray-300">{order.customerName} • {order.phone}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-amber-200">${order.total.toFixed(2)}</p>
-                      </div>
-                    </div>
-
-                    <div className="mt-3 flex gap-3">
-                      {order.status === 'pending' && (
-                        <button onClick={() => updateOrderStatus(order.id, 'accepted')} className="rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-3 py-2 text-sm font-black text-stone-950">Aceptar</button>
-                      )}
-                      {order.status === 'accepted' && (
-                        <button onClick={() => updateOrderStatus(order.id, 'preparing')} className="rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-3 py-2 text-sm font-black text-stone-950">Preparando</button>
-                      )}
-                      {order.status === 'preparing' && (
-                        <button onClick={() => updateOrderStatus(order.id, 'ready')} className="rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-3 py-2 text-sm font-black text-stone-950">Listo</button>
-                      )}
-                      {order.status === 'ready' && (
-                        <button onClick={() => updateOrderStatus(order.id, 'completed')} className="rounded-full bg-emerald-500/90 px-3 py-2 text-sm font-black text-stone-950">Terminado</button>
-                      )}
-                    </div>
-                  </article>
-                ))}
+        {loading ? (
+          <div className="text-center py-12">
+            <p className="text-gray-400">Cargando órdenes...</p>
+          </div>
+        ) : (
+          <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
+            {/* PENDIENTES */}
+            <section className="rounded-xl border border-red-500/20 bg-red-500/5 p-4">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-lg font-bold text-red-200">📋 Pendientes</h2>
+                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-bold">
+                  {pendingOrders.length}
+                </span>
               </div>
-            )}
-          </section>
-        </div>
+
+              {pendingOrders.length === 0 ? (
+                <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-center text-gray-400 text-sm">
+                  Sin órdenes pendientes
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {pendingOrders.map(order => (
+                    <OrderCard
+                      key={order.id}
+                      order={order}
+                      onStatusChange={updateStatus}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+
+            {/* EN PREPARACIÓN */}
+            <section className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-4">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-lg font-bold text-blue-200">🔥 Preparando</h2>
+                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 text-xs font-bold">
+                  {preparingOrders.length}
+                </span>
+              </div>
+
+              {preparingOrders.length === 0 ? (
+                <div className="rounded-lg border border-blue-500/20 bg-blue-500/10 p-4 text-center text-gray-400 text-sm">
+                  Sin órdenes en preparación
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {preparingOrders.map(order => (
+                    <OrderCard
+                      key={order.id}
+                      order={order}
+                      onStatusChange={updateStatus}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+
+            {/* LISTOS */}
+            <section className="rounded-xl border border-green-500/20 bg-green-500/5 p-4">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-lg font-bold text-green-200">✅ Listos</h2>
+                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-green-500 text-xs font-bold">
+                  {readyOrders.length}
+                </span>
+              </div>
+
+              {readyOrders.length === 0 ? (
+                <div className="rounded-lg border border-green-500/20 bg-green-500/10 p-4 text-center text-gray-400 text-sm">
+                  Sin órdenes listas
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {readyOrders.map(order => (
+                    <OrderCard
+                      key={order.id}
+                      order={order}
+                      onStatusChange={updateStatus}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+        )}
       </div>
+    </div>
+  );
+}
+
+// Componente para tarjeta de orden
+function OrderCard({ order, onStatusChange }: { 
+  order: Order; 
+  onStatusChange: (id: number, status: string) => Promise<void> 
+}) {
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleStatusChange = async (newStatus: string) => {
+    setIsUpdating(true);
+    await onStatusChange(order.id, newStatus);
+    setIsUpdating(false);
+  };
+
+  const getNextStatus = (status: string): { label: string; status: string } | null => {
+    const transitions: Record<string, { label: string; status: string }> = {
+      'pending': { label: 'Aceptar', status: 'accepted' },
+      'accepted': { label: 'Preparando', status: 'preparing' },
+      'preparing': { label: 'Listo', status: 'ready' },
+      'ready': { label: 'Entregado', status: 'completed' }
+    };
+    return transitions[status] || null;
+  };
+
+  const nextAction = getNextStatus(order.status);
+  const createdTime = new Date(order.created_at).toLocaleTimeString('es-ES', { 
+    hour: '2-digit', 
+    minute: '2-digit' 
+  });
+
+  return (
+    <div className="rounded-lg border border-white/10 bg-white/5 p-3 space-y-2">
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <p className="text-xs font-mono text-amber-300 font-bold">{order.order_number}</p>
+          <p className="text-sm font-semibold text-white truncate">{order.customer_name}</p>
+          <p className="text-xs text-gray-400">{createdTime}</p>
+        </div>
+        <p className="text-right font-bold text-amber-200">${order.total_amount}</p>
+      </div>
+
+      {order.items && order.items.length > 0 && (
+        <div className="border-t border-white/10 pt-2 space-y-1">
+          {order.items.map((item: any) => (
+            <div key={item.id} className="flex justify-between text-xs text-gray-300">
+              <span>{item.quantity}x {item.product_name}</span>
+              <span>${item.subtotal}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {nextAction && (
+        <button
+          onClick={() => handleStatusChange(nextAction.status)}
+          disabled={isUpdating}
+          className="w-full rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-3 py-2 text-xs font-bold text-black transition-opacity disabled:opacity-50"
+        >
+          {isUpdating ? 'Actualizando...' : nextAction.label}
+        </button>
+      )}
     </div>
   );
 }
