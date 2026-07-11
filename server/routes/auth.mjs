@@ -36,4 +36,28 @@ router.post('/lookup', requireServiceClient, async (req, res) => {
   }
 });
 
+router.get('/role/:id', requireServiceClient, async (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    return res.status(400).json({ error: 'User ID is required' });
+  }
+
+  try {
+    const { data, error } = await req.supabase
+      .from('users')
+      .select('role, branch_id')
+      .eq('id', id)
+      .single();
+
+    if (error || !data) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    res.json({ role: data.role, branchId: data.branch_id });
+  } catch (err) {
+    console.error('Fetch role error', err.message || err);
+    res.status(500).json({ error: 'Error interno al obtener rol' });
+  }
+});
+
 export default router;

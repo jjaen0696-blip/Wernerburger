@@ -8,11 +8,10 @@ import Kitchen from './pages/Kitchen';
 import Delivery from './pages/Delivery';
 import Admin from './pages/Admin';
 import POS from './pages/POS';
-import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import PrivateRoute from './components/PrivateRoute';
 
-type Page = 'home' | 'menu' | 'kitchen' | 'delivery' | 'login' | 'admin' | 'pos' | 'dashboard';
+type Page = 'home' | 'menu' | 'kitchen' | 'delivery' | 'login' | 'admin' | 'pos';
 
 function AppContent() {
   const [page, setPage] = useState<Page>('home');
@@ -34,13 +33,13 @@ function AppContent() {
       if (user && session) {
         // Redirigir automáticamente según rol
         if (role === 'admin') {
-          setPage('dashboard');
+          setPage('admin');
         } else if (role === 'cocina') {
           setPage('kitchen');
         } else if (role === 'delivery') {
           setPage('delivery');
         } else {
-          setPage('dashboard');
+          setPage('admin');
         }
       } else {
         const savedPage = window.localStorage.getItem('werner-app-page') as Page | null;
@@ -69,14 +68,10 @@ function AppContent() {
             : page === 'menu' ? <Menu />
             : page === 'kitchen' ? <Kitchen onNavigate={navigate} />
             : page === 'delivery' ? <Delivery />
-            : page === 'login' ? <Login onSuccess={() => setPage('dashboard')} onBack={() => setPage('home')} />
+            : page === 'login' ? <Login onSuccess={() => setPage('admin')} onBack={() => setPage('home')} />
             : page === 'admin' ? (
               <PrivateRoute onUnauthorized={() => setPage('login')} allowedRoles={['admin', 'manager', 'kitchen', 'delivery']}>
                 <Admin />
-              </PrivateRoute>
-            ) : page === 'dashboard' ? (
-              <PrivateRoute onUnauthorized={() => setPage('login')} allowedRoles={['admin', 'manager']}>
-                <Dashboard />
               </PrivateRoute>
             ) : page === 'pos' ? <POS />
             : null}

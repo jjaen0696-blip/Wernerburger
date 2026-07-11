@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase, supabaseConfigured } from '../lib/supabase';
 
 type User = any;
-export type UserRole = 'admin' | 'cocina' | 'delivery';
+export type UserRole = 'admin' | 'manager' | 'cocina' | 'delivery';
 
 interface AuthContextValue {
   user: User | null;
@@ -25,14 +25,12 @@ export const useAuth = () => {
 
 const fetchUserRole = async (userId: string): Promise<{ role: UserRole | null; branchId: string | null }> => {
   try {
-    const { data, error } = await supabase
-      .from('users')
-      .select('role, branch_id')
-      .eq('id', userId)
-      .single();
-    
-    if (error || !data) return { role: 'admin', branchId: null };
-    return { role: data.role || 'admin', branchId: data.branch_id };
+    const res = await fetch(`${API_BASE}/auth/role/${encodeURIComponent(userId)}`);
+    if (!res.ok) {
+      return { role: 'admin', branchId: null };
+    }
+    const data = await res.json();
+    return { role: data.role || 'admin', branchId: data.branchId || null };
   } catch {
     return { role: 'admin', branchId: null };
   }
