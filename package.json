@@ -10,7 +10,9 @@
     "start:frontend": "serve -s dist -l 3000",
     "start:server": "node server/index.mjs",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit -p tsconfig.app.json"
+    "typecheck": "tsc --noEmit -p tsconfig.app.json",
+    "fix:updated-at": "node fix-updated-at-simple.mjs",
+    "db:migrate": "node scripts/run_sql_file.js supabase/migrations/20260711_fix_updated_at_fields.sql"
   },
   "dependencies": {
     "cors": "^2.8.5",

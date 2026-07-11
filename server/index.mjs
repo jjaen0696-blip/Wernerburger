@@ -10,6 +10,7 @@ import inventoryRouter from './routes/inventory.mjs';
 import purchasesRouter from './routes/purchases.mjs';
 import reportsRouter from './routes/reports.mjs';
 import alertsRouter from './routes/alerts.mjs';
+import diagnosticsRouter from './routes/diagnostics.mjs';
 
 const app = express();
 const corsOrigins = [
@@ -64,6 +65,7 @@ app.use('/purchases', purchasesRouter);
 app.use('/reports', reportsRouter);
 app.use('/alerts', alertsRouter);
 app.use('/orders', ordersRouter);
+app.use('/admin/diagnostics', diagnosticsRouter);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Not Found' });
