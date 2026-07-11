@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ShoppingBag, Clock, Star, ArrowRight, LogIn, MapPin, ChevronDown, Check, Flame, Sparkles } from 'lucide-react';
 import WernerLogo from '../components/WernerLogo';
-import { supabase, type Location, sortLocationsForDisplay } from '../lib/supabase';
+import { supabase, type Location } from '../lib/supabase';
 
 type Props = {
   onOrder: (locationId: string) => void;
@@ -29,58 +29,41 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
 
   const isLocationOpen = (loc: Location) => loc.is_open ?? true;
 
-  const loadLocations = useCallback(async () => {
-    try {
-      const { data, error: loadError } = await supabase
-        .from('locations')
-        .select('*')
-        .order('name');
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const { data, error: loadError } = await supabase
+          .from('locations')
+          .select('*')
+          .eq('is_active', true)
+          .order('name');
 
-      if (loadError) {
-        throw loadError;
-      }
-
-      if (data && data.length > 0) {
-        const visibleLocations = sortLocationsForDisplay((data as Location[])).filter((loc) => loc.is_active);
-        setLocations(visibleLocations);
-        setSelectedLocation((prev) => (prev && visibleLocations.some((loc) => loc.id === prev.id) ? prev : null));
-        if (visibleLocations.length === 0) {
-          setWarning('No se encontraron sucursales activas. Usando sucursal por defecto.');
-        } else {
-          setWarning(null);
+        if (loadError) {
+          throw loadError;
         }
-      } else {
+
+        if (data && data.length > 0) {
+          setLocations(data);
+          // No se pre-selecciona: el cliente debe elegir una sucursal a propósito.
+        } else {
+          setLocations([defaultLocation]);
+          setSelectedLocation(defaultLocation);
+          setWarning('No se encontraron sucursales activas. Usando sucursal por defecto.');
+        }
+      } catch (err) {
+        const message =
+          err instanceof Error
+            ? err.message
+            : 'No se pudo cargar las sucursales. Usando sucursal por defecto.';
         setLocations([defaultLocation]);
         setSelectedLocation(defaultLocation);
-        setWarning('No se encontraron sucursales activas. Usando sucursal por defecto.');
+        setWarning(message);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : 'No se pudo cargar las sucursales. Usando sucursal por defecto.';
-      setLocations([defaultLocation]);
-      setSelectedLocation(defaultLocation);
-      setWarning(message);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void loadLocations();
-
-    const channel = supabase
-      .channel('home-locations-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'locations' }, () => {
-        void loadLocations();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
     };
-  }, [loadLocations]);
+    load();
+  }, []);
 
   useEffect(() => {
     if (!dropdownOpen) return;
@@ -133,6 +116,7 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
                   const { data, error: loadError } = await supabase
                     .from('locations')
                     .select('*')
+                    .eq('is_active', true)
                     .order('name');
 
                   if (loadError) {
@@ -140,8 +124,7 @@ export default function Home({ onOrder, onKitchenAccess }: Props) {
                   }
 
                   if (data && data.length > 0) {
-                    const visibleLocations = sortLocationsForDisplay((data as Location[])).filter((loc) => loc.is_active);
-                    setLocations(visibleLocations);
+                    setLocations(data);
                     // No se pre-selecciona: el cliente debe elegir una sucursal.
                   } else {
                     setError('No se encontraron sucursales activas. Revisa la configuración de Supabase.');

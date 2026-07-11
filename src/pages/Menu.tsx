@@ -1,0 +1,561 @@
+import { useMemo, useState, useEffect, type FormEvent } from 'react';
+import { motion } from 'framer-motion';
+import {
+  Trash2,
+  X,
+  CreditCard,
+  Check,
+  Truck,
+  Wallet,
+  Star,
+  Sparkles,
+  Gift,
+  Coffee,
+  Package,
+} from 'lucide-react';
+
+import { MENU_ITEMS, CATEGORIES, type Category } from '../data/menuData';
+import { useCart } from '../context/CartContext';
+import HeroPremium from '../components/HeroPremium';
+import ProductCardPremium from '../components/ProductCardPremium';
+
+type FilterCategory = 'todas' | Category;
+type PaymentMethod = 'efectivo' | 'yappy';
+type DeliveryType = 'local' | 'delivery' | null;
+
+const API_BASE = import.meta.env.VITE_API_BASE || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://127.0.0.1:5174' : 'https://wernerburger.onrender.com');
+const api = (path: string) => `${API_BASE}${path}`;
+
+const badgeWidgets = [
+  { icon: Star, label: 'Más populares', value: `${MENU_ITEMS.filter((item) => item.isPopular).length} ítems` },
+  { icon: Sparkles, label: 'Nuevos', value: 'Tendencias frescas' },
+  { icon: Package, label: 'Combos', value: 'Paquetes exquisitos' },
+  { icon: Gift, label: 'Promociones', value: 'Ofertas exclusivas' },
+  { icon: Coffee, label: 'Bebidas', value: 'Refrescantes' },
+];
+
+// Small inline SVG icons for the categories (single-color, easy to style)
+function AllStarsIcon({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <path d="M12 2l2.6 5.3L20 9l-4 3.3L17.2 20 12 16.7 6.8 20 8 12.3 4 9l5.4-1.7L12 2z" />
+    </svg>
+  );
+}
+
+function HotdogIcon({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <path d="M2 12c0-3 4-6 10-6s10 3 10 6-4 6-10 6S2 15 2 12z" />
+      <path d="M4 12v2c0 1.5 3 3 8 3s8-1.5 8-3v-2" />
+    </svg>
+  );
+}
+
+function BurgerIcon({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <rect x="3" y="6" width="18" height="3" rx="1" />
+      <path d="M3 12h18v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2z" />
+      <rect x="5" y="17" width="14" height="2" rx="1" />
+    </svg>
+  );
+}
+
+function FriesIcon({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <path d="M7 4l1.5 12.5a2 2 0 0 0 2 1.8h3a2 2 0 0 0 2-1.8L17 4" />
+      <path d="M10 6v6" />
+      <path d="M14 6v6" />
+    </svg>
+  );
+}
+
+function DrinkIcon({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <path d="M8 3h8l-1 6a4 4 0 0 1-6 0L8 3z" />
+      <path d="M12 14v6" />
+    </svg>
+  );
+}
+
+function CategoryScroller({ setActiveCategory, activeCategory }: { setActiveCategory: (c: FilterCategory) => void; activeCategory: FilterCategory }) {
+  return (
+    <div className="relative">
+      <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-[rgba(255,255,255,0.05)] p-2 shadow-[0_12px_40px_rgba(0,0,0,0.22)]">
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setActiveCategory(cat.id as FilterCategory)}
+              className={`shrink-0 flex items-center gap-2 rounded-full px-3.5 py-2 text-[11px] font-semibold transition-all duration-300 ${
+                activeCategory === cat.id
+                  ? 'bg-gradient-to-r from-amber-500/20 via-amber-400/15 to-orange-300/15 text-amber-100 shadow-[0_12px_32px_rgba(245,158,11,0.14)] border border-amber-400/20'
+                  : 'bg-white/6 text-gray-300 border border-white/10 hover:border-amber-400/30 hover:bg-white/10'
+              }`}
+            >
+              <span className={`${activeCategory === cat.id ? 'text-amber-200' : 'text-gray-400'}`}>
+                {cat.id === 'todas' && <AllStarsIcon className="w-4 h-4" />}
+                {cat.id === 'hotdogs' && <HotdogIcon className="w-4 h-4" />}
+                {cat.id === 'hamburguesas' && <BurgerIcon className="w-4 h-4" />}
+                {cat.id === 'salchipapas' && <FriesIcon className="w-4 h-4" />}
+                {cat.id === 'pepitos' && <HotdogIcon className="w-4 h-4" />}
+                {cat.id === 'arepas' && <FriesIcon className="w-4 h-4" />}
+                {cat.id === 'extras' && <DrinkIcon className="w-4 h-4" />}
+              </span>
+              <span className="truncate max-w-[7rem]">{cat.id === 'todas' ? 'TODOS' : cat.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function Menu() {
+  const [activeCategory, setActiveCategory] = useState<FilterCategory>('todas');
+  const [search, setSearch] = useState('');
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('efectivo');
+  const [orderPlaced, setOrderPlaced] = useState(false);
+  const [deliveryType, setDeliveryType] = useState<DeliveryType>(null);
+  const [ubicacion, setUbicacion] = useState<{ lat: number; lng: number } | null>(null);
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [customerAddress, setCustomerAddress] = useState('');
+
+  const { cart, addToCart, removeFromCart, total, itemCount, placeOrder } = useCart();
+
+  useEffect(() => {
+    if (!orderPlaced) return;
+    const timers = [3000, 6000, 9000].map((ms) =>
+      setTimeout(() => {
+        // placeholder for future progress state if needed
+      }, ms)
+    );
+    return () => timers.forEach((t) => clearTimeout(t));
+  }, [orderPlaced]);
+
+  const filtered = useMemo(() => {
+    return MENU_ITEMS.filter((item) => {
+      const matchCat = activeCategory === 'todas' || item.category === activeCategory;
+      const q = search.trim().toLowerCase();
+      const matchSearch = !q || item.name.toLowerCase().includes(q) || item.description.toLowerCase().includes(q);
+      return matchCat && matchSearch;
+    });
+  }, [activeCategory, search]);
+
+  const deliveryFee = deliveryType === 'delivery' ? 2.0 : 0;
+  const grandTotal = total + (total > 0 ? deliveryFee : 0);
+  const nameValid = customerName.trim().length > 0;
+  const phoneValid = customerPhone.trim().length > 0;
+  const addressReady = deliveryType !== 'delivery' || ubicacion || customerAddress.trim().length > 0;
+
+  const handleCheckout = () => {
+    if (itemCount === 0) return;
+    setOrderPlaced(false);
+    setDeliveryType(null);
+    setUbicacion(null);
+    setCheckoutOpen(true);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const handleCloseCheckout = () => {
+    setCheckoutOpen(false);
+    setDeliveryType(null);
+    setUbicacion(null);
+    document.body.style.overflow = '';
+  };
+
+  const handleGetLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUbicacion({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+          setCustomerAddress('');
+        },
+        () => alert('No pudimos obtener tu ubicación.')
+      );
+    } else {
+      alert('Tu navegador no soporta geolocalización.');
+    }
+  };
+
+  const handlePlaceOrder = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!customerName.trim() || !customerPhone.trim()) {
+      alert('Ingresa tu nombre y teléfono para completar el pedido.');
+      return;
+    }
+
+    if (deliveryType === 'delivery' && !customerAddress.trim() && !ubicacion) {
+      alert('Ingresa tu dirección o comparte tu ubicación.');
+      return;
+    }
+
+    const body = {
+      branch_id: 'default',
+      customer_name: customerName.trim(),
+      phone: customerPhone.trim(),
+      delivery_type: deliveryType,
+      payment_method: paymentMethod,
+      total: grandTotal,
+      items: cart.map((entry) => ({
+        product_id: entry.item.id,
+        quantity: entry.quantity,
+        unit_price: entry.item.price,
+      })),
+      address: deliveryType === 'delivery'
+        ? ubicacion
+          ? `Lat ${ubicacion.lat.toFixed(4)}, Lng ${ubicacion.lng.toFixed(4)}`
+          : customerAddress.trim()
+        : undefined,
+    };
+
+    try {
+      const response = await fetch(api('/orders'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        alert(errorData?.error || 'Error al procesar el pedido.');
+        return;
+      }
+
+      placeOrder({
+        items: cart,
+        total: grandTotal,
+        customerName: customerName.trim(),
+        phone: customerPhone.trim(),
+        address: deliveryType === 'delivery'
+          ? ubicacion
+            ? `Lat ${ubicacion.lat.toFixed(4)}, Lng ${ubicacion.lng.toFixed(4)}`
+            : customerAddress.trim()
+          : undefined,
+        deliveryType: deliveryType!,
+        paymentMethod,
+      });
+
+      setOrderPlaced(true);
+      setCustomerName('');
+      setCustomerPhone('');
+      setCustomerAddress('');
+      setUbicacion(null);
+    } catch (err) {
+      alert('No se pudo conectar con el servidor.');
+    }
+  };
+
+  return (
+    <div className="bg-black min-h-screen pb-28">
+      <HeroPremium value={search} onChange={(e) => setSearch(e.target.value)} />
+
+      <div className="relative overflow-hidden py-10">
+        <div className="absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-black/40 to-transparent" />
+        <div className="absolute right-0 top-0 h-64 w-64 rounded-full bg-amber-500/10 blur-3xl" />
+        <div className="absolute left-0 bottom-0 h-72 w-72 rounded-full bg-white/5 blur-3xl" />
+
+        <div className="max-w-7xl mx-auto grid gap-10 lg:grid-cols-[minmax(20rem,28%)_minmax(0,1fr)] px-4 sm:px-6 lg:px-8">
+          <aside className="relative self-start overflow-hidden rounded-[2.25rem] border border-white/10 bg-[rgba(12,12,12,0.82)] p-6 shadow-[0_32px_90px_rgba(0,0,0,0.45)] backdrop-blur-xl lg:sticky lg:top-24">
+            <div className="mb-6 space-y-3">
+              <p className="text-xs uppercase tracking-[0.35em] text-amber-200/70">Panel premium</p>
+              <h2 className="text-3xl font-black text-white tracking-[0.04em]">Control de menú</h2>
+              <p className="text-sm leading-6 text-gray-300">Monitorea tendencias, oferta y tiempo de entrega con una experiencia de pedidos ultra premium.</p>
+            </div>
+
+            <div className="mt-8 grid gap-3">
+              {badgeWidgets.map((widget, index) => (
+                <div key={widget.label} className={`rounded-[1.8rem] border ${index === 0 ? 'border-amber-400/20 bg-gradient-to-r from-amber-500/10 via-black/40 to-transparent' : 'border-white/10 bg-white/5'} p-4 shadow-[0_16px_42px_rgba(0,0,0,0.24)] transition hover:-translate-y-0.5 hover:shadow-[0_20px_60px_rgba(0,0,0,0.28)]`}>
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-3xl bg-amber-300/10 text-amber-200 shadow-[0_10px_30px_rgba(245,158,11,0.12)]">
+                      <widget.icon className="h-5 w-5" />
+                    </span>
+                    <div>
+                      <p className="text-[11px] uppercase tracking-[0.28em] text-amber-200/70">{widget.label}</p>
+                      <p className="mt-1 text-base font-semibold text-white">{widget.value}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-8 rounded-[2rem] border border-white/10 bg-gradient-to-br from-black/80 via-black/70 to-amber-900/10 p-6 shadow-[0_28px_80px_rgba(245,158,11,0.18)]">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.35em] text-amber-200/70">Entrega estimada</p>
+                  <h3 className="mt-3 text-3xl font-black text-white">20‑35 min</h3>
+                  <p className="mt-2 text-sm leading-6 text-gray-300">Servicio rápido, elegante y con entrega puntual.</p>
+                </div>
+                <div className="flex h-20 w-20 items-center justify-center rounded-[2rem] bg-amber-300/10 text-amber-200 shadow-[0_20px_60px_rgba(245,158,11,0.18)]">
+                  <Truck className="h-8 w-8" />
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          <main className="space-y-8">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }} className="rounded-[2rem] border border-white/10 bg-[rgba(255,255,255,0.04)] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.3)] backdrop-blur-xl">
+                <p className="text-[10px] uppercase tracking-[0.35em] text-amber-200/75">Catálogo</p>
+                <p className="mt-3 text-3xl font-black text-white">{filtered.length}</p>
+                <p className="mt-2 text-sm text-gray-400">Items disponibles dentro de tu selección.</p>
+              </motion.div>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.05 }} className="rounded-[2rem] border border-white/10 bg-[rgba(255,255,255,0.04)] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.3)] backdrop-blur-xl">
+                <p className="text-[10px] uppercase tracking-[0.35em] text-amber-200/75">Total pedido</p>
+                <p className="mt-3 text-3xl font-black text-amber-300">${grandTotal.toFixed(2)}</p>
+                <p className="mt-2 text-sm text-gray-400">Incluye tarifas y envío cuando aplique.</p>
+              </motion.div>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.1 }} className="rounded-[2rem] border border-white/10 bg-[rgba(255,255,255,0.04)] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.3)] backdrop-blur-xl">
+                <p className="text-[10px] uppercase tracking-[0.35em] text-amber-200/75">Categoría</p>
+                <p className="mt-3 text-3xl font-black text-white truncate">{activeCategory === 'todas' ? 'Todos' : activeCategory}</p>
+                <p className="mt-2 text-sm text-gray-400">Cambio instantáneo con un solo toque.</p>
+              </motion.div>
+            </div>
+
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.15 }} className="rounded-[2rem] border border-white/10 bg-black/40 p-6 shadow-[0_18px_60px_rgba(0,0,0,0.25)] backdrop-blur-xl">
+              <CategoryScroller setActiveCategory={setActiveCategory} activeCategory={activeCategory} />
+            </motion.div>
+
+            <div className="space-y-6">
+              {filtered.length === 0 ? (
+                <div className="rounded-[2rem] border border-white/10 bg-black/40 p-12 text-center text-gray-400 shadow-[0_10px_35px_rgba(0,0,0,0.26)]">
+                  <p className="text-lg font-semibold text-white">No encontramos lo que buscas</p>
+                  <p className="mt-3 text-sm text-gray-400">Prueba otro término o cambia de categoría premium.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                  {filtered.map((item) => (
+                    <ProductCardPremium key={item.id} item={item} onAdd={() => addToCart(item)} compact={activeCategory === 'todas'} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </main>
+        </div>
+      </div>
+
+      {itemCount > 0 && (
+        <div className="fixed bottom-5 left-1/2 z-40 -translate-x-1/2">
+          <button
+            onClick={handleCheckout}
+            className="inline-flex items-center justify-center gap-4 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-3 text-sm font-black text-stone-950 shadow-[0_24px_80px_rgba(245,158,11,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_28px_90px_rgba(245,158,11,0.3)]"
+          >
+            <span className="inline-flex h-3.5 w-3.5 rounded-full bg-emerald-300 shadow-[0_0_12px_rgba(86,199,103,0.45)]" />
+            <span className="text-xs uppercase tracking-[0.4em] text-white/90">Ver carrito</span>
+            <span className="text-base font-black">{itemCount} items</span>
+            <span className="text-base font-black">${grandTotal.toFixed(2)}</span>
+          </button>
+        </div>
+      )}
+
+      {checkoutOpen && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/75 backdrop-blur-sm px-3 py-4 overflow-y-auto overscroll-contain sm:items-center sm:px-6 sm:py-8">
+          <div className="relative w-full max-w-[min(100%,34rem)] overflow-hidden rounded-[2rem] border border-amber-400/20 bg-[#0c0b0f]/95 shadow-[0_32px_96px_rgba(0,0,0,0.65)] max-h-[90vh] ios-scrollbar">
+            <button
+              onClick={handleCloseCheckout}
+              className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-gray-300 transition hover:bg-white/15"
+              aria-label="Cerrar"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="space-y-4 p-3 sm:p-4">
+              <div className="rounded-3xl border border-white/10 bg-white/5 p-4 shadow-[0_8px_28px_rgba(0,0,0,0.25)]">
+                <div className="mb-3 flex items-center gap-2 text-[12px] uppercase tracking-[0.35em] text-amber-200 font-bold">
+                  <CreditCard className="h-4 w-4" />
+                  Tu pedido
+                </div>
+                <div className="space-y-3 max-h-[38vh] overflow-y-auto pr-1 ios-scrollbar">
+                  {cart.length === 0 ? (
+                    <div className="rounded-2xl bg-white/5 p-4 text-center text-sm text-gray-300">No hay artículos en el carrito.</div>
+                  ) : (
+                    cart.map(({ item, quantity }) => (
+                      <div key={item.id} className="flex items-center justify-between gap-3 border-b border-white/10 py-3 last:border-0">
+                        <div>
+                          <p className="text-sm font-semibold text-white">{item.name}</p>
+                          <p className="text-xs text-gray-400">x{quantity}</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <p className="text-sm font-bold text-amber-300">${(item.price * quantity).toFixed(2)}</p>
+                          <button
+                            type="button"
+                            onClick={() => removeFromCart(item.id)}
+                            className="rounded-full bg-red-500/20 p-1.5 text-red-400 transition hover:bg-red-500/30"
+                            aria-label={`Quitar ${item.name}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              <div className="grid gap-3 rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-gray-200">
+                <div className="flex justify-between">
+                  <span className="font-medium">Comida</span>
+                  <span className="font-semibold">${total.toFixed(2)}</span>
+                </div>
+                {deliveryType === 'delivery' && (
+                  <div className="flex justify-between text-amber-200">
+                    <span className="font-medium">Envío</span>
+                    <span className="font-semibold">+$2.00</span>
+                  </div>
+                )}
+                <div className="flex justify-between border-t border-white/10 pt-3 text-base font-black text-white">
+                  <span>Total</span>
+                  <span className="text-amber-300">${grandTotal.toFixed(2)}</span>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {orderPlaced ? (
+                  <div className="space-y-5 rounded-3xl border border-emerald-400/20 bg-emerald-900/5 p-5 text-center">
+                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-300">
+                      <Check className="h-6 w-6" />
+                    </div>
+                    <h4 className="text-xl font-black text-white">¡Pedido confirmado!</h4>
+                    <p className="text-sm text-emerald-100/80">Estamos preparando tu orden con cuidado.</p>
+                    <button
+                      onClick={handleCloseCheckout}
+                      className="mt-4 w-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-3 font-black text-stone-950"
+                    >
+                      Volver al menú
+                    </button>
+                  </div>
+                ) : !deliveryType ? (
+                  <div className="grid gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setDeliveryType('local')}
+                      className={`rounded-3xl border p-4 text-left transition ${deliveryType === 'local' ? 'border-amber-400/60 bg-amber-500/10' : 'border-white/10 bg-white/5 hover:border-amber-400/30'}`}
+                    >
+                      <p className="text-sm font-black text-white">Recoger en tienda</p>
+                      <p className="text-xs text-gray-400 mt-2">Retira tu orden cuando esté lista.</p>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDeliveryType('delivery')}
+                      className={`rounded-3xl border p-4 text-left transition ${deliveryType === 'delivery' ? 'border-amber-400/60 bg-amber-500/10' : 'border-white/10 bg-white/5 hover:border-amber-400/30'}`}
+                    >
+                      <p className="text-sm font-black text-white">Entregar a domicilio</p>
+                      <p className="text-xs text-gray-400 mt-2">Te lo llevamos (+$2).</p>
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handlePlaceOrder} className="space-y-4">
+                    <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
+                      <label className={`rounded-3xl border p-3 ${nameValid ? 'border-emerald-400/60 bg-emerald-500/10' : 'border-white/10 bg-white/5'}`}>
+                        <span className="text-[11px] uppercase tracking-[0.3em] text-amber-200 font-semibold">A nombre</span>
+                        <input
+                          required
+                          value={customerName}
+                          onChange={(e) => setCustomerName(e.target.value)}
+                          placeholder="Ej. Juan Pérez"
+                          className="mt-3 w-full bg-transparent text-white outline-none"
+                        />
+                        {nameValid && (
+                          <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-2 text-[11px] font-semibold text-emerald-200">
+                            {customerName.trim()}
+                          </div>
+                        )}
+                      </label>
+
+                      {nameValid && (
+                        <label className={`rounded-3xl border p-3 ${phoneValid ? 'border-emerald-400/60 bg-emerald-500/10' : 'border-white/10 bg-white/5'}`}>
+                          <span className="text-[11px] uppercase tracking-[0.3em] text-amber-200 font-semibold">Teléfono</span>
+                          <input
+                            required
+                            type="tel"
+                            inputMode="tel"
+                            value={customerPhone}
+                            onChange={(e) => setCustomerPhone(e.target.value)}
+                            placeholder="Ej. 6789-1234"
+                            className="mt-3 w-full bg-transparent text-white outline-none"
+                          />
+                          {phoneValid && (
+                            <div className="mt-3 text-[11px] font-semibold text-emerald-200">Número listo</div>
+                          )}
+                        </label>
+                      )}
+                    </div>
+
+                    {deliveryType === 'delivery' && phoneValid && (
+                      <div className="space-y-3 rounded-3xl border border-white/10 bg-white/5 p-4">
+                        <p className="text-[11px] uppercase tracking-[0.3em] text-amber-200 font-semibold">Enviar ubicación</p>
+                        {ubicacion ? (
+                          <div className="rounded-3xl border border-emerald-400/30 bg-emerald-900/10 p-3 text-sm text-emerald-100">
+                            Ubicación actual enviada
+                            <div className="mt-2 text-xs text-emerald-200">Lat {ubicacion.lat.toFixed(4)}, Lng {ubicacion.lng.toFixed(4)}</div>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={handleGetLocation}
+                            className="w-full rounded-3xl border border-amber-400/40 bg-amber-500/10 px-4 py-3 text-sm font-bold text-amber-200"
+                          >
+                            Enviar ubicación actual
+                          </button>
+                        )}
+                        <p className="text-xs text-gray-400">Asegúrate de permitir compartir tu ubicación para no escribir la dirección.</p>
+                        {!ubicacion && (
+                          <label className="rounded-3xl border border-white/10 bg-white/5 p-3">
+                            <span className="text-[11px] uppercase tracking-[0.3em] text-amber-200 font-semibold">Dirección (opcional)</span>
+                            <input
+                              value={customerAddress}
+                              onChange={(e) => setCustomerAddress(e.target.value)}
+                              placeholder="Calle, número, apto"
+                              className="mt-3 w-full bg-transparent text-white outline-none"
+                            />
+                          </label>
+                        )}
+                      </div>
+                    )}
+
+                    {(deliveryType !== 'delivery' || (phoneValid && addressReady)) && (
+                      <>
+                        <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
+                          <p className="text-[11px] uppercase tracking-[0.3em] text-amber-200 font-semibold">¿Cómo deseas pagar?</p>
+                          <div className="mt-3 grid gap-2 grid-cols-2">
+                            <button
+                              type="button"
+                              onClick={() => setPaymentMethod('efectivo')}
+                              className={`rounded-3xl border px-3 py-3 text-left transition ${paymentMethod === 'efectivo' ? 'border-amber-400/60 bg-amber-500/10 text-amber-100' : 'border-white/10 bg-white/6 text-gray-200 hover:border-amber-400/30'}`}
+                            >
+                              <div className="flex items-center gap-2 font-semibold">
+                                <Wallet className="h-4 w-4" /> Efectivo
+                              </div>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setPaymentMethod('yappy')}
+                              className={`rounded-3xl border px-3 py-3 text-left transition ${paymentMethod === 'yappy' ? 'border-amber-400/60 bg-amber-500/10 text-amber-100' : 'border-white/10 bg-white/6 text-gray-200 hover:border-amber-400/30'}`}
+                            >
+                              <div className="flex items-center gap-2 font-semibold">
+                                <CreditCard className="h-4 w-4" /> Yappy
+                              </div>
+                            </button>
+                          </div>
+                        </div>
+
+                        <button type="submit" className="w-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-3 font-black text-stone-950">
+                          Confirmar y pagar
+                        </button>
+                      </>
+                    )}
+                  </form>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

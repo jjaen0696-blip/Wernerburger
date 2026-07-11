@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { Users, Shield, UserCog, UserPlus, Mail, KeyRound, Check, Store, Bike } from 'lucide-react';
-import { OWNER_EMAIL, supabase, supabaseUrl, supabaseAnonKey, type Location, type Role, sortLocationsForDisplay } from '../lib/supabase';
+import { OWNER_EMAIL, supabase, supabaseUrl, supabaseAnonKey, type Location, type Role } from '../lib/supabase';
 import { Modal, Field, TextInput, SelectInput, PrimaryButton, GhostButton, Pill, Spinner, EmptyState, Banner } from './ui';
 
 type AdminUser = { id: string; email: string | null; role: Role; location_id: string | null; created_at: string };
@@ -31,16 +31,16 @@ export default function Usuarios({ currentEmail }: { currentEmail: string | null
   const load = useCallback(async () => {
     const [{ data: us, error: uErr }, locResult] = await Promise.all([
       supabase.rpc('admin_list_users'),
-      supabase.from('locations').select('id,slug,name,address,is_active,is_open,created_at').order('name'),
+      supabase.from('locations').select('id,slug,name,address,is_active,is_open,created_at').eq('is_active', true).order('name'),
     ]);
     let locs = locResult.data;
     if (locResult.error && /is_open|column/i.test(locResult.error.message)) {
-      const fallback = await supabase.from('locations').select('id,slug,name,address,is_active,created_at').order('name');
+      const fallback = await supabase.from('locations').select('id,slug,name,address,is_active,created_at').eq('is_active', true).order('name');
       locs = fallback.data;
     }
     if (uErr) setError(uErr.message);
     else setUsers((us ?? []) as AdminUser[]);
-    setLocations(sortLocationsForDisplay((locs ?? []) as Location[]));
+    setLocations(locs ?? []);
     setLoading(false);
   }, []);
 

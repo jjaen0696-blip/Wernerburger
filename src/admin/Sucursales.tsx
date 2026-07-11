@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { MapPin, Plus, Pencil, Power, Search, Building2, Check } from 'lucide-react';
-import { supabase, type Location, checkSupabaseConnection, getCurrentProfile, sortLocationsForDisplay } from '../lib/supabase';
+import { supabase, type Location, checkSupabaseConnection, getCurrentProfile } from '../lib/supabase';
 import { Modal, Field, TextInput, PrimaryButton, GhostButton, Pill, Spinner, EmptyState, Banner } from './ui';
 
 const slugify = (s: string) =>
@@ -32,7 +32,7 @@ export default function Sucursales() {
       setError(`No se pudieron cargar las sucursales: ${result.error.message}`);
       setItems([]);
     } else {
-      setItems(sortLocationsForDisplay((result.data ?? []) as Location[]));
+      setItems(result.data ?? []);
     }
     setLoading(false);
   }, []);

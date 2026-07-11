@@ -1,239 +1,159 @@
-import { ReactNode } from 'react';
-import { X, AlertCircle, CheckCircle, AlertTriangle } from 'lucide-react';
+import { type ReactNode, type InputHTMLAttributes, type SelectHTMLAttributes, type ButtonHTMLAttributes } from 'react';
+import { createPortal } from 'react-dom';
+import { X, Loader2, Inbox } from 'lucide-react';
 
-/* ======================== Modal ======================== */
-export function Modal({
-  open,
-  onClose,
-  title,
-  children,
-  footer,
-}: {
-  open: boolean;
-  onClose: () => void;
-  title: string;
-  children: ReactNode;
-  footer?: ReactNode;
-}) {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 p-4">
-      <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-[28px] border border-white/10 bg-ink-800/95 shadow-[0_24px_80px_rgba(0,0,0,0.28)] backdrop-blur-xl animate-pop-in">
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/8 bg-ink-800/80 px-6 py-4 backdrop-blur">
-          <h3 className="font-display text-lg font-extrabold text-white">{title}</h3>
-          <button onClick={onClose} className="text-white/45 transition-colors hover:text-white">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        <div className="scrollable-touch p-6">{children}</div>
-        {footer && (
-          <div className="flex gap-3 border-t border-white/8 bg-ink-800/80 px-6 py-4 backdrop-blur">
-            {footer}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+/* Pequeño helper para unir clases condicionales. */
+export const cx = (...parts: (string | false | null | undefined)[]) => parts.filter(Boolean).join(' ');
 
-/* ======================== Field ======================== */
-export function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string;
-  hint?: string;
-  children: ReactNode;
-}) {
+/* ===== Botones ===== */
+export function PrimaryButton({
+  children, className, ...props
+}: { children: ReactNode } & ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
-    <div className="flex flex-col gap-2">
-      <label className="text-sm font-bold text-white/80">{label}</label>
-      {hint && <p className="text-xs text-white/45">{hint}</p>}
-      {children}
-    </div>
-  );
-}
-
-/* ======================== TextInput ======================== */
-export function TextInput({
-  value,
-  onChange,
-  placeholder,
-  disabled,
-  type = 'text',
-  className = '',
-  autoComplete,
-}: {
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  placeholder?: string;
-  disabled?: boolean;
-  type?: string;
-  className?: string;
-  autoComplete?: string;
-}) {
-  return (
-    <input
-      type={type}
-      value={value}
-      onChange={onChange}
-      placeholder={placeholder}
-      disabled={disabled}
-      autoComplete={autoComplete}
-      className={`rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 text-white placeholder:text-white/30 transition-colors focus:border-gold/40 focus:bg-white/[0.08] focus:outline-none disabled:opacity-50 ${className}`}
-    />
-  );
-}
-
-/* ======================== SelectInput ======================== */
-export function SelectInput({
-  value,
-  onChange,
-  disabled,
-  children,
-}: {
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-  disabled?: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <select
-      value={value}
-      onChange={onChange}
-      disabled={disabled}
-      className="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 text-white transition-colors focus:border-gold/40 focus:bg-white/[0.08] focus:outline-none disabled:opacity-50"
+    <button
+      {...props}
+      className={cx(
+        'inline-flex items-center justify-center gap-2 rounded-2xl bg-yellow-cta px-4 py-2.5 text-sm font-extrabold uppercase tracking-wide text-ink shadow-glow-gold transition-all hover:brightness-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50',
+        className,
+      )}
     >
+      {children}
+    </button>
+  );
+}
+
+export function GhostButton({
+  children, className, ...props
+}: { children: ReactNode } & ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      {...props}
+      className={cx(
+        'inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm font-bold text-white/80 transition-colors hover:border-gold/40 hover:text-gold disabled:opacity-50',
+        className,
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+/* ===== Campos de formulario ===== */
+export function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
+  return (
+    <label className="block">
+      <span className="mb-1.5 block text-[13px] font-bold text-white/75">{label}</span>
+      {children}
+      {hint && <span className="mt-1 block text-[11px] text-white/40">{hint}</span>}
+    </label>
+  );
+}
+
+const inputBase =
+  'w-full rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-[15px] text-white placeholder-white/30 outline-none transition-all focus:border-gold/50 focus:ring-2 focus:ring-gold/15 disabled:opacity-50';
+
+export function TextInput(props: InputHTMLAttributes<HTMLInputElement>) {
+  return <input {...props} className={cx(inputBase, props.className)} />;
+}
+
+export function SelectInput({ children, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <select {...props} className={cx(inputBase, 'cursor-pointer', props.className)}>
       {children}
     </select>
   );
 }
 
-/* ======================== PrimaryButton ======================== */
-export function PrimaryButton({
-  onClick,
-  disabled,
-  children,
-  className = '',
-}: {
-  onClick?: () => void;
-  disabled?: boolean;
-  children: ReactNode;
-  className?: string;
-}) {
+/* ===== Píldora de estado ===== */
+export type Tone = 'green' | 'yellow' | 'red' | 'gray' | 'gold';
+const TONES: Record<Tone, string> = {
+  green: 'border-emerald-400/40 bg-emerald-500/10 text-emerald-300',
+  yellow: 'border-amber-400/40 bg-amber-500/10 text-amber-300',
+  red: 'border-red-400/40 bg-red-500/10 text-red-300',
+  gray: 'border-white/15 bg-white/[0.05] text-white/60',
+  gold: 'border-gold/40 bg-gold/10 text-gold-light',
+};
+export function Pill({ tone = 'gray', children, className }: { tone?: Tone; children: ReactNode; className?: string }) {
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className={`inline-flex items-center justify-center gap-2 rounded-2xl bg-gold px-4 py-2.5 font-bold text-ink shadow-glow-gold transition-all hover:brightness-110 active:scale-95 disabled:opacity-50 disabled:hover:brightness-100 disabled:active:scale-100 ${className}`}
-    >
-      {children}
-    </button>
-  );
-}
-
-/* ======================== GhostButton ======================== */
-export function GhostButton({
-  onClick,
-  disabled,
-  children,
-  className = '',
-}: {
-  onClick?: () => void;
-  disabled?: boolean;
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className={`inline-flex items-center justify-center gap-2 rounded-2xl border border-white/20 px-4 py-2.5 font-bold text-white/80 transition-all hover:border-white/40 hover:text-white active:bg-white/[0.06] disabled:opacity-50 ${className}`}
-    >
-      {children}
-    </button>
-  );
-}
-
-/* ======================== Pill ======================== */
-export function Pill({
-  tone = 'gray',
-  children,
-}: {
-  tone?: 'gold' | 'green' | 'gray' | 'red' | 'cyan';
-  children: ReactNode;
-}) {
-  const styles = {
-    gold: 'bg-gold/20 text-gold-light border-gold/30',
-    green: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-    gray: 'bg-white/10 text-white/60 border-white/20',
-    red: 'bg-red-500/20 text-red-300 border-red-500/30',
-    cyan: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
-  };
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold uppercase tracking-[0.2em] ${styles[tone]}`}
-    >
+    <span className={cx('inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide', TONES[tone], className)}>
       {children}
     </span>
   );
 }
 
-/* ======================== Spinner ======================== */
-export function Spinner({ label }: { label: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center gap-4 py-12">
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-gold border-t-transparent" />
-      <p className="text-sm text-white/60">{label}</p>
-    </div>
-  );
-}
-
-/* ======================== EmptyState ======================== */
-export function EmptyState({
-  title,
-  subtitle,
-  icon,
+/* ===== Modal ===== */
+export function Modal({
+  open, onClose, title, children, footer, wide,
 }: {
-  title: string;
-  subtitle: string;
-  icon?: ReactNode;
-}) {
-  return (
-    <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
-      {icon && <div className="text-white/60">{icon}</div>}
-      <div>
-        <p className="font-display text-lg font-extrabold text-white">{title}</p>
-        <p className="mt-1 text-sm text-white/60">{subtitle}</p>
-      </div>
-    </div>
-  );
-}
-
-/* ======================== Banner ======================== */
-export function Banner({
-  tone = 'info',
-  children,
-}: {
-  tone?: 'err' | 'ok' | 'info';
+  open: boolean;
+  onClose: () => void;
+  title: ReactNode;
   children: ReactNode;
+  footer?: ReactNode;
+  wide?: boolean;
 }) {
-  const styles = {
-    err: 'border-red-500/30 bg-red-500/10 text-red-300',
-    ok: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
-    info: 'border-gold/30 bg-gold/10 text-gold-light',
-  };
-  const icons = {
-    err: AlertTriangle,
-    ok: CheckCircle,
-    info: AlertCircle,
-  };
-  const Icon = icons[tone];
+  if (!open || typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex min-h-screen items-start justify-center overflow-y-auto px-2 py-3 sm:items-center sm:px-4 sm:py-6">
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in" onClick={onClose} />
+      <div className={cx('relative z-[10000] w-full max-h-[95dvh] overflow-hidden rounded-[28px] border border-white/10 glass-strong shadow-card animate-pop-in', wide ? 'max-w-2xl' : 'max-w-md')}>
+        <div className="flex items-center justify-between border-b border-white/8 px-4 py-4 sm:px-6">
+          <h3 className="font-display text-lg font-extrabold text-white">{title}</h3>
+          <button onClick={onClose} aria-label="Cerrar" className="grid h-9 w-9 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-white transition-colors hover:bg-white/10">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="scrollable-touch max-h-[calc(100dvh-12rem)] px-4 py-5 sm:px-6">{children}</div>
+        {footer && <div className="flex flex-col-reverse gap-2 border-t border-white/8 px-4 py-4 sm:flex-row sm:items-center sm:justify-end sm:px-6">{footer}</div>}
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+/* ===== Estados auxiliares ===== */
+export function Spinner({ label }: { label?: string }) {
   return (
-    <div className={`flex gap-3 rounded-2xl border px-4 py-3 text-sm font-bold ${styles[tone]}`}>
-      <Icon className="h-5 w-5 shrink-0" />
-      <span>{children}</span>
+    <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+      <Loader2 className="h-7 w-7 animate-spin text-gold" />
+      {label && <p className="text-sm text-white/50">{label}</p>}
+    </div>
+  );
+}
+
+export function EmptyState({ title, subtitle, icon }: { title: string; subtitle?: string; icon?: ReactNode }) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-3 rounded-[24px] border border-dashed border-white/15 bg-white/[0.02] py-16 text-center">
+      <div className="grid h-14 w-14 place-items-center rounded-2xl border border-white/10 bg-white/[0.04] text-white/40">
+        {icon ?? <Inbox className="h-6 w-6" />}
+      </div>
+      <p className="font-display text-base font-bold text-white">{title}</p>
+      {subtitle && <p className="max-w-xs text-[13px] text-white/45">{subtitle}</p>}
+    </div>
+  );
+}
+
+/* Mensaje inline (ok / error / info). */
+export function Banner({ tone, children }: { tone: 'ok' | 'err' | 'info'; children: ReactNode }) {
+  const map = {
+    ok: 'border-emerald-400/40 bg-emerald-500/10 text-emerald-200',
+    err: 'border-brand-light/40 bg-brand/15 text-red-200',
+    info: 'border-gold/40 bg-gold/10 text-gold-light',
+  } as const;
+  return <div className={cx('rounded-2xl border px-4 py-3 text-sm font-semibold', map[tone])}>{children}</div>;
+}
+
+/* Tarjeta KPI reutilizable (dashboard / encabezados de sección). */
+export function StatCard({ label, value, icon, tone = 'gold', sub }: { label: string; value: ReactNode; icon?: ReactNode; tone?: Tone; sub?: ReactNode }) {
+  return (
+    <div className="rounded-[22px] border border-white/10 bg-ink-800/70 p-4 shadow-soft">
+      <div className="flex items-center justify-between">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-white/40">{label}</span>
+        {icon && <Pill tone={tone} className="!px-2 !py-1">{icon}</Pill>}
+      </div>
+      <div className="mt-2 font-display text-2xl font-extrabold text-white">{value}</div>
+      {sub && <div className="mt-1 text-[12px] text-white/45">{sub}</div>}
     </div>
   );
 }
