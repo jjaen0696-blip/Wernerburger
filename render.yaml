@@ -9,6 +9,8 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+    healthCheckPath: /
     routes:
-      - path: /
-        destination: dist
+      - type: http
+        path: /*
+        destination: dist/index.html
