@@ -3,14 +3,16 @@ import cors from 'cors';
 import usersRouter from './routes/users.mjs';
 import branchesRouter from './routes/branches.mjs';
 import authRouter from './routes/auth.mjs';
+import productsRouter from './routes/products.mjs';
+import ordersRouter from './routes/orders.mjs';
 
 const app = express();
 const corsOrigins = [
   process.env.CORS_ORIGIN,
   'https://wernerburger.vercel.app',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
   'https://wernerburger.onrender.com',
-  'http://localhost:5174',
-  'http://127.0.0.1:5174',
 ].filter(Boolean);
 
 const corsOptions = {
@@ -30,11 +32,13 @@ app.options('*', cors(corsOptions));
 app.use(express.json());
 
 // Simple health check
-app.get('/health', (req, res) => res.json({ status: 'ok' }));
+app.get('/health', (req, res) => res.json({ ok: true, server: 'WernerBurger API' }));
 
 // Protect mutating endpoints: require either Authorization header (JWT from client) or an admin API key header
+const publicMutations = ['/auth/lookup', '/orders'];
 function protectMutations(req, res, next) {
   if (req.method === 'GET') return next();
+  if (publicMutations.includes(req.path)) return next();
   const adminKey = process.env.ADMIN_API_KEY;
   const provided = req.headers['x-admin-api-key'] || req.headers.authorization;
   if (!provided) return res.status(401).json({ error: 'Missing credentials' });
@@ -48,8 +52,22 @@ app.use(protectMutations);
 app.use('/auth', authRouter);
 app.use('/users', usersRouter);
 app.use('/branches', branchesRouter);
+app.use('/products', productsRouter);
+app.use('/orders', ordersRouter);
 
-const PORT = process.env.PORT || 4000;
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not Found' });
+});
+
+app.use((err, req, res, next) => {
+  if (err instanceof Error && err.message.startsWith('Origin ')) {
+    return res.status(403).json({ error: 'CORS origin denied' });
+  }
+  console.error(err);
+  res.status(500).json({ error: 'Internal server error' });
+});
+
+const PORT = Number(process.env.PORT) || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

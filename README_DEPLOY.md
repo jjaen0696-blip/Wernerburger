@@ -7,13 +7,14 @@ Requisitos de entorno:
 - `VITE_API_BASE` → URL pública del servidor (ej. https://wernerburger.onrender.com)
 
 Servidores:
-- Backend (API) - desplegar carpeta `server/` con Node 18+ (Express). En Render, crea un "Web Service" apuntando al repo y configura `start` como `node server/index.mjs` o usa `npm run start:server`.
+- Backend (API) - desplegar carpeta `server/` con Node 18+ (Express). En Render, crea un "Web Service" apuntando al repo y configura `start` como `npm start`.
 - Frontend - desplegar con Vite en Vercel/Render; asegúrate de configurar `VITE_API_BASE` en las variables de despliegue.
 
 Pasos (Render):
 1. Conecta el repo en Render.
-2. Crea un nuevo service para el backend: build command `npm ci` y start command `npm run start:server`.
-   - No uses `npm start`, ya que ese script sirve la build de Vite y no ejecuta el backend Express.
+2. Crea un nuevo service para el backend: build command `npm ci` y start command `npm start`.
+   - `npm start` ejecuta ahora el backend Express en `server/index.mjs`.
+   - Si necesitas servir solo el frontend localmente desde la build, usa `npm run start:frontend`.
 3. Añade variables de entorno en Render: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_API_KEY`, `PORT`.
 4. Despliega y copia la URL pública para `VITE_API_BASE` en las settings del Frontend service.
 

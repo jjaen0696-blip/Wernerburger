@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "start": "serve -s dist -l 3000",
+    "start": "node server/index.mjs",
+    "start:frontend": "serve -s dist -l 3000",
     "start:server": "node server/index.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.app.json"
