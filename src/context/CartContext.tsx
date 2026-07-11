@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
 import { MenuItem } from '../data/menuData';
+import supabase from '../lib/supabase';
 
 export type OrderStatus = 'pending' | 'accepted' | 'preparing' | 'ready' | 'assigned' | 'delivering' | 'completed';
 
@@ -33,7 +34,8 @@ interface CartContextType {
   removeFromCart: (itemId: string) => void;
   updateQuantity: (itemId: string, delta: number) => void;
   clearCart: () => void;
-  placeOrder: (payload: Omit<Order, 'id' | 'status' | 'placedAt'>) => string;
+  // ahora devuelve la fila de orden insertada o null en error
+  placeOrder: (payload: Omit<Order, 'id' | 'status' | 'placedAt'>, branchId?: string) => Promise<any | null>;
   updateOrderStatus: (orderId: string, status: OrderStatus) => void;
   total: number;
   itemCount: number;
@@ -69,17 +71,76 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const clearCart = () => setCart([]);
 
-  const placeOrder = (payload: Omit<Order, 'id' | 'status' | 'placedAt'>) => {
-    const id = `ORD-${Date.now()}`;
-    const newOrder: Order = {
-      ...payload,
-      id,
-      status: 'pending',
-      placedAt: Date.now(),
-    };
-    setOrders((prev) => [newOrder, ...prev]);
-    clearCart();
-    return id;
+  const placeOrder = async (payload: Omit<Order, 'id' | 'status' | 'placedAt'>, branchId?: string) => {
+    try {
+      // Determinar branch si no fue proporcionado
+      let orderBranchId = branchId;
+      if (!orderBranchId) {
+        const { data: bdata } = await supabase.from('branches').select('id').limit(1);
+        orderBranchId = bdata?.[0]?.id;
+      }
+
+      if (!orderBranchId) throw new Error('No branch available to place order');
+
+      // Insertar orden
+      const { data: orderData, error: orderError } = await supabase.from('orders').insert([{
+        branch_id: orderBranchId,
+        customer_name: payload.customerName,
+        customer_phone: payload.phone,
+        customer_address: payload.address || null,
+        delivery_type: payload.deliveryType || 'local',
+        payment_method: payload.paymentMethod,
+        status: 'pending',
+        total_amount: payload.total,
+        notes: null,
+      }]).select();
+
+      if (orderError || !orderData || orderData.length === 0) {
+        console.error('Error inserting order:', orderError);
+        return null;
+      }
+
+      const insertedOrder = orderData[0];
+
+      // Insertar items
+      const itemsToInsert = cart.map(entry => ({
+        order_id: insertedOrder.id,
+        product_name: entry.item.name,
+        product_id: entry.item.id,
+        quantity: entry.quantity,
+        unit_price: entry.item.price,
+        subtotal: entry.item.price * entry.quantity,
+        notes: null,
+      }));
+
+      const { error: itemsError } = await supabase.from('order_items').insert(itemsToInsert);
+      if (itemsError) {
+        console.error('Error inserting order items:', itemsError);
+        return null;
+      }
+
+      // Actualizar estado local
+      const newOrder: Order = {
+        id: insertedOrder.id?.toString() || `ORD-${Date.now()}`,
+        items: cart.map(c => ({ item: c.item, quantity: c.quantity })),
+        total: payload.total,
+        customerName: payload.customerName,
+        phone: payload.phone,
+        address: payload.address,
+        deliveryType: payload.deliveryType,
+        paymentMethod: payload.paymentMethod,
+        status: 'pending',
+        placedAt: Date.now(),
+      };
+
+      setOrders((prev) => [newOrder, ...prev]);
+      clearCart();
+
+      return insertedOrder;
+    } catch (err) {
+      console.error('placeOrder error:', err);
+      return null;
+    }
   };
 
   const updateOrderStatus = (orderId: string, status: OrderStatus) => {

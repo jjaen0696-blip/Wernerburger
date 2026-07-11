@@ -296,68 +296,16 @@ export default function Menu() {
     setIsSubmitting(true);
 
     try {
-      // Obtener branch_id (usar el del usuario o la primera rama)
+      // Determinar sucursal y delegar inserción al CartContext
       const orderBranchId = branchId || (await supabase.from('branches').select('id').limit(1).then(res => res.data?.[0]?.id));
-      
+
       if (!orderBranchId) {
         alert('Error: no se pudo determinar la sucursal.');
         setIsSubmitting(false);
         return;
       }
 
-      // Insertar orden en tabla orders
-      const { data: orderData, error: orderError } = await supabase
-        .from('orders')
-        .insert([
-          {
-            branch_id: orderBranchId,
-            customer_name: customerName.trim(),
-            customer_phone: customerPhone.trim(),
-            customer_address: deliveryType === 'delivery' 
-              ? (ubicacion ? `Lat ${ubicacion.lat.toFixed(4)}, Lng ${ubicacion.lng.toFixed(4)}` : customerAddress.trim())
-              : null,
-            delivery_type: deliveryType || 'local',
-            payment_method: paymentMethod,
-            status: 'pending',
-            total_amount: grandTotal,
-            notes: null,
-          }
-        ])
-        .select();
-
-      if (orderError || !orderData || orderData.length === 0) {
-        console.error('Order insert error:', orderError);
-        alert('Error al crear la orden en la base de datos.');
-        setIsSubmitting(false);
-        return;
-      }
-
-      const orderId = orderData[0].id;
-
-      // Insertar items en tabla order_items
-      const itemsToInsert = cart.map(entry => ({
-        order_id: orderId,
-        product_name: entry.item.name,
-        product_id: entry.item.id,
-        quantity: entry.quantity,
-        unit_price: entry.item.price,
-        subtotal: entry.item.price * entry.quantity,
-        notes: null,
-      }));
-
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(itemsToInsert);
-
-      if (itemsError) {
-        console.error('Items insert error:', itemsError);
-        alert('Error al agregar items a la orden.');
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Actualizar estado local y limpiar
-      placeOrder({
+      const inserted = await placeOrder({
         items: cart,
         total: grandTotal,
         customerName: customerName.trim(),
@@ -367,9 +315,14 @@ export default function Menu() {
           : undefined,
         deliveryType: deliveryType!,
         paymentMethod,
-      });
+      }, orderBranchId);
 
-      clearCart();
+      if (!inserted) {
+        alert('Error al crear la orden en la base de datos.');
+        setIsSubmitting(false);
+        return;
+      }
+
       setOrderPlaced(true);
       setCustomerName('');
       setCustomerPhone('');
@@ -377,8 +330,7 @@ export default function Menu() {
       setUbicacion(null);
       setCheckoutOpen(false);
 
-      // Mostrar confirmación
-      alert(`✅ Orden ${orderData[0].order_number} creada exitosamente!\n\nTu pedido está siendo preparado.`);
+      alert(`✅ Orden ${inserted.order_number || inserted.id} creada exitosamente!\n\nTu pedido está siendo preparado.`);
     } catch (err) {
       console.error('Order placement error:', err);
       alert('Error inesperado al procesar la orden.');
