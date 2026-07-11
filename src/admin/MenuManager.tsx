@@ -1,346 +1,446 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Edit3, Eye, EyeOff, ImagePlus, Plus, Save, Trash2, UtensilsCrossed } from 'lucide-react';
-import { supabase, type MenuItem } from '../lib/supabase';
-import { Banner, EmptyState, Field, GhostButton, Modal, Pill, PrimaryButton, Spinner, TextInput } from './ui';
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+import { Plus, Trash2, Edit, Image as ImageIcon, X, Save, Loader } from 'lucide-react';
 
-type MenuForm = {
+
+interface Category {
+  id: string;
+  name: string;
+  icon: string;
+}
+
+interface Product {
+  id: string;
   name: string;
   description: string;
-  price: string;
-  category: string;
+  price: number;
+  category_id: string;
   image_url: string;
   available: boolean;
-  sort_order: string;
-};
+  display_order: number;
+}
 
-const EMPTY_FORM: MenuForm = {
-  name: '',
-  description: '',
-  price: '0',
-  category: '',
-  image_url: '',
-  available: true,
-  sort_order: '0',
-};
+export default function MenuManager() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
 
-const buildItemIdentity = (item: Pick<MenuItem, 'name' | 'category' | 'price'>) => {
-  const normalizedName = (item.name ?? '').trim().toLowerCase();
-  const normalizedCategory = (item.category ?? '').trim().toLowerCase();
-  const normalizedPrice = Number(item.price ?? 0).toFixed(2);
-  return `${normalizedName}::${normalizedCategory}::${normalizedPrice}`;
-};
-
-const dedupeItems = (list: MenuItem[]) => {
-  const seen = new Set<string>();
-  const unique: MenuItem[] = [];
-  list.forEach((item) => {
-    const identity = buildItemIdentity(item);
-    if (seen.has(identity)) return;
-    seen.add(identity);
-    unique.push(item);
+  const [formData, setFormData] = useState({
+    id: '',
+    name: '',
+    description: '',
+    price: '',
+    category_id: '',
+    available: true,
   });
-  return unique;
-};
-
-export default function MenuManager({ currentEmail }: { currentEmail: string | null }) {
-  const [items, setItems] = useState<MenuItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<{ tone: 'ok' | 'err' | 'info'; text: string } | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
-  const [form, setForm] = useState<MenuForm>(EMPTY_FORM);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-
-  const isOwner = (currentEmail ?? '').trim().toLowerCase() === 'baex10@icloud.com';
-
-  const normalizedItems = useMemo(() => dedupeItems(items), [items]);
-  const categories = useMemo(() => {
-    return Array.from(new Set(normalizedItems.map((item) => item.category).filter(Boolean))).sort((a, b) => a.localeCompare(b));
-  }, [normalizedItems]);
-
-  const loadItems = useCallback(async () => {
-    setLoading(true);
-    const { data, error: loadError } = await supabase
-      .from('menu_items')
-      .select('*')
-      .order('category')
-      .order('sort_order')
-      .order('name');
-
-    if (loadError) {
-      setError(loadError.message);
-      setItems([]);
-    } else {
-      setError(null);
-      setItems(dedupeItems((data ?? []) as MenuItem[]));
-    }
-    setLoading(false);
-  }, []);
 
   useEffect(() => {
-    loadItems();
-    const channel = supabase
-      .channel('menu-manager-live')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'menu_items' }, () => loadItems())
-      .subscribe();
+    loadData();
+  }, []);
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [loadItems]);
+  async function loadData() {
+    setIsLoading(true);
+    try {
+      const [productsRes, categoriesRes] = await Promise.all([
+        supabase.from('products').select('*').order('display_order'),
+        supabase.from('categories').select('*').order('display_order'),
+      ]);
 
-  const resetForm = () => {
-    setForm(EMPTY_FORM);
-    setSelectedFile(null);
-    setEditingItem(null);
-    setMessage(null);
-  };
+      if (productsRes.data) setProducts(productsRes.data);
+      if (categoriesRes.data) {
+        setCategories(categoriesRes.data);
+        if (categoriesRes.data.length > 0 && !selectedCategory) {
+          setSelectedCategory(categoriesRes.data[0].id);
+        }
+      }
+    } catch (err) {
+      console.error('Error loading data:', err);
+      alert('Error al cargar los datos');
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
-  const openNew = () => {
-    resetForm();
-    setModalOpen(true);
-  };
+  function getCategoryName(categoryId: string): string {
+    const category = categories.find(c => c.id === categoryId);
+    return category ? `${category.icon} ${category.name}` : 'Sin categoría';
+  }
 
-  const openEdit = (item: MenuItem) => {
-    resetForm();
-    setEditingItem(item);
-    setForm({
-      name: item.name,
-      description: item.description ?? '',
-      price: item.price.toString(),
-      category: item.category ?? '',
-      image_url: item.image_url ?? '',
-      available: item.available,
-      sort_order: item.sort_order?.toString() ?? '0',
+  function openAddModal() {
+    setEditingProduct(null);
+    setFormData({
+      id: '',
+      name: '',
+      description: '',
+      price: '',
+      category_id: selectedCategory,
+      available: true,
     });
-    setModalOpen(true);
-  };
+    setImagePreview('');
+    setIsModalOpen(true);
+  }
 
-  const closeModal = () => {
-    if (saving || deleting) return;
-    setModalOpen(false);
-    resetForm();
-  };
+  function openEditModal(product: Product) {
+    setEditingProduct(product);
+    setFormData({
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price.toString(),
+      category_id: product.category_id,
+      available: product.available,
+    });
+    setImagePreview(product.image_url || '');
+    setIsModalOpen(true);
+  }
 
-  const handleSave = async () => {
-    const name = form.name.trim();
-    const category = form.category.trim();
-    const priceValue = Number.parseFloat(form.price);
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    if (!name || !category) {
-      setMessage({ tone: 'err', text: 'Ingresa el nombre y la categoría del producto.' });
-      return;
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `menu/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('products')
+        .upload(filePath, file, { upsert: false });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from('products').getPublicUrl(filePath);
+      setImagePreview(data.publicUrl);
+    } catch (err) {
+      console.error('Upload error:', err);
+      alert('Error al subir la imagen');
+    } finally {
+      setUploading(false);
     }
-    if (Number.isNaN(priceValue) || priceValue < 0) {
-      setMessage({ tone: 'err', text: 'El precio debe ser un número válido.' });
-      return;
-    }
+  }
 
-    const normalizedPayload = {
-      name,
-      category,
-      price: Number(priceValue.toFixed(2)),
-    };
+  async function handleSaveProduct(e: React.FormEvent) {
+    e.preventDefault();
 
-    const duplicateExists = items.some((item) => item.id !== editingItem?.id && buildItemIdentity(item) === buildItemIdentity(normalizedPayload as Pick<MenuItem, 'name' | 'category' | 'price'>));
-    if (duplicateExists) {
-      setMessage({ tone: 'err', text: 'Ya existe un producto igual en este menú. Edita el existente o cambia el nombre/categoría.' });
-      return;
-    }
-
-    setSaving(true);
-    setMessage(null);
-
-    let imageUrl = form.image_url.trim();
-
-    if (selectedFile) {
-      const reader = new FileReader();
-      const fileDataUrl = await new Promise<string>((resolve, reject) => {
-        reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : '');
-        reader.onerror = () => reject(new Error('No se pudo leer la imagen seleccionada.'));
-        reader.readAsDataURL(selectedFile);
-      });
-      imageUrl = fileDataUrl;
-    }
-
-    const payload = {
-      name,
-      description: form.description.trim(),
-      price: Number(priceValue.toFixed(2)),
-      category,
-      image_url: imageUrl,
-      available: form.available,
-      sort_order: Number(form.sort_order || 0),
-    };
-
-    const { data, error: saveError } = editingItem
-      ? await supabase.from('menu_items').update(payload).eq('id', editingItem.id).select('*').single()
-      : await supabase.from('menu_items').insert(payload).select('*').single();
-
-    setSaving(false);
-    if (saveError || !data) {
-      setMessage({ tone: 'err', text: saveError?.message ?? 'No se pudo guardar el producto.' });
+    if (!formData.name.trim() || !formData.price || !formData.category_id) {
+      alert('Completa todos los campos requeridos');
       return;
     }
 
-    setItems((prev) => dedupeItems([...prev.filter((item) => item.id !== data.id), data as MenuItem]).sort((a, b) => a.category.localeCompare(b.category) || a.sort_order - b.sort_order || a.name.localeCompare(b.name)));
+    setUploading(true);
+    try {
+      const productData = {
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        price: parseFloat(formData.price),
+        category_id: formData.category_id,
+        available: formData.available,
+        image_url: imagePreview || null,
+      };
 
-    setMessage({ tone: 'ok', text: editingItem ? 'Producto actualizado correctamente.' : 'Producto creado correctamente.' });
-    setModalOpen(false);
-    resetForm();
-  };
+      if (editingProduct) {
+        const { error } = await supabase
+          .from('products')
+          .update(productData)
+          .eq('id', editingProduct.id);
 
-  const handleDelete = async () => {
-    if (!editingItem) return;
-    if (!window.confirm(`¿Eliminar "${editingItem.name}" del menú?`)) return;
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('products')
+          .insert([{ id: formData.id || `prod-${Date.now()}`, ...productData }]);
 
-    setDeleting(true);
-    const { error: deleteError } = await supabase.from('menu_items').delete().eq('id', editingItem.id);
-    setDeleting(false);
+        if (error) throw error;
+      }
 
-    if (deleteError) {
-      setMessage({ tone: 'err', text: deleteError.message });
-      return;
+      await loadData();
+      setIsModalOpen(false);
+      alert(editingProduct ? 'Producto actualizado' : 'Producto creado');
+    } catch (err) {
+      console.error('Save error:', err);
+      alert('Error al guardar el producto');
+    } finally {
+      setUploading(false);
     }
+  }
 
-    setMessage({ tone: 'ok', text: 'Producto eliminado.' });
-    setModalOpen(false);
-    resetForm();
-    loadItems();
-  };
+  async function handleDeleteProduct(productId: string) {
+    if (!confirm('¿Eliminar este producto?')) return;
 
-  if (!isOwner) return null;
+    try {
+      const { error } = await supabase.from('products').delete().eq('id', productId);
+      if (error) throw error;
+
+      await loadData();
+      alert('Producto eliminado');
+    } catch (err) {
+      console.error('Delete error:', err);
+      alert('Error al eliminar el producto');
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader className="h-8 w-8 animate-spin text-amber-500" />
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="flex items-center gap-2 font-display text-2xl font-extrabold uppercase tracking-tight text-white">
-            <UtensilsCrossed className="h-6 w-6 text-gold" /> Menú y catálogos
-          </h2>
-          <p className="mt-1 max-w-2xl text-[13px] text-white/45">
-            Modifica productos, categorías, visibilidad, precios, orden y reemplaza las imágenes del menú desde aquí.
-          </p>
-        </div>
-        <PrimaryButton onClick={openNew}>
-          <Plus className="h-4 w-4" /> Nuevo producto
-        </PrimaryButton>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-white">Gestión de Menú</h2>
+        <button
+          onClick={openAddModal}
+          className="flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 font-semibold text-stone-950 transition hover:bg-amber-600"
+        >
+          <Plus className="h-5 w-5" />
+          Agregar Producto
+        </button>
       </div>
 
-      {message && <div className="mb-4"><Banner tone={message.tone}>{message.text}</Banner></div>}
-      {error && <div className="mb-4"><Banner tone="err">⚠️ {error}</Banner></div>}
+      {/* Categorías con productos */}
+      <div className="space-y-8">
+        {categories.map(category => {
+          const categoryProducts = products.filter(p => p.category_id === category.id);
+          if (categoryProducts.length === 0) return null;
 
-      {loading ? (
-        <Spinner label="Cargando menú…" />
-      ) : normalizedItems.length === 0 ? (
-        <EmptyState title="Sin productos" subtitle="Crea el primer artículo del menú para empezar a editarlo." icon={<UtensilsCrossed className="h-6 w-6" />} />
-      ) : (
-        <div className="space-y-5">
-          {categories.map((category) => {
-            const categoryItems = normalizedItems.filter((item) => item.category === category);
-            return (
-              <div key={category} className="premium-panel rounded-[24px] p-4">
-                <div className="mb-4 flex items-center justify-between gap-2">
-                  <h3 className="font-display text-lg font-extrabold uppercase tracking-tight text-white">{category}</h3>
-                  <Pill tone="gold">{categoryItems.length} productos</Pill>
-                </div>
-                <div className="grid gap-3 xl:grid-cols-2">
-                  {categoryItems.map((item) => (
-                    <div key={item.id} className="rounded-[20px] border border-white/10 bg-white/[0.03] p-4 shadow-[0_16px_36px_rgba(0,0,0,0.22)]">
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="min-w-0">
-                          <p className="font-display text-lg font-extrabold text-white">{item.name}</p>
-                          <p className="mt-1 text-sm text-white/55">{item.description || 'Sin descripción'}</p>
-                        </div>
-                        {item.available ? <Pill tone="green" className="w-fit"><Eye className="h-3 w-3" /> Visible</Pill> : <Pill tone="gray" className="w-fit"><EyeOff className="h-3 w-3" /> Oculto</Pill>}
+          return (
+            <div key={category.id} className="space-y-4">
+              <div className="flex items-center gap-2 border-b border-white/10 pb-3">
+                <span className="text-2xl">{category.icon}</span>
+                <h3 className="text-lg font-bold text-white">{category.name}</h3>
+                <span className="ml-auto text-xs text-gray-400">{categoryProducts.length} items</span>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {categoryProducts.map(product => (
+                  <div
+                    key={product.id}
+                    className="overflow-hidden rounded-lg border border-white/10 bg-white/5 transition hover:border-amber-400/50"
+                  >
+                    {product.image_url ? (
+                      <img
+                        src={product.image_url}
+                        alt={product.name}
+                        className="aspect-video w-full object-cover"
+                      />
+                    ) : (
+                      <div className="aspect-video w-full bg-gray-700 flex items-center justify-center">
+                        <ImageIcon className="h-8 w-8 text-gray-500" />
                       </div>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <Pill tone="gold">${Number(item.price).toFixed(2)}</Pill>
-                        <Pill tone="gray">Orden {item.sort_order}</Pill>
+                    )}
+
+                    <div className="p-4 space-y-3">
+                      <div>
+                        <p className="font-bold text-white">{product.name}</p>
+                        <p className="text-xs text-gray-400 mt-1 line-clamp-2">{product.description}</p>
                       </div>
-                      {item.image_url ? (
-                        <img src={item.image_url} alt={item.name} className="mt-3 h-28 w-full rounded-2xl object-cover" />
-                      ) : (
-                        <div className="mt-3 flex h-28 items-center justify-center rounded-2xl border border-dashed border-white/10 bg-white/[0.03] text-sm text-white/40">
-                          <ImagePlus className="mr-2 h-4 w-4" /> Sin imagen
+
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-lg font-bold text-amber-300">${product.price.toFixed(2)}</p>
+                          <span
+                            className={`text-xs font-semibold ${
+                              product.available
+                                ? 'text-emerald-300'
+                                : 'text-red-300'
+                            }`}
+                          >
+                            {product.available ? '✓ Disponible' : '✗ No disponible'}
+                          </span>
                         </div>
-                      )}
-                      <div className="mt-4 flex justify-start sm:justify-end">
-                        <GhostButton onClick={() => openEdit(item)} className="w-full sm:w-auto">
-                          <Edit3 className="h-4 w-4" /> Editar
-                        </GhostButton>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => openEditModal(product)}
+                          className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-blue-500/20 py-2 text-sm font-semibold text-blue-300 transition hover:bg-blue-500/30"
+                        >
+                          <Edit className="h-4 w-4" />
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => handleDeleteProduct(product.id)}
+                          className="flex items-center justify-center rounded-lg bg-red-500/20 p-2 text-red-300 transition hover:bg-red-500/30"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
                       </div>
                     </div>
-                  ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Modal para agregar/editar */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 px-4 py-8">
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-amber-400/20 bg-[#0c0b0f]/95 p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-white">
+                {editingProduct ? 'Editar Producto' : 'Nuevo Producto'}
+              </h3>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="rounded-full bg-white/10 p-2 text-gray-300 transition hover:bg-white/20"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveProduct} className="space-y-4">
+              {/* Nombre */}
+              <div>
+                <label className="block text-sm font-semibold text-amber-200 mb-2">
+                  Nombre del Producto *
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Ej. Hamburguesa Especial"
+                  className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-white placeholder-gray-500 outline-none focus:border-amber-400"
+                  required
+                />
+              </div>
+
+              {/* Descripción */}
+              <div>
+                <label className="block text-sm font-semibold text-amber-200 mb-2">
+                  Descripción
+                </label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Ingredientes y detalles..."
+                  rows={3}
+                  className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-white placeholder-gray-500 outline-none focus:border-amber-400 resize-none"
+                />
+              </div>
+
+              {/* Precio y Categoría */}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-semibold text-amber-200 mb-2">
+                    Precio ($) *
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    placeholder="0.00"
+                    className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-white placeholder-gray-500 outline-none focus:border-amber-400"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-amber-200 mb-2">
+                    Categoría *
+                  </label>
+                  <select
+                    value={formData.category_id}
+                    onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
+                    className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-white outline-none focus:border-amber-400"
+                    required
+                  >
+                    <option value="">Selecciona una categoría</option>
+                    {categories.map(cat => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.icon} {cat.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
-            );
-          })}
+
+              {/* Imagen */}
+              <div>
+                <label className="block text-sm font-semibold text-amber-200 mb-2">
+                  Imagen del Producto
+                </label>
+                <div className="flex gap-4">
+                  {imagePreview && (
+                    <div className="relative h-32 w-32">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="h-full w-full rounded-lg object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setImagePreview('')}
+                        className="absolute -right-2 -top-2 rounded-full bg-red-500 p-1 text-white"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
+                  <label className="flex flex-1 flex-col items-center justify-center rounded-lg border-2 border-dashed border-amber-400/50 bg-amber-500/5 p-6 cursor-pointer transition hover:border-amber-400">
+                    <ImageIcon className="h-8 w-8 text-amber-400 mb-2" />
+                    <span className="text-sm font-semibold text-amber-200">
+                      {uploading ? 'Subiendo...' : 'Clic para subir imagen'}
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={uploading}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {/* Disponibilidad */}
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="available"
+                  checked={formData.available}
+                  onChange={(e) => setFormData({ ...formData, available: e.target.checked })}
+                  className="h-4 w-4 rounded border-white/10"
+                />
+                <label htmlFor="available" className="text-sm font-semibold text-amber-200">
+                  Disponible en el menú
+                </label>
+              </div>
+
+              {/* Botones */}
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="flex-1 rounded-lg border border-white/10 py-2 font-semibold text-white transition hover:bg-white/5"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={uploading}
+                  className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-amber-500 py-2 font-semibold text-stone-950 transition hover:bg-amber-600 disabled:opacity-50"
+                >
+                  <Save className="h-4 w-4" />
+                  {editingProduct ? 'Actualizar' : 'Crear'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
-
-      <Modal
-        open={modalOpen}
-        onClose={closeModal}
-        title={editingItem ? `Editar ${editingItem.name}` : 'Nuevo producto'}
-        wide
-        footer={
-          <>
-            {editingItem && (
-              <GhostButton onClick={handleDelete} disabled={saving || deleting} className="mr-auto !border-red-500/30 !text-red-200 hover:!border-red-400 hover:!text-red-100">
-                <Trash2 className="h-4 w-4" /> Eliminar
-              </GhostButton>
-            )}
-            <GhostButton onClick={closeModal} disabled={saving || deleting}>Cancelar</GhostButton>
-            <PrimaryButton onClick={handleSave} disabled={saving || deleting}>
-              {saving ? 'Guardando…' : <><Save className="h-4 w-4" /> Guardar</>}
-            </PrimaryButton>
-          </>
-        }
-      >
-        <div className="space-y-4">
-          {message && <Banner tone={message.tone}>{message.text}</Banner>}
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <Field label="Nombre del producto">
-              <TextInput value={form.name} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} placeholder="Ej. Hamburguesa doble" />
-            </Field>
-            <Field label="Precio">
-              <TextInput type="number" step="0.01" min="0" value={form.price} onChange={(e) => setForm((prev) => ({ ...prev, price: e.target.value }))} placeholder="0.00" />
-            </Field>
-          </div>
-
-          <Field label="Descripción">
-            <TextInput value={form.description} onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))} placeholder="Describe el producto" />
-          </Field>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <Field label="Categoría">
-              <TextInput list="menu-categories-list" value={form.category} onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))} placeholder="Hamburguesas" />
-              <datalist id="menu-categories-list">
-                {categories.map((category) => <option key={category} value={category} />)}
-              </datalist>
-            </Field>
-            <Field label="Orden / prioridad">
-              <TextInput type="number" min="0" value={form.sort_order} onChange={(e) => setForm((prev) => ({ ...prev, sort_order: e.target.value }))} placeholder="0" />
-            </Field>
-          </div>
-
-          <Field label="Imagen del producto">
-            <TextInput value={form.image_url} onChange={(e) => setForm((prev) => ({ ...prev, image_url: e.target.value }))} placeholder="https://... o deja vacío para quitarla" />
-            <input type="file" accept="image/*" className="mt-2 w-full rounded-2xl border border-white/10 bg-white/[0.05] px-3 py-2 text-sm text-white file:mr-3 file:rounded-xl file:border-0 file:bg-yellow-cta file:px-3 file:py-2 file:text-ink" onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)} />
-            <p className="mt-2 text-[12px] text-white/45">Puedes pegar una URL externa o subir un archivo nuevo; si subes uno, reemplazará la imagen actual.</p>
-          </Field>
-
-          <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/70">
-            <input type="checkbox" checked={form.available} onChange={(e) => setForm((prev) => ({ ...prev, available: e.target.checked }))} className="h-4 w-4 rounded border-white/20 bg-transparent" />
-            Mostrar este producto en el menú público
-          </label>
-        </div>
-      </Modal>
     </div>
   );
 }

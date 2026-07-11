@@ -16,12 +16,30 @@ import {
 
 import { MENU_ITEMS, CATEGORIES, type Category } from '../data/menuData';
 import { useCart } from '../context/CartContext';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
 import HeroPremium from '../components/HeroPremium';
 import ProductCardPremium from '../components/ProductCardPremium';
 
 type FilterCategory = 'todas' | Category;
 type PaymentMethod = 'efectivo' | 'yappy';
 type DeliveryType = 'local' | 'delivery' | null;
+
+interface SupabaseProduct {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  category_id: string;
+  image_url: string;
+  available: boolean;
+}
+
+interface SupabaseCategory {
+  id: string;
+  name: string;
+  icon: string;
+}
 
 const API_BASE = import.meta.env.VITE_API_BASE || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://127.0.0.1:5174' : 'https://wernerburger.onrender.com');
 const api = (path: string) => `${API_BASE}${path}`;
@@ -81,12 +99,20 @@ function DrinkIcon({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
-function CategoryScroller({ setActiveCategory, activeCategory }: { setActiveCategory: (c: FilterCategory) => void; activeCategory: FilterCategory }) {
+function CategoryScroller({ 
+  setActiveCategory, 
+  activeCategory, 
+  categories = CATEGORIES 
+}: { 
+  setActiveCategory: (c: FilterCategory) => void;
+  activeCategory: FilterCategory;
+  categories?: typeof CATEGORIES;
+}) {
   return (
     <div className="relative">
       <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-[rgba(255,255,255,0.05)] p-2 shadow-[0_12px_40px_rgba(0,0,0,0.22)]">
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-          {CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id as FilterCategory)}
@@ -125,8 +151,34 @@ export default function Menu() {
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [supabaseProducts, setSupabaseProducts] = useState<SupabaseProduct[]>([]);
+  const [supabaseCategories, setSupabaseCategories] = useState<SupabaseCategory[]>([]);
+  const [loadingMenu, setLoadingMenu] = useState(true);
 
-  const { cart, addToCart, removeFromCart, total, itemCount, placeOrder } = useCart();
+  const { cart, addToCart, removeFromCart, total, itemCount, placeOrder, clearCart } = useCart();
+  const { user, branchId } = useAuth();
+
+  // Cargar productos desde Supabase
+  useEffect(() => {
+    async function loadMenuFromSupabase() {
+      try {
+        const [productsRes, categoriesRes] = await Promise.all([
+          supabase.from('products').select('*').eq('available', true).order('display_order'),
+          supabase.from('categories').select('*').order('display_order'),
+        ]);
+
+        if (productsRes.data) setSupabaseProducts(productsRes.data);
+        if (categoriesRes.data) setSupabaseCategories(categoriesRes.data);
+      } catch (err) {
+        console.error('Error loading menu from Supabase:', err);
+      } finally {
+        setLoadingMenu(false);
+      }
+    }
+
+    loadMenuFromSupabase();
+  }, []);
 
   useEffect(() => {
     if (!orderPlaced) return;
@@ -139,13 +191,59 @@ export default function Menu() {
   }, [orderPlaced]);
 
   const filtered = useMemo(() => {
-    return MENU_ITEMS.filter((item) => {
+    // Usar productos de Supabase si están disponibles, si no, usar datos estáticos
+    const itemsToFilter = supabaseProducts.length > 0 
+      ? supabaseProducts.map(p => ({
+          id: p.id,
+          name: p.name,
+          price: p.price,
+          description: p.description,
+          category: getCategoryFromId(p.category_id),
+          image: p.image_url || 'https://via.placeholder.com/300',
+        }))
+      : MENU_ITEMS;
+
+    return itemsToFilter.filter((item) => {
       const matchCat = activeCategory === 'todas' || item.category === activeCategory;
       const q = search.trim().toLowerCase();
       const matchSearch = !q || item.name.toLowerCase().includes(q) || item.description.toLowerCase().includes(q);
       return matchCat && matchSearch;
     });
-  }, [activeCategory, search]);
+  }, [activeCategory, search, supabaseProducts]);
+
+  // Helper para convertir category_id a Category string
+  function getCategoryFromId(categoryId: string): Category {
+    const categoryMap: { [key: string]: Category } = {
+      'hamburguesas': 'hamburguesas',
+      'hotdogs': 'hotdogs',
+      'arepas': 'arepas',
+      'salchipapas': 'salchipapas',
+      'pepitos': 'pepitos',
+      'extras': 'extras',
+    };
+
+    const category = supabaseCategories.find(c => c.id === categoryId);
+    if (!category) return 'extras';
+
+    // Buscar por nombre
+    const nameLower = category.name.toLowerCase();
+    for (const [key, value] of Object.entries(categoryMap)) {
+      if (nameLower.includes(key)) return value;
+    }
+    return 'extras';
+  }
+
+  // Crear estructura de categorías combinadas
+  const categoriesDisplay = supabaseCategories.length > 0
+    ? [
+        { id: 'todas' as const, label: 'Todos los platillos', emoji: '🍽️' },
+        ...supabaseCategories.map(cat => ({
+          id: getCategoryFromId(cat.id) as Category,
+          label: cat.name,
+          emoji: cat.icon,
+        }))
+      ]
+    : CATEGORIES;
 
   const deliveryFee = deliveryType === 'delivery' ? 2.0 : 0;
   const grandTotal = total + (total > 0 ? deliveryFee : 0);
@@ -195,59 +293,97 @@ export default function Menu() {
       return;
     }
 
-    const body = {
-      branch_id: 'default',
-      customer_name: customerName.trim(),
-      phone: customerPhone.trim(),
-      delivery_type: deliveryType,
-      payment_method: paymentMethod,
-      total: grandTotal,
-      items: cart.map((entry) => ({
-        product_id: entry.item.id,
-        quantity: entry.quantity,
-        unit_price: entry.item.price,
-      })),
-      address: deliveryType === 'delivery'
-        ? ubicacion
-          ? `Lat ${ubicacion.lat.toFixed(4)}, Lng ${ubicacion.lng.toFixed(4)}`
-          : customerAddress.trim()
-        : undefined,
-    };
+    setIsSubmitting(true);
 
     try {
-      const response = await fetch(api('/orders'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        alert(errorData?.error || 'Error al procesar el pedido.');
+      // Obtener branch_id (usar el del usuario o la primera rama)
+      const orderBranchId = branchId || (await supabase.from('branches').select('id').limit(1).then(res => res.data?.[0]?.id));
+      
+      if (!orderBranchId) {
+        alert('Error: no se pudo determinar la sucursal.');
+        setIsSubmitting(false);
         return;
       }
 
+      // Insertar orden en tabla orders
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .insert([
+          {
+            branch_id: orderBranchId,
+            customer_name: customerName.trim(),
+            customer_phone: customerPhone.trim(),
+            customer_address: deliveryType === 'delivery' 
+              ? (ubicacion ? `Lat ${ubicacion.lat.toFixed(4)}, Lng ${ubicacion.lng.toFixed(4)}` : customerAddress.trim())
+              : null,
+            delivery_type: deliveryType || 'local',
+            payment_method: paymentMethod,
+            status: 'pending',
+            total_amount: grandTotal,
+            notes: null,
+          }
+        ])
+        .select();
+
+      if (orderError || !orderData || orderData.length === 0) {
+        console.error('Order insert error:', orderError);
+        alert('Error al crear la orden en la base de datos.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      const orderId = orderData[0].id;
+
+      // Insertar items en tabla order_items
+      const itemsToInsert = cart.map(entry => ({
+        order_id: orderId,
+        product_name: entry.item.name,
+        product_id: entry.item.id,
+        quantity: entry.quantity,
+        unit_price: entry.item.price,
+        subtotal: entry.item.price * entry.quantity,
+        notes: null,
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(itemsToInsert);
+
+      if (itemsError) {
+        console.error('Items insert error:', itemsError);
+        alert('Error al agregar items a la orden.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Actualizar estado local y limpiar
       placeOrder({
         items: cart,
         total: grandTotal,
         customerName: customerName.trim(),
         phone: customerPhone.trim(),
         address: deliveryType === 'delivery'
-          ? ubicacion
-            ? `Lat ${ubicacion.lat.toFixed(4)}, Lng ${ubicacion.lng.toFixed(4)}`
-            : customerAddress.trim()
+          ? (ubicacion ? `Lat ${ubicacion.lat.toFixed(4)}, Lng ${ubicacion.lng.toFixed(4)}` : customerAddress.trim())
           : undefined,
         deliveryType: deliveryType!,
         paymentMethod,
       });
 
+      clearCart();
       setOrderPlaced(true);
       setCustomerName('');
       setCustomerPhone('');
       setCustomerAddress('');
       setUbicacion(null);
+      setCheckoutOpen(false);
+
+      // Mostrar confirmación
+      alert(`✅ Orden ${orderData[0].order_number} creada exitosamente!\n\nTu pedido está siendo preparado.`);
     } catch (err) {
-      alert('No se pudo conectar con el servidor.');
+      console.error('Order placement error:', err);
+      alert('Error inesperado al procesar la orden.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -318,7 +454,7 @@ export default function Menu() {
             </div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.15 }} className="rounded-[2rem] border border-white/10 bg-black/40 p-6 shadow-[0_18px_60px_rgba(0,0,0,0.25)] backdrop-blur-xl">
-              <CategoryScroller setActiveCategory={setActiveCategory} activeCategory={activeCategory} />
+              <CategoryScroller setActiveCategory={setActiveCategory} activeCategory={activeCategory} categories={categoriesDisplay} />
             </motion.div>
 
             <div className="space-y-6">
@@ -343,19 +479,18 @@ export default function Menu() {
         <div className="fixed bottom-5 left-1/2 z-40 -translate-x-1/2">
           <button
             onClick={handleCheckout}
-            className="inline-flex items-center justify-center gap-4 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-3 text-sm font-black text-stone-950 shadow-[0_24px_80px_rgba(245,158,11,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_28px_90px_rgba(245,158,11,0.3)]"
+            className="inline-flex items-center justify-center gap-3 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-3 text-sm font-black text-stone-950 shadow-[0_24px_80px_rgba(245,158,11,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_28px_90px_rgba(245,158,11,0.3)]"
           >
             <span className="inline-flex h-3.5 w-3.5 rounded-full bg-emerald-300 shadow-[0_0_12px_rgba(86,199,103,0.45)]" />
-            <span className="text-xs uppercase tracking-[0.4em] text-white/90">Ver carrito</span>
-            <span className="text-base font-black">{itemCount} items</span>
+            <span className="text-sm font-black">{itemCount}</span>
             <span className="text-base font-black">${grandTotal.toFixed(2)}</span>
           </button>
         </div>
       )}
 
       {checkoutOpen && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/75 backdrop-blur-sm px-3 py-4 overflow-y-auto overscroll-contain sm:items-center sm:px-6 sm:py-8">
-          <div className="relative w-full max-w-[min(100%,34rem)] overflow-hidden rounded-[2rem] border border-amber-400/20 bg-[#0c0b0f]/95 shadow-[0_32px_96px_rgba(0,0,0,0.65)] max-h-[90vh] ios-scrollbar">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm px-3 py-4 sm:px-6 sm:py-8">
+          <div className="relative w-full max-w-[min(100%,34rem)] overflow-y-auto rounded-[2rem] border border-amber-400/20 bg-[#0c0b0f]/95 shadow-[0_32px_96px_rgba(0,0,0,0.65)] max-h-[95vh] ios-scrollbar">
             <button
               onClick={handleCloseCheckout}
               className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-gray-300 transition hover:bg-white/15"
@@ -364,7 +499,7 @@ export default function Menu() {
               <X className="h-5 w-5" />
             </button>
 
-            <div className="space-y-4 p-3 sm:p-4">
+            <div className="space-y-4 p-3 sm:p-4 pb-6">
               <div className="rounded-3xl border border-white/10 bg-white/5 p-4 shadow-[0_8px_28px_rgba(0,0,0,0.25)]">
                 <div className="mb-3 flex items-center gap-2 text-[12px] uppercase tracking-[0.35em] text-amber-200 font-bold">
                   <CreditCard className="h-4 w-4" />
@@ -544,8 +679,12 @@ export default function Menu() {
                           </div>
                         </div>
 
-                        <button type="submit" className="w-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-3 font-black text-stone-950">
-                          Confirmar y pagar
+                        <button 
+                          type="submit" 
+                          disabled={isSubmitting}
+                          className="w-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-3 font-black text-stone-950 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                        >
+                          {isSubmitting ? 'Procesando...' : 'Confirmar y pagar'}
                         </button>
                       </>
                     )}
