@@ -48,24 +48,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  const findEmailForUsername = async (username: string) => {
-    if (!username) return null;
-    if (username.includes('@')) return username;
-    const { data, error } = await supabase.from('app_users').select('email').eq('username', username).single();
-    if (error || !data?.email) return null;
-    return data.email as string;
-  };
-
   const signIn = async (username: string, password: string) => {
     if (!supabaseConfigured) {
       return { error: { message: 'Supabase client is not configured' } };
     }
     setLoading(true);
-    const email = await findEmailForUsername(username);
-    if (!email) {
-      setLoading(false);
-      return { error: { message: 'Usuario no encontrado' } };
+    
+    let email = username;
+    
+    // If username doesn't contain @, search for it in users table
+    if (!username.includes('@')) {
+      try {
+        // Try to find user by username in the users table
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('email')
+          .eq('username', username)
+          .single();
+        
+        if (userError || !userData?.email) {
+          setLoading(false);
+          return { error: { message: 'Usuario no encontrado' } };
+        }
+        
+        email = userData.email;
+      } catch (err) {
+        setLoading(false);
+        return { error: { message: 'Error al buscar usuario' } };
+      }
     }
+    
     const res = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (res.error) return { error: res.error };
