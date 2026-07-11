@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Werner Burger logo">
+  <circle cx="32" cy="32" r="32" fill="#090606" />
+  <circle cx="32" cy="32" r="28" fill="#130505" />
+  <circle cx="32" cy="32" r="25" fill="#1c0d06" />
+  <circle cx="32" cy="32" r="22" fill="#b0761d" opacity="0.14" />
+  <circle cx="32" cy="32" r="20" fill="#0f1213" />
+  <path d="M18 28 C20 20, 28 20, 30 28 S38 36, 46 28" stroke="#f7d388" stroke-width="4" fill="none" stroke-linecap="round" />
+  <path d="M24 36 C26 42, 34 42, 36 36" stroke="#f7d388" stroke-width="4" fill="none" stroke-linecap="round" />
+  <text x="32" y="50" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="800" fill="#f8e7c5">WB</text>
+  <circle cx="32" cy="32" r="31" fill="none" stroke="#f59e0b" stroke-width="3" />
+</svg>
