@@ -2,11 +2,14 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase, supabaseConfigured } from '../lib/supabase';
 
 type User = any;
+export type UserRole = 'admin' | 'cocina' | 'delivery';
 
 interface AuthContextValue {
   user: User | null;
   session: any | null;
   loading: boolean;
+  role: UserRole | null;
+  branchId: string | null;
   signIn: (username: string, password: string) => Promise<{ error?: any }>;
   signOut: () => Promise<void>;
   getAccessToken: () => string | null;
@@ -20,10 +23,27 @@ export const useAuth = () => {
   return ctx;
 };
 
+const fetchUserRole = async (userId: string): Promise<{ role: UserRole | null; branchId: string | null }> => {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('role, branch_id')
+      .eq('id', userId)
+      .single();
+    
+    if (error || !data) return { role: 'admin', branchId: null };
+    return { role: data.role || 'admin', branchId: data.branch_id };
+  } catch {
+    return { role: 'admin', branchId: null };
+  }
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<any | null>(null);
+  const [role, setRole] = useState<UserRole | null>(null);
+  const [branchId, setBranchId] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -31,14 +51,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data } = await supabase.auth.getSession();
       if (!mounted) return;
       setSession(data.session ?? null);
-      setUser(data.session?.user ?? null);
+      const currentUser = data.session?.user ?? null;
+      setUser(currentUser);
+      
+      if (currentUser?.id) {
+        const { role: userRole, branchId: userBranch } = await fetchUserRole(currentUser.id);
+        setRole(userRole);
+        setBranchId(userBranch);
+      }
       setLoading(false);
     };
     void getSession();
 
-      const { data: listener } = supabase.auth.onAuthStateChange((_event: string, s: any) => {
+    const { data: listener } = supabase.auth.onAuthStateChange(async (_event: string, s: any) => {
       setSession(s ?? null);
-      setUser(s?.user ?? null);
+      const currentUser = s?.user ?? null;
+      setUser(currentUser);
+      
+      if (currentUser?.id) {
+        const { role: userRole, branchId: userBranch } = await fetchUserRole(currentUser.id);
+        setRole(userRole);
+        setBranchId(userBranch);
+      } else {
+        setRole(null);
+        setBranchId(null);
+      }
       setLoading(false);
     });
 
@@ -83,6 +120,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (res.error) return { error: res.error };
     setSession(res.data.session ?? null);
     setUser(res.data.user ?? null);
+    
+    // Fetch role after login
+    if (res.data.user?.id) {
+      const { role: userRole, branchId: userBranch } = await fetchUserRole(res.data.user.id);
+      setRole(userRole);
+      setBranchId(userBranch);
+    }
+    
     return {};
   };
 
@@ -91,13 +136,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await supabase.auth.signOut();
     setSession(null);
     setUser(null);
+    setRole(null);
+    setBranchId(null);
     setLoading(false);
   };
 
   const getAccessToken = () => session?.access_token ?? null;
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signOut, getAccessToken }}>
+    <AuthContext.Provider value={{ user, session, loading, role, branchId, signIn, signOut, getAccessToken }}>
       {children}
     </AuthContext.Provider>
   );

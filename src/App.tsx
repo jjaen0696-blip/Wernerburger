@@ -16,7 +16,7 @@ type Page = 'home' | 'menu' | 'kitchen' | 'delivery' | 'login' | 'admin' | 'pos'
 
 function AppContent() {
   const [page, setPage] = useState<Page>('home');
-  const { user, session, loading, signOut } = useAuth();
+  const { user, session, loading, role, signOut } = useAuth();
 
   const navigate = (p: Page) => {
     setPage(p);
@@ -28,21 +28,26 @@ function AppContent() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const savedPage = window.localStorage.getItem('werner-app-page') as Page | null;
     const publicPages: Page[] = ['home', 'menu', 'kitchen', 'delivery', 'login', 'pos'];
 
     if (!loading) {
       if (user && session) {
-        if (savedPage && savedPage !== 'login' && savedPage !== 'home') {
-          setPage(savedPage);
+        // Redirigir automáticamente según rol
+        if (role === 'admin') {
+          setPage('dashboard');
+        } else if (role === 'cocina') {
+          setPage('kitchen');
+        } else if (role === 'delivery') {
+          setPage('delivery');
         } else {
           setPage('dashboard');
         }
       } else {
+        const savedPage = window.localStorage.getItem('werner-app-page') as Page | null;
         setPage(savedPage && publicPages.includes(savedPage) ? savedPage : 'home');
       }
     }
-  }, [loading, user, session]);
+  }, [loading, user, session, role]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
