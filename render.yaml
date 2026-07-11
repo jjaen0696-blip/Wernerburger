@@ -4,13 +4,9 @@ services:
     env: node
     region: oregon
     plan: free
-    buildCommand: npm ci && npm run build
-    startCommand: npm start
+    buildCommand: npm ci
+    startCommand: npm run start:server
     envVars:
       - key: NODE_ENV
         value: production
-    healthCheckPath: /
-    routes:
-      - type: http
-        path: /*
-        destination: dist/index.html
+    healthCheckPath: /health

@@ -12,7 +12,8 @@ Servidores:
 
 Pasos (Render):
 1. Conecta el repo en Render.
-2. Crea un nuevo service para el backend: build command `npm install && npm run build` (si necesitas build) and start command `npm run start:server`.
+2. Crea un nuevo service para el backend: build command `npm ci` y start command `npm run start:server`.
+   - No uses `npm start`, ya que ese script sirve la build de Vite y no ejecuta el backend Express.
 3. Añade variables de entorno en Render: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_API_KEY`, `PORT`.
 4. Despliega y copia la URL pública para `VITE_API_BASE` en las settings del Frontend service.
 
