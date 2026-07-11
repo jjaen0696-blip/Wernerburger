@@ -1,0 +1,369 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { ShoppingBag, Clock, Star, ArrowRight, LogIn, MapPin, ChevronDown, Check, Flame, Sparkles } from 'lucide-react';
+import WernerLogo from '../components/WernerLogo';
+import { supabase, type Location, sortLocationsForDisplay } from '../lib/supabase';
+
+type Props = {
+  onOrder: (locationId: string) => void;
+  onKitchenAccess: () => void;
+};
+
+export default function Home({ onOrder, onKitchenAccess }: Props) {
+  const defaultLocation: Location = {
+    id: 'default',
+    slug: 'default',
+    name: 'WernerBurguer',
+    address: 'Sucursal por defecto',
+    is_active: true,
+    is_open: true,
+    created_at: new Date().toISOString(),
+  };
+
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [warning, setWarning] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+
+  const isLocationOpen = (loc: Location) => loc.is_open ?? true;
+
+  const loadLocations = useCallback(async () => {
+    try {
+      const { data, error: loadError } = await supabase
+        .from('locations')
+        .select('*')
+        .order('name');
+
+      if (loadError) {
+        throw loadError;
+      }
+
+      if (data && data.length > 0) {
+        const visibleLocations = sortLocationsForDisplay((data as Location[])).filter((loc) => loc.is_active);
+        setLocations(visibleLocations);
+        setSelectedLocation((prev) => (prev && visibleLocations.some((loc) => loc.id === prev.id) ? prev : null));
+        if (visibleLocations.length === 0) {
+          setWarning('No se encontraron sucursales activas. Usando sucursal por defecto.');
+        } else {
+          setWarning(null);
+        }
+      } else {
+        setLocations([defaultLocation]);
+        setSelectedLocation(defaultLocation);
+        setWarning('No se encontraron sucursales activas. Usando sucursal por defecto.');
+      }
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'No se pudo cargar las sucursales. Usando sucursal por defecto.';
+      setLocations([defaultLocation]);
+      setSelectedLocation(defaultLocation);
+      setWarning(message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadLocations();
+
+    const channel = supabase
+      .channel('home-locations-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'locations' }, () => {
+        void loadLocations();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [loadLocations]);
+
+  useEffect(() => {
+    if (!dropdownOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setDropdownOpen(false);
+    };
+
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target && (target.closest('[data-location-dropdown]') || target.closest('[data-location-trigger]'))) return;
+      setDropdownOpen(false);
+    };
+
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [dropdownOpen]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-premium flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-14 h-14 rounded-full border-4 border-gold border-t-transparent animate-spin mx-auto mb-4" />
+          <p className="text-white/70 font-semibold">Cargando sucursales…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-premium flex items-center justify-center px-6">
+        <div className="max-w-lg w-full glass-strong rounded-[28px] p-8 text-center shadow-card">
+          <div className="grid h-16 w-16 place-items-center rounded-2xl border border-white/10 bg-white/[0.04] text-3xl mx-auto mb-5">😕</div>
+          <p className="text-white font-display font-extrabold text-xl mb-3">Error al cargar sucursales</p>
+          <p className="text-white/60 mb-6">{error}</p>
+          <button
+            onClick={() => {
+              setError(null);
+              setLoading(true);
+              setLocations([]);
+              setSelectedLocation(null);
+              setDropdownOpen(false);
+              const load = async () => {
+                try {
+                  const { data, error: loadError } = await supabase
+                    .from('locations')
+                    .select('*')
+                    .order('name');
+
+                  if (loadError) {
+                    throw new Error(loadError.message);
+                  }
+
+                  if (data && data.length > 0) {
+                    const visibleLocations = sortLocationsForDisplay((data as Location[])).filter((loc) => loc.is_active);
+                    setLocations(visibleLocations);
+                    // No se pre-selecciona: el cliente debe elegir una sucursal.
+                  } else {
+                    setError('No se encontraron sucursales activas. Revisa la configuración de Supabase.');
+                  }
+                } catch (err) {
+                  setError(err instanceof Error ? err.message : 'No se pudo cargar las sucursales.');
+                } finally {
+                  setLoading(false);
+                }
+              };
+              load();
+            }}
+            className="rounded-2xl bg-yellow-cta px-6 py-3 text-ink font-extrabold uppercase shadow-glow-gold transition-transform active:scale-95"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-premium text-white">
+      {/* Nav */}
+      <nav className="absolute left-0 right-0 top-0 z-30 flex items-center justify-end px-4 py-4 sm:px-6 lg:px-8">
+        <button
+          onClick={onKitchenAccess}
+          className="flex min-h-[44px] items-center gap-2 rounded-2xl border border-white/10 glass px-4 py-2.5 text-sm font-bold text-white/90 transition-all hover:border-gold/40 hover:text-white"
+        >
+          <LogIn className="h-4 w-4 text-gold" />
+          Login
+        </button>
+      </nav>
+
+      {/* Hero */}
+      <section className="relative isolate overflow-visible">
+        <div className="absolute inset-0 bg-[#5e0a0c]">
+          <div
+            className="absolute inset-0 scale-110 bg-cover bg-center bg-no-repeat blur-3xl opacity-60 saturate-150 home-hero-bg home-hero-bg--blur"
+            aria-hidden="true"
+          />
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat home-hero-bg"
+            aria-hidden="true"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-ink/95 via-ink/80 to-ink/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink/95 via-ink/50 to-ink/20" />
+        </div>
+
+        <div className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-7xl items-center px-4 pb-12 pt-24 sm:px-6 lg:px-8">
+          <div className="w-full max-w-2xl animate-fade-up">
+            <div className="rounded-[32px] border border-white/10 bg-[#0f0a0b]/55 p-6 shadow-[0_30px_90px_rgba(0,0,0,0.35)] backdrop-blur-2xl sm:p-8 lg:p-10">
+              <div className="mb-6 flex justify-start">
+                <WernerLogo size="lg" />
+              </div>
+
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/10 px-4 py-1.5 shadow-[0_0_24px_rgba(234,171,8,0.15)]">
+                <Flame className="h-4 w-4 text-gold-light" />
+                <span className="text-[13px] font-bold uppercase tracking-[0.25em] text-gold-light">Comida hecha al momento</span>
+              </div>
+
+              <h1 className="mb-6 max-w-2xl font-display text-[40px] font-extrabold leading-[0.95] tracking-tight text-balance text-white [text-shadow:0_2px_16px_rgba(0,0,0,0.75)] sm:text-6xl lg:text-7xl">
+                PIDE TU COMIDA
+                <br />
+                <span className="text-gold-grad">FAVORITA EN MINUTOS</span>
+              </h1>
+
+              <p className="mb-7 max-w-xl text-[15px] leading-relaxed text-white/75 [text-shadow:0_1px_10px_rgba(0,0,0,0.8)] sm:text-lg">
+                Hamburguesas a la parrilla, hot dogs cargados, salchipapas y más. Una experiencia de pedido rápida, elegante y preparada para ti.
+              </p>
+
+              <div className="mb-7 flex flex-wrap gap-2">
+                {['Entrega rápida', 'Sabor premium', 'Pago seguro'].map((item) => (
+                  <span key={item} className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-[12px] font-semibold uppercase tracking-[0.2em] text-white/70 backdrop-blur-sm">
+                    {item}
+                  </span>
+                ))}
+              </div>
+
+              {/* Location selector */}
+              <div className="relative z-[100] mb-6 w-full max-w-sm">
+                <p className="mb-2 flex items-center gap-1.5 text-[13px] font-bold uppercase tracking-[0.25em] text-white/45">
+                  <MapPin className="h-4 w-4 text-gold" />
+                  Elige tu sucursal
+                </p>
+                <button
+                  ref={triggerRef}
+                  id="branch-selector-trigger"
+                  data-location-trigger
+                  type="button"
+                  onClick={() => {
+                    setDropdownOpen((prev) => !prev);
+                  }}
+                  className="flex min-h-[50px] w-full items-center justify-between gap-3 rounded-[20px] border border-white/15 bg-white/[0.08] px-4 py-3.5 text-left font-semibold text-white shadow-[0_16px_40px_rgba(0,0,0,0.28)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/40 hover:bg-white/[0.12]"
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <MapPin className="h-5 w-5 shrink-0 text-gold" />
+                    <span className={`truncate ${selectedLocation ? '' : 'text-white/45'}`}>
+                      {selectedLocation ? selectedLocation.name : 'Selecciona una sucursal'}
+                    </span>
+                  </span>
+                  <ChevronDown className={`h-5 w-5 shrink-0 text-gold transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {dropdownOpen && (
+                  <div className="absolute z-[40] top-full left-0 mt-2 w-full" onClick={() => setDropdownOpen(false)}>
+                    <div
+                      data-location-dropdown
+                      className="overflow-hidden rounded-[20px] border border-white/10 bg-[#0b0809] shadow-[0_16px_42px_rgba(0,0,0,0.72)]"
+                      style={{ maxHeight: 'min(320px, 72svh)' }}
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      <div className="max-h-[144px] overflow-y-auto overscroll-contain bg-[#0b0809]">
+                        {locations.map((loc) => {
+                          const open = isLocationOpen(loc);
+                          return (
+                            <button
+                              key={loc.id}
+                              disabled={!open}
+                              onClick={() => {
+                                if (!open) {
+                                  setWarning('Esta sucursal está cerrada por hoy. Elige otra para seguir con tu pedido.');
+                                  return;
+                                }
+                                setSelectedLocation(loc);
+                                setDropdownOpen(false);
+                              }}
+                              className={`flex min-h-[48px] w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors ${open ? 'hover:bg-white/[0.08]' : 'cursor-not-allowed opacity-60'}`}
+                            >
+                              <div className="min-w-0">
+                                <p className="truncate font-bold text-white">{loc.name}</p>
+                                <p className="truncate text-xs text-white/45">{loc.address}</p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {!open && <span className="rounded-full border border-red-400/30 bg-red-500/10 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-red-300">Cerrado por hoy</span>}
+                                {selectedLocation?.id === loc.id && <Check className="h-5 w-5 shrink-0 text-gold" />}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {warning && (
+                <div className="mb-5 rounded-2xl border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-gold-light">
+                  {warning}
+                </div>
+              )}
+
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                <button
+                  onClick={() => selectedLocation && isLocationOpen(selectedLocation) && onOrder(selectedLocation.id)}
+                  disabled={!selectedLocation || !isLocationOpen(selectedLocation)}
+                  className="group inline-flex min-h-[54px] items-center justify-center gap-3 rounded-[20px] bg-gradient-to-r from-[#f7d878] via-[#e5b04a] to-[#b87b08] px-8 py-4 text-lg font-extrabold uppercase tracking-[0.2em] text-ink shadow-[0_18px_45px_rgba(234,171,8,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:brightness-105 active:scale-95 disabled:opacity-50 disabled:hover:translate-y-0 disabled:active:scale-100 sm:w-auto"
+                >
+                  <ShoppingBag className="h-6 w-6" />
+                  Pedir ahora
+                  <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                </button>
+
+                <div className="rounded-[18px] border border-white/10 bg-white/[0.05] px-4 py-3 text-sm text-white/70 backdrop-blur-sm">
+                  <p className="font-semibold text-white">Tiempo promedio</p>
+                  <p className="text-gold-light">15–20 minutos</p>
+                </div>
+              </div>
+
+              {!selectedLocation && (
+                <p className="mt-3 flex items-center gap-1.5 text-[13px] text-white/45">
+                  <MapPin className="h-4 w-4 text-gold" />
+                  Elige una sucursal abierta para continuar.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="relative border-t border-white/10 bg-[radial-gradient(80%_60%_at_50%_0%,rgba(234,171,8,0.14),transparent_70%)] px-4 py-16 sm:px-6 sm:py-24">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-gold-light">
+                <Sparkles className="h-3.5 w-3.5" />
+                Experiencia premium
+              </div>
+              <h2 className="font-display text-[28px] font-extrabold leading-tight text-white sm:text-[34px]">
+                Elegancia, velocidad y sabor en cada pedido.
+              </h2>
+            </div>
+            <p className="max-w-xl text-sm leading-relaxed text-white/60 sm:text-base">
+              Cada detalle está pensado para que ordenar se sienta tan especial como comer.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            {[
+              { icon: ShoppingBag, title: 'Pide fácil', text: 'Explora el menú, agrega al carrito y confirma en segundos.' },
+              { icon: Clock, title: 'En tiempo real', text: 'La cocina recibe tu pedido al instante y lo prepara con precisión.' },
+              { icon: Star, title: 'Calidad garantizada', text: 'Ingredientes frescos, presentación impecable y sabor consistente.' },
+            ].map((f) => (
+              <div key={f.title} className="group relative overflow-hidden rounded-[26px] border border-white/10 bg-white/[0.04] p-7 text-left shadow-[0_25px_80px_rgba(0,0,0,0.25)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 hover:border-gold/30 hover:shadow-[0_30px_100px_rgba(230,180,80,0.12)]">
+                <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-r from-gold/10 via-transparent to-transparent opacity-80" />
+                <div className="relative mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-gold/20 bg-gold/10">
+                  <f.icon className="h-7 w-7 text-gold" />
+                </div>
+                <h3 className="relative mb-2 font-display text-lg font-extrabold uppercase text-white">{f.title}</h3>
+                <p className="relative text-sm leading-relaxed text-white/60">{f.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <footer className="border-t border-white/10 px-4 py-6 sm:px-6">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-center gap-2 text-center sm:flex-row">
+          <Sparkles className="h-3.5 w-3.5 text-gold/50" />
+          <p className="text-xs uppercase tracking-[0.25em] text-white/30">© WernerBurguer · Hecho al momento</p>
+        </div>
+      </footer>
+    </div>
+  );
+}
