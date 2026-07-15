@@ -9,7 +9,20 @@ interface HomeProps {
 type Branch = { id: string; name: string; address: string; is_closed?: boolean };
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'https://wernerburger.onrender.com';
-const api = (path: string) => `${API_BASE}${path}`;
+const FALLBACK_BRANCHES: Branch[] = [
+  { id: 'fallback-centro', name: 'Werner Burguer - Centro', address: 'Av. Principal 123', is_closed: false },
+  { id: 'fallback-norte', name: 'Werner Burguer - Norte', address: 'Calle Secundaria 45', is_closed: false },
+];
+const api = (path: string) => `${API_BASE.replace(/\/$/, '')}${path}`;
+
+const normalizeBranches = (payload: unknown): Branch[] => {
+  if (!Array.isArray(payload)) return [];
+  return payload.filter((item): item is Branch => {
+    if (!item || typeof item !== 'object') return false;
+    const candidate = item as Partial<Branch>;
+    return typeof candidate.id === 'string' && typeof candidate.name === 'string';
+  });
+};
 
 export default function Home({ onNavigate, onLogin }: HomeProps) {
   const [open, setOpen] = useState(false);
@@ -27,31 +40,50 @@ export default function Home({ onNavigate, onLogin }: HomeProps) {
 
   useEffect(() => {
     const storedBranchId = typeof window !== 'undefined' ? localStorage.getItem('werner-branch') : null;
+    let cancelled = false;
     setLoadingBranches(true);
     setError('');
 
-    fetch(api('/branches'))
-      .then((response) => {
+    const applyBranches = (data: Branch[]) => {
+      if (cancelled) return;
+      if (data.length > 0) {
+        setBranches(data);
+        const assigned = data.find((branch) => branch.id === storedBranchId);
+        const firstOpen = data.find((branch) => !branch.is_closed);
+        const next = assigned && !assigned.is_closed ? assigned : firstOpen || data[0] || null;
+        if (next) persistBranch(next);
+      } else {
+        setBranches(FALLBACK_BRANCHES);
+        const fallback = FALLBACK_BRANCHES.find((branch) => !branch.is_closed) || FALLBACK_BRANCHES[0];
+        if (fallback) persistBranch(fallback);
+        setError('No hay sucursales disponibles. Se usaron sucursales de respaldo.');
+      }
+    };
+
+    const loadBranches = async () => {
+      try {
+        const response = await fetch(api('/branches'), { headers: { Accept: 'application/json' } });
         if (!response.ok) throw new Error('No se pudo cargar sucursales');
-        return response.json();
-      })
-      .then((data: Branch[]) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setBranches(data);
-          const assigned = data.find((branch) => branch.id === storedBranchId);
-          const firstOpen = data.find((branch) => !branch.is_closed);
-          const next = assigned && !assigned.is_closed ? assigned : firstOpen || data[0] || null;
-          if (next) persistBranch(next);
-        } else {
-          setError('No hay sucursales disponibles.');
-        }
-      })
-      .catch((err) => {
+        const payload = await response.json();
+        const data = normalizeBranches(payload);
+        applyBranches(data);
+      } catch (err) {
+        if (cancelled) return;
+        const fallback = FALLBACK_BRANCHES;
+        setBranches(fallback);
+        const fallbackBranch = fallback.find((branch) => !branch.is_closed) || fallback[0];
+        if (fallbackBranch) persistBranch(fallbackBranch);
         setError(err instanceof Error ? err.message : 'Error al cargar sucursales');
-      })
-      .finally(() => {
-        setLoadingBranches(false);
-      });
+      } finally {
+        if (!cancelled) setLoadingBranches(false);
+      }
+    };
+
+    void loadBranches();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const handleSelect = (branch: Branch) => {
